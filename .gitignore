@@ -1,2 +1,11 @@
 # Generated per-harness layouts — never edit by hand, re-run bin/generate.sh
 /dist/
+
+# OS-specific files
+**/.DS_Store
+**/.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

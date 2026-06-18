@@ -1,22 +1,2 @@
 # Generated per-harness layouts — never edit by hand, re-run bin/generate.sh
 /dist/
-
-# General macOS operating system files
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Icon files that may appear when customizing folders
-Icon?
-
-# Thumbnails and system indexes
-._*
-
-# Files that may appear at the root of a volume
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent

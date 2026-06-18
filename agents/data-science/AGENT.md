@@ -7,8 +7,9 @@ skills:
   - scrub-data
   - write-sql
   - chart-viz
-mcp:
+connections:
   - warehouse-server
+  - metrics-api
 delegates_to:
   - sql            # hand complex query authoring to the SQL agent as a subagent
 ---

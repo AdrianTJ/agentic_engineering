@@ -1,0 +1,7 @@
+name: leads-with-decision
+description: The presentation agent opens with the decision/ask, not the methodology.
+prompt: Turn last week's revenue results into a two-slide summary for the leadership team.
+expect:
+  - skill_loaded: stakeholder-narrative
+  - skill_loaded: build-deck
+  - reply_not_contains: p-value

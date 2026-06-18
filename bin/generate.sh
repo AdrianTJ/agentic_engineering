@@ -5,7 +5,8 @@
 # The repo is the single source of truth. You only ever edit these:
 #   AGENTS.md               root agent context (always-on project instructions)
 #   skills/<name>/SKILL.md  the shared skill library (write each skill ONCE)
-#   agents/<name>/AGENT.md  thin agent manifests that declare which skills they compose
+#   agents/<name>/AGENT.md  thin agent manifests: which skills + connections they compose
+#   connections/<name>.md   declarative pointers to MCP servers / APIs (env var, never secret)
 #
 # Each harness wants those files in a different place. Rather than maintain a copy
 # per harness, the per-harness LAYOUT is described as data in harnesses/<name>.conf,
@@ -32,11 +33,12 @@ LINK_MODE="symlink"
 
 usage() { sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'; }
 
-# Print one skill name per line from the `skills:` block of a YAML frontmatter file.
-parse_skills() {
-  awk '
+# Print each item of a frontmatter list block, one per line.
+#   parse_list <file> <yaml_key>   e.g. parse_list agent/AGENT.md skills
+parse_list() {
+  awk -v key="$2" '
     /^---[[:space:]]*$/ { fm = !fm; next }
-    fm && /^skills:[[:space:]]*$/ { inlist = 1; next }
+    fm && $0 ~ "^" key ":[[:space:]]*$" { inlist = 1; next }
     fm && inlist {
       if ($0 ~ /^[[:space:]]+-[[:space:]]+/) {
         line = $0
@@ -71,6 +73,7 @@ build_harness() {
   # Layout defaults — a .conf overrides only what differs.
   local SKILLS_DIR="skills"
   local AGENTS_DIR="agents"
+  local CONNECTIONS_DIR=""          # empty = this harness has no connections dir; skip
   local INSTRUCTIONS_FILE="AGENTS.md"
   local ALSO_AGENTS_MD="false"
   local AGENT_FILE_EXT="md"
@@ -86,12 +89,14 @@ build_harness() {
     place "$REPO_ROOT/AGENTS.md" "$out/AGENTS.md"
   fi
 
-  # 2) Each agent's manifest, plus the shared skills it composes.
-  local agent_md name skill skdir
+  # 2) Each agent's manifest, plus the shared skills and connections it composes.
+  local agent_md name skill skdir conn connfile
   for agent_md in "$REPO_ROOT"/agents/*/AGENT.md; do
     [ -e "$agent_md" ] || continue
     name="$(basename "$(dirname "$agent_md")")"
     place "$agent_md" "$out/$AGENTS_DIR/$name.$AGENT_FILE_EXT"
+
+    # 2a) shared skills
     while IFS= read -r skill; do
       [ -n "$skill" ] || continue
       skdir="$REPO_ROOT/skills/$skill"
@@ -100,7 +105,22 @@ build_harness() {
       else
         echo "  warning: agent '$name' references missing skill '$skill'" >&2
       fi
-    done < <(parse_skills "$agent_md")
+    done < <(parse_list "$agent_md" skills)
+
+    # 2b) connections (declarative pointers to MCP servers / APIs) — only if this
+    #     harness exposes a connections dir. The file names only an env var for any
+    #     secret, never the secret itself.
+    if [ -n "$CONNECTIONS_DIR" ]; then
+      while IFS= read -r conn; do
+        [ -n "$conn" ] || continue
+        connfile="$REPO_ROOT/connections/$conn.md"
+        if [ -f "$connfile" ]; then
+          place "$connfile" "$out/$CONNECTIONS_DIR/$conn.md"
+        else
+          echo "  warning: agent '$name' references missing connection '$conn'" >&2
+        fi
+      done < <(parse_list "$agent_md" connections)
+    fi
   done
 
   echo "built dist/$harness  (mode: $LINK_MODE)"

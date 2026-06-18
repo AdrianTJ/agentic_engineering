@@ -5,7 +5,7 @@ skills:
   - write-sql
   - introspect-schema
   - scrub-data
-mcp:
+connections:
   - warehouse-server
 delegates_to: []
 ---

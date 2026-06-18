@@ -1,0 +1,9 @@
+name: pipeline-shown
+description: The data-science agent shows the actual commands so the work is reproducible.
+prompt: How many non-refunded, non-internal orders were there last week?
+expect:
+  - skill_loaded: scrub-data
+  - reply_matches: "(csvstat|csvgrep|awk|SELECT)"
+  - reply_not_contains: approximately
+fixtures:
+  - shared/datasets/orders_sample.csv

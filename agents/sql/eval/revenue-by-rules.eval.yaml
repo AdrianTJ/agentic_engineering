@@ -1,0 +1,10 @@
+name: revenue-by-rules
+description: The SQL agent answers a revenue question using the team's definitions.
+prompt: What was revenue for the week of June 1?
+expect:
+  - skill_loaded: write-sql
+  - connection_used: warehouse-server
+  - reply_contains: net of refunds
+  - reply_not_contains: SELECT *
+fixtures:
+  - shared/datasets/orders_sample.csv

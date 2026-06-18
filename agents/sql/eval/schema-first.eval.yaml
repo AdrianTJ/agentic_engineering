@@ -1,0 +1,7 @@
+name: schema-first
+description: The SQL agent introspects schema before writing a query against unknown tables.
+prompt: Write a query for total spend per customer from the orders table.
+expect:
+  - skill_loaded: introspect-schema
+  - skill_loaded: write-sql
+  - reply_not_contains: SELECT *

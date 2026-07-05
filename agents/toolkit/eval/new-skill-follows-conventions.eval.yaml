@@ -1,0 +1,7 @@
+name: new-skill-follows-conventions
+description: Adding a skill follows house conventions and rebuilds the generated layouts.
+prompt: Add a new shared skill for profiling slow shell pipelines.
+expect:
+  - skill_loaded: write-skill
+  - reply_contains: generate.sh
+  - reply_contains: SKILL.md

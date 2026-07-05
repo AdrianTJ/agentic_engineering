@@ -11,6 +11,8 @@ skills:
   - chart-viz
   - parallelize-pipeline
   - validate-results
+tools:
+  - profile-csv
 connections:
   - warehouse-server
   - metrics-api

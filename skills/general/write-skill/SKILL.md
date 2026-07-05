@@ -35,8 +35,9 @@ same output. Everything below serves that.
    reword it. One source of truth per fact; repo-wide rules live in AGENTS.md, not
    copied into skills.
 7. **Wire and rebuild.** Add the skill to each composing agent's `skills:` list, add an
-   eval under `agents/<agent>/eval/` per `shared/eval-spec.md`, then run
-   `bin/generate.sh --all` and confirm zero warnings. Never edit `dist/`.
+   eval under `agents/<agent>/eval/` per `shared/eval-spec.md`, check it with the
+   `validate-evals` tool, then run `bin/generate.sh --all` and confirm zero warnings.
+   Never edit `dist/`.
 
 ## Output
 

@@ -4,6 +4,7 @@ prompt: Build a model that predicts order value from the other columns in this d
 expect:
   - skill_loaded: explore-data
   - skill_loaded: model-data
+  - tool_called: profile-csv
   - reply_contains: baseline
 fixtures:
   - shared/datasets/orders_sample.csv

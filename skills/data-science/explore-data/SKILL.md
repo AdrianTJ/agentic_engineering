@@ -15,9 +15,10 @@ kills a bad assumption or becomes a hypothesis for `model-data`.
 
 ## Workflow
 
-1. **Shape first.** Header, column count, row count:
-   `csvlook data.csv | head`, `xsv headers data.csv` (or `head -1 | tr ',' '\n'`),
-   `xsv count data.csv` / `wc -l`. Know the size before running anything heavier.
+1. **Shape first.** Run the `profile-csv` tool for the one-shot orientation
+   (shape, columns, empty counts, sample); fall back to `csvlook data.csv | head`,
+   `xsv headers`, and `wc -l` when it isn't available. Know the size before
+   running anything heavier.
 2. **Column summaries.** `csvstat data.csv` for types, nulls, min/max/mean/stddev,
    unique counts. Note every column whose type or null count surprises you.
 3. **Sample, don't full-scan.** Eyeball random rows (`shuf -n 20`, `xsv sample 20`),

@@ -37,8 +37,8 @@ layout into per-harness layouts on demand.
 - `dist/` is generated output. Never edit it by hand; edit the sources and re-run
   `bin/generate.sh`.
 - Commit at each logical checkpoint (don't batch a whole session into one commit), and
-  add `Co-Authored-By: Adrian Tame <atj904@gmail.com>` to every commit so the work is
-  traceable.
+  add `Co-Authored-By: Adrian Tame <Adrian.tame.jacobo@gmail.com>` to every commit so
+  the work is traceable.
 
 ## Build
 

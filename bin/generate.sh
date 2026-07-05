@@ -7,7 +7,8 @@
 #   skills/<category>/<name>/SKILL.md  the shared skill library (write each skill ONCE;
 #                           category dirs are purely organizational — agents reference
 #                           skills by bare name, which must be unique across categories)
-#   agents/<name>/AGENT.md  thin agent manifests: which skills + connections they compose
+#   agents/<name>/AGENT.md  thin agent manifests: which skills, tools + connections they compose
+#   tools/<name>/TOOL.md    executable capabilities (manifest + script), composed by agents
 #   connections/<name>.md   declarative pointers to MCP servers / APIs (env var, never secret)
 #
 # Each harness wants those files in a different place. Rather than maintain a copy
@@ -75,6 +76,7 @@ build_harness() {
   # Layout defaults — a .conf overrides only what differs.
   local SKILLS_DIR="skills"
   local AGENTS_DIR="agents"
+  local TOOLS_DIR="tools"           # empty = this harness gets no projected tools; skip
   local CONNECTIONS_DIR=""          # empty = this harness has no connections dir; skip
   local INSTRUCTIONS_FILE="AGENTS.md"
   local ALSO_AGENTS_MD="false"
@@ -115,7 +117,22 @@ build_harness() {
       fi
     done < <(parse_list "$agent_md" skills)
 
-    # 2b) connections (declarative pointers to MCP servers / APIs) — only if this
+    # 2b) tools (executable capabilities: TOOL.md manifest + script) — only if this
+    #     harness exposes a tools dir.
+    if [ -n "$TOOLS_DIR" ]; then
+      local tool tooldir
+      while IFS= read -r tool; do
+        [ -n "$tool" ] || continue
+        tooldir="$REPO_ROOT/tools/$tool"
+        if [ -d "$tooldir" ]; then
+          place "$tooldir" "$out/$TOOLS_DIR/$tool"
+        else
+          echo "  warning: agent '$name' references missing tool '$tool'" >&2
+        fi
+      done < <(parse_list "$agent_md" tools)
+    fi
+
+    # 2c) connections (declarative pointers to MCP servers / APIs) — only if this
     #     harness exposes a connections dir. The file names only an env var for any
     #     secret, never the secret itself.
     if [ -n "$CONNECTIONS_DIR" ]; then

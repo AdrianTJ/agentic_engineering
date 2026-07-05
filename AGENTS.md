@@ -13,8 +13,13 @@ layout into per-harness layouts on demand.
   `references/`, and `assets/` subfolders. Category dirs (`general/`, `data-science/`)
   are purely organizational: agents reference skills by bare name, which must therefore
   be unique across categories.
+- `tools/<name>/TOOL.md` — executable capabilities: a manifest (frontmatter `name`,
+  `description`, `entrypoint`, `runtime`) beside the script it describes. Tools differ
+  from a skill's private `scripts/`: a skill script is a helper only that skill uses,
+  while a tool is a first-class capability an agent invokes directly and any agent can
+  compose. Promote a skill script to `tools/` when a second consumer appears.
 - `agents/<name>/AGENT.md` — a thin agent manifest. It declares the agent's identity
-  and scope and lists which shared skills and connections it composes (in YAML
+  and scope and lists which shared skills, tools, and connections it composes (in YAML
   frontmatter). It does **not** contain copies of skills.
 - `connections/<name>.md` — a declarative pointer to an MCP server or API: its `url`,
   `kind`, and the **env var** that holds its credential (never the credential itself).
@@ -63,8 +68,12 @@ generator discovers it, no registration needed.
   `references/`, `assets/` beside it as needed. Make it atomic and reusable so more
   than one agent can compose it. Skill names must be unique across categories; agents
   reference the bare name.
+- **Add a tool:** create `tools/<name>/TOOL.md` (frontmatter: `name`, `description`
+  saying what AND when, `entrypoint`, `runtime`) with the executable script beside it.
+  Keep tools read-only on their inputs unless mutation is the tool's whole point.
+  Reference the tool from an agent's `tools:` list.
 - **Add an agent:** create `agents/<name>/AGENT.md`. Frontmatter declares `name`,
-  `role`, a `skills:` list, an optional `connections:` list, and optional
+  `role`, a `skills:` list, optional `tools:` and `connections:` lists, and optional
   `delegates_to:` (names of other agents it may call as subagents). The body is the
   agent's identity, scope, and guardrails — keep it short; it becomes the system
   prompt. Reference existing shared skills by name rather than writing new ones.

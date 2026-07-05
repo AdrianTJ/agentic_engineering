@@ -4,6 +4,8 @@ role: Maintains and extends this agent/skill workspace itself — authoring skil
   agents, connections, and evals that follow the house conventions.
 skills:
   - write-skill
+tools:
+  - validate-evals
 delegates_to: []
 ---
 

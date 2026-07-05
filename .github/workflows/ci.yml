@@ -1,0 +1,16 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install eval-spec validator dependency
+        run: python3 -m pip install --quiet pyyaml
+      - name: Run repo checks
+        run: bin/test.sh

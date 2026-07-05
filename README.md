@@ -30,6 +30,9 @@ ai-toolkit/
 │       ├── explore-data/
 │       ├── model-data/
 │       └── …
+├── tools/                    # executable capabilities: TOOL.md manifest + script
+│   ├── profile-csv/
+│   └── validate-evals/
 ├── connections/              # declarative pointers to MCP servers / APIs (env var, never secret)
 │   ├── warehouse-server.md
 │   └── metrics-api.md
@@ -44,6 +47,9 @@ ai-toolkit/
   science agent. You write it once; both pull it.
 - **Agents are thin.** An `AGENT.md` declares identity, scope, and lists of skill and
   connection names — never copies of skills.
+- **Tools are executable.** A `tools/<name>/` dir holds a TOOL.md manifest and the
+  script it describes; agents compose tools by name (`tools:` list) and invoke the
+  script directly. Skills say *how to work*; tools *do one concrete thing*.
 - **Connections are declarative.** A `connections/<name>.md` points at an MCP server or
   API and names the env var holding its secret; the secret never lives in the repo.
 - **Evals are declarative too.** `agents/<agent>/eval/*.eval.yaml` describe behavior to
@@ -81,6 +87,9 @@ omit takes a sensible default (top-level `skills/`, `agents/`, `AGENTS.md`, and 
   documents the house style.
 - New agent: `mkdir agents/<name> && $EDITOR agents/<name>/AGENT.md` with `skills:` and
   optional `connections:` lists in the frontmatter. Re-run the generator.
+- New tool: `mkdir tools/<name>` with a `TOOL.md` (`name`, `description`, `entrypoint`,
+  `runtime`) and the executable script beside it. Reference it from an agent's
+  `tools:` list.
 - New connection: `$EDITOR connections/<name>.md` (`name`, `kind`, `url`,
   `auth.token_env`). Reference it from an agent's `connections:` list.
 

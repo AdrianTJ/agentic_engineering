@@ -4,7 +4,9 @@
 #
 # The repo is the single source of truth. You only ever edit these:
 #   AGENTS.md               root agent context (always-on project instructions)
-#   skills/<name>/SKILL.md  the shared skill library (write each skill ONCE)
+#   skills/<category>/<name>/SKILL.md  the shared skill library (write each skill ONCE;
+#                           category dirs are purely organizational — agents reference
+#                           skills by bare name, which must be unique across categories)
 #   agents/<name>/AGENT.md  thin agent manifests: which skills + connections they compose
 #   connections/<name>.md   declarative pointers to MCP servers / APIs (env var, never secret)
 #
@@ -96,10 +98,16 @@ build_harness() {
     name="$(basename "$(dirname "$agent_md")")"
     place "$agent_md" "$out/$AGENTS_DIR/$name.$AGENT_FILE_EXT"
 
-    # 2a) shared skills
+    # 2a) shared skills — bare `skills/<name>` first (back-compat), then any
+    #     category subdir `skills/<category>/<name>`; first match wins.
     while IFS= read -r skill; do
       [ -n "$skill" ] || continue
       skdir="$REPO_ROOT/skills/$skill"
+      if [ ! -d "$skdir" ]; then
+        for cand in "$REPO_ROOT"/skills/*/"$skill"; do
+          [ -d "$cand" ] && { skdir="$cand"; break; }
+        done
+      fi
       if [ -d "$skdir" ]; then
         place "$skdir" "$out/$SKILLS_DIR/$skill"
       else

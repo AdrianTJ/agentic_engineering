@@ -1,0 +1,9 @@
+name: explore-before-model
+description: The agent explores a new dataset and fits a baseline before any real model.
+prompt: Build a model that predicts order value from the other columns in this dataset.
+expect:
+  - skill_loaded: explore-data
+  - skill_loaded: model-data
+  - reply_contains: baseline
+fixtures:
+  - shared/datasets/orders_sample.csv

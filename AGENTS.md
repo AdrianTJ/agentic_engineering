@@ -7,10 +7,12 @@ layout into per-harness layouts on demand.
 
 ## How it's organized
 
-- `skills/<name>/SKILL.md` — the shared skill library. Each skill is written **once**
-  and may be composed by any number of agents. Skills are atomic and reusable: one
-  skill does one well-defined thing (e.g. `write-sql`), with optional `scripts/`,
-  `references/`, and `assets/` subfolders.
+- `skills/<category>/<name>/SKILL.md` — the shared skill library. Each skill is written
+  **once** and may be composed by any number of agents. Skills are atomic and reusable:
+  one skill does one well-defined thing (e.g. `write-sql`), with optional `scripts/`,
+  `references/`, and `assets/` subfolders. Category dirs (`general/`, `data-science/`)
+  are purely organizational: agents reference skills by bare name, which must therefore
+  be unique across categories.
 - `agents/<name>/AGENT.md` — a thin agent manifest. It declares the agent's identity
   and scope and lists which shared skills and connections it composes (in YAML
   frontmatter). It does **not** contain copies of skills.
@@ -50,11 +52,14 @@ If you are a coding agent working in this repo, follow these conventions. Each k
 thing is a file (or a directory) whose name and location ARE its definition; the
 generator discovers it, no registration needed.
 
-- **Add a skill:** create `skills/<name>/SKILL.md` with YAML frontmatter (`name`,
-  `description`) then a markdown body of instructions. The `description` must say what
-  the skill does AND when to use it — it is the only thing an agent sees when deciding
-  to load it. Bundle `scripts/`, `references/`, `assets/` beside it as needed. Make it
-  atomic and reusable so more than one agent can compose it.
+- **Add a skill:** consult the `write-skill` skill, then create
+  `skills/<category>/<name>/SKILL.md` (`general/` for all-purpose, `data-science/` for
+  the OSEMN pipeline) with YAML frontmatter (`name`, `description`) then a markdown body
+  of instructions. The `description` must say what the skill does AND when to use it —
+  it is the only thing an agent sees when deciding to load it. Bundle `scripts/`,
+  `references/`, `assets/` beside it as needed. Make it atomic and reusable so more
+  than one agent can compose it. Skill names must be unique across categories; agents
+  reference the bare name.
 - **Add an agent:** create `agents/<name>/AGENT.md`. Frontmatter declares `name`,
   `role`, a `skills:` list, an optional `connections:` list, and optional
   `delegates_to:` (names of other agents it may call as subagents). The body is the

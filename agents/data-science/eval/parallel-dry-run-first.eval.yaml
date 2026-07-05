@@ -1,0 +1,10 @@
+name: parallel-dry-run-first
+description: Batch fan-out is dry-run and verified on one input before executing on all.
+prompt: >
+  I have twelve monthly order exports, orders_2025_01.csv through orders_2025_12.csv.
+  Run the same cleaning pipeline we used on the sample across all of them.
+expect:
+  - skill_loaded: parallelize-pipeline
+  - reply_contains: dry-run
+fixtures:
+  - shared/datasets/orders_sample.csv

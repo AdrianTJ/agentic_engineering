@@ -17,12 +17,19 @@ ai-toolkit/
 │   │   ├── AGENT.md
 │   │   └── eval/*.eval.yaml   #   declarative behavior checks for this agent
 │   ├── sql/
-│   └── presentation/
+│   ├── presentation/
+│   └── toolkit/              #   meta-agent: maintains this workspace itself
 ├── skills/                   # the shared library — each skill written ONCE
-│   ├── write-sql/            #   (with scripts/, references/, assets/ as needed)
-│   ├── scrub-data/
-│   ├── chart-viz/
-│   └── …
+│   ├── general/              #   all-purpose skills
+│   │   ├── write-skill/      #   (with scripts/, references/, assets/ as needed)
+│   │   ├── validate-results/
+│   │   └── …
+│   └── data-science/         #   the CLI-first OSEMN pipeline
+│       ├── obtain-data/
+│       ├── scrub-data/
+│       ├── explore-data/
+│       ├── model-data/
+│       └── …
 ├── connections/              # declarative pointers to MCP servers / APIs (env var, never secret)
 │   ├── warehouse-server.md
 │   └── metrics-api.md
@@ -67,8 +74,11 @@ omit takes a sensible default (top-level `skills/`, `agents/`, `AGENTS.md`, and 
 
 ## Adding an agent, skill, or connection
 
-- New skill: `mkdir skills/<name> && $EDITOR skills/<name>/SKILL.md` (name + description
-  frontmatter, then instructions). Reference it from any agent's `skills:` list.
+- New skill: `mkdir skills/<category>/<name> && $EDITOR skills/<category>/<name>/SKILL.md`
+  (name + description frontmatter, then instructions; category is `general/`,
+  `data-science/`, or a new domain dir — names must be unique across categories).
+  Reference it by bare name from any agent's `skills:` list. The `write-skill` skill
+  documents the house style.
 - New agent: `mkdir agents/<name> && $EDITOR agents/<name>/AGENT.md` with `skills:` and
   optional `connections:` lists in the frontmatter. Re-run the generator.
 - New connection: `$EDITOR connections/<name>.md` (`name`, `kind`, `url`,
@@ -84,8 +94,9 @@ Paste this to point a coding agent at the repo and have it extend it correctly:
 ```text
 This repo is a harness-agnostic workspace for AI agents and shared skills. Read
 AGENTS.md first — especially "Extending this repo (for coding agents)" — and follow its
-conventions exactly. The canonical sources are skills/<name>/SKILL.md (shared skills,
-each with name+description frontmatter), agents/<name>/AGENT.md (thin manifests with
+conventions exactly. The canonical sources are skills/<category>/<name>/SKILL.md (shared
+skills, each with name+description frontmatter; category dirs are organizational only —
+agents reference bare skill names), agents/<name>/AGENT.md (thin manifests with
 skills:/connections:/delegates_to: frontmatter and a short identity body),
 connections/<name>.md (declarative MCP/API pointers naming an env var, never a secret),
 and agents/<agent>/eval/*.eval.yaml (declarative checks per shared/eval-spec.md). A

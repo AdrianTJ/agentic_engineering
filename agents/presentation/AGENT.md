@@ -5,6 +5,7 @@ skills:
   - chart-viz
   - build-deck
   - stakeholder-narrative
+  - validate-results
 delegates_to:
   - data-science   # ask the DS agent to produce the underlying numbers
 ---

@@ -1,0 +1,8 @@
+name: prune-not-append
+description: The agent corrects and prunes stale doc content rather than only appending new text.
+prompt: >
+  It's been a few weeks since the architecture doc was touched and we've rebuilt a
+  good chunk of the system since. Sync the docs.
+expect:
+  - skill_loaded: sync-docs
+  - reply_matches: "(prune|correct|stale|out.of.date|out of date)"

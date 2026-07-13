@@ -1,0 +1,9 @@
+name: decision-log-append-only
+description: Decisions are logged with sequential IDs and past entries are never rewritten.
+prompt: >
+  We just decided to drop the gRPC migration after burning a week on it — sticking
+  with REST for the internal API. Log this decision.
+expect:
+  - skill_loaded: log-decision
+  - reply_matches: "DEC-[0-9]{3}"
+  - reply_not_contains: edit the previous entry

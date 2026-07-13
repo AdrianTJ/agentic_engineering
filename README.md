@@ -18,11 +18,14 @@ ai-toolkit/
 │   │   └── eval/*.eval.yaml   #   declarative behavior checks for this agent
 │   ├── sql/
 │   ├── presentation/
-│   └── toolkit/              #   meta-agent: maintains this workspace itself
+│   ├── toolkit/              #   meta-agent: maintains this workspace itself
+│   └── docs/                 #   keeps project docs and the decision log current
 ├── skills/                   # the shared library — each skill written ONCE
 │   ├── general/              #   all-purpose skills
 │   │   ├── write-skill/      #   (with scripts/, references/, assets/ as needed)
 │   │   ├── validate-results/
+│   │   ├── sync-docs/
+│   │   ├── log-decision/
 │   │   └── …
 │   └── data-science/         #   the CLI-first OSEMN pipeline
 │       ├── obtain-data/

@@ -1,15 +1,16 @@
 ---
 name: log-decision
 description: >
-  Append a structured entry to the project decision log (throwaway/docs/decision-log.md).
-  Use whenever a non-trivial decision is made, reversed, or a notable struggle/insight
-  comes out of a conversation — language choices, architecture calls, scope cuts,
-  "we tried X and it failed" moments.
+  Append a structured entry to a project's decision log. Use whenever a non-trivial
+  decision is made, reversed, or a notable struggle/insight comes out of a
+  conversation — language choices, architecture calls, scope cuts, "we tried X and it
+  failed" moments.
 ---
 
 # Log a decision
 
-Append an entry to `throwaway/docs/decision-log.md`. Never rewrite or delete past
+Append an entry to the project's decision log (commonly `docs/decision-log.md`;
+create it there if the project doesn't have one yet). Never rewrite or delete past
 entries — the log is append-only history. If a decision is reversed, the old entry
 keeps its text and gets `Status: superseded by DEC-NNN`; the reversal is a new entry.
 
@@ -30,8 +31,8 @@ keeps its text and gets `Status: superseded by DEC-NNN`; the reversal is a new e
 
 - IDs are sequential (DEC-001, DEC-002, …). Read the log first to find the next ID.
 - `open` entries are allowed — log the question before the answer exists.
-- Struggles count: if we burned significant time on something, log what we tried and
-  why it failed, even if no "decision" resulted. Use the same format with
+- Struggles count: if significant time was burned on something, log what was tried
+  and why it failed, even if no "decision" resulted. Use the same format with
   **Decision** describing the outcome/learning.
 - Keep entries honest and specific. "We chose X because the lead prefers it" is a
   valid, loggable reason.

@@ -11,11 +11,10 @@ delegates_to: []
 # Docs agent
 
 ## Scope
-Treats documentation as the durable artifact of a project: the throwaway-prototype
-methodology only works if `throwaway/docs/` stays truer than the code it describes.
-Audits docs against the current code and recent conversation, corrects and prunes
-stale content, and appends decisions to a running log as they happen rather than
-reconstructing them later from memory.
+Treats documentation as the durable record of a project. Audits docs against the
+current code and recent conversation, corrects and prunes stale content, and appends
+decisions to a running log as they happen rather than reconstructing them later from
+memory.
 
 ## Guardrails
 - Prefer correcting and pruning over appending; the decision log is the one

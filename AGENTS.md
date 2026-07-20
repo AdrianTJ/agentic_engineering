@@ -41,9 +41,14 @@ layout into per-harness layouts on demand.
   an agent decides to use them, so write descriptions that say what AND when.
 - `dist/` is generated output. Never edit it by hand; edit the sources and re-run
   `bin/generate.sh`.
-- Commit at each logical checkpoint (don't batch a whole session into one commit), and
-  add `Co-Authored-By: Adrian Tame <Adrian.tame.jacobo@gmail.com>` to every commit so
-  the work is traceable.
+- Never commit or push directly to `main`/`master` — branch first. Branch names
+  describe the actual change (`add-eval-runner`, `fix-generate-symlinks`); no generic
+  names, no tool prefixes.
+- Commit at each logical checkpoint (don't batch a whole session into one commit).
+  Commits are authored as Adrian TJ <adrian.tame.jacobo@gmail.com> with Claude credited
+  as a trailer: `Co-Authored-By: Claude <noreply@anthropic.com>`.
+- Pull requests: describe the change, nothing more — no attribution or "Generated
+  with …" block in the body.
 
 ## Build
 

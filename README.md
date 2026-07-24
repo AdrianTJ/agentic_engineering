@@ -39,6 +39,8 @@ ai-toolkit/
 ├── connections/              # declarative pointers to MCP servers / APIs (env var, never secret)
 │   ├── warehouse-server.md
 │   └── metrics-api.md
+├── vendor/
+│   └── anthropic-skills/     #   git submodule: anthropics/skills, kept in sync automatically
 └── shared/
     ├── eval-spec.md          # the eval spec format
     └── datasets/             # fixtures for evals
@@ -60,6 +62,10 @@ ai-toolkit/
 - **Harness layout is data, not code.** Each `harnesses/*.conf` says where that harness
   wants skills, agents, and connections. Adding a harness is one new file;
   `bin/generate.sh` never changes.
+- **Prefer what Anthropic already maintains.** `vendor/anthropic-skills/` vendors their
+  public skill library as a submodule; a skill name resolves there if it's not in our
+  own `skills/`. Gives non-Claude harnesses the same `docx`/`pdf`/`pptx`/`xlsx`/
+  `skill-creator` that Claude Code/claude.ai already have natively — see `vendor/README.md`.
 
 ## Usage
 

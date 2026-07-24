@@ -30,6 +30,10 @@ layout into per-harness layouts on demand.
 - `harnesses/<name>.conf` — data describing where a given harness expects skills,
   agents, connections, and instructions to live.
 - `bin/generate.sh` — reads the above and materializes `dist/<harness>/`.
+- `vendor/anthropic-skills/skills/<name>/` — Anthropic's actively-maintained public
+  skill library, vendored as a git submodule (see `vendor/README.md`). A skill name
+  resolves here as a third fallback after `skills/<name>` and `skills/*/<name>`. Kept
+  current by a weekly scheduled workflow that opens a PR when upstream moves.
 
 ## Conventions
 
@@ -65,14 +69,17 @@ If you are a coding agent working in this repo, follow these conventions. Each k
 thing is a file (or a directory) whose name and location ARE its definition; the
 generator discovers it, no registration needed.
 
-- **Add a skill:** consult the `write-skill` skill, then create
+- **Add a skill:** first check whether `vendor/anthropic-skills/skills/` already has
+  one that does the job (Anthropic actively maintains that library — prefer it over a
+  new internal skill when the job is genuinely the same; see `vendor/README.md`). If
+  not, consult the `write-skill` skill, then create
   `skills/<category>/<name>/SKILL.md` (`general/` for all-purpose, `data-science/` for
   the OSEMN pipeline) with YAML frontmatter (`name`, `description`) then a markdown body
   of instructions. The `description` must say what the skill does AND when to use it —
   it is the only thing an agent sees when deciding to load it. Bundle `scripts/`,
   `references/`, `assets/` beside it as needed. Make it atomic and reusable so more
-  than one agent can compose it. Skill names must be unique across categories; agents
-  reference the bare name.
+  than one agent can compose it. Skill names must be unique across categories and
+  vendored skill names; agents reference the bare name either way.
 - **Add a tool:** create `tools/<name>/TOOL.md` (frontmatter: `name`, `description`
   saying what AND when, `entrypoint`, `runtime`) with the executable script beside it.
   Keep tools read-only on their inputs unless mutation is the tool's whole point.

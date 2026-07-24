@@ -19,6 +19,11 @@ Get data onto disk reliably and reproducibly.
 - `csvkit`'s `in2csv` / `sql2csv` — convert spreadsheets and query databases to CSV.
 - `tar`, `unzip`, `gunzip` — decompress archives.
 
+For a service this environment already has a declared `connections/<name>.md` for
+(or a first-class connector/MCP tool, e.g. GitHub), use that instead of raw
+`curl`/`wget` — direct HTTP calls to those services are often blocked at the network
+level, and the declared connection is the source of truth for how to reach them.
+
 ## Workflow
 
 1. Save raw responses to disk before parsing, so a flaky network or API doesn't cost

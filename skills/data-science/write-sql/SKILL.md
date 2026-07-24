@@ -34,7 +34,8 @@ readable always.
    iterating, then widen once the logic is verified.
 7. **Verify, then optimize.** Confirm correctness on a small sample first. Only then
    look at the plan and optimize. See `scripts/explain.sh` for a quick way to inspect
-   a query plan.
+   a query plan — it defaults to Postgres/MySQL's `EXPLAIN ANALYZE`; for SQLite, set
+   `EXPLAIN_KEYWORD="EXPLAIN QUERY PLAN"` first (SQLite doesn't support `ANALYZE`).
 
 ## Style
 

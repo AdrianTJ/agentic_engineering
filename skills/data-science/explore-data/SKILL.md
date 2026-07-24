@@ -25,7 +25,10 @@ kills a bad assumption or becomes a hypothesis for `model-data`.
    not just the head — files are often sorted, and the head lies about the middle.
 4. **Distributions and frequencies.** Frequency tables for categoricals
    (`csvcut -c col data.csv | sort | uniq -c | sort -rn`, `xsv frequency`); group
-   summaries for numerics (`datamash -t, --headers groupby 2 mean 5 count 5`).
+   summaries for numerics. `datamash groupby` requires input **pre-sorted by the
+   group column** — it silently fragments unsorted groups into wrong sub-groups
+   instead of erroring, so sort first:
+   `csvsort -c col data.csv | datamash -t, --headers groupby 2 mean 5 count 5`.
 5. **Quick throwaway plots.** Reach for `chart-viz` in exploratory mode for anything a
    number can't show: trends, outliers, bimodality. Speed over polish here.
 6. **Write the data brief.** Close with a short note: rows × columns, key column types,

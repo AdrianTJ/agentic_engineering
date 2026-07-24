@@ -21,13 +21,15 @@ from a simple model outperforms a sharper number nobody can trust.
 2. **Fit the dumb baseline first.** Mean/median for regression, majority class for
    classification, last value for forecasts. Every later model is judged against it —
    a model that can't beat the baseline is reported as exactly that.
-3. **Hold out data before looking.** Split train/test at the command line (e.g.
-   `awk 'NR==1 || rand()<0.8'` per stream, or a date cutoff for time series — never a
-   random split when order matters). Touch the test set once, at the end.
+3. **Hold out data before looking.** Split train/test at the command line: for
+   independent rows, `awk 'NR==1 || rand()<0.8'` per stream; for time series, sort by
+   date and cut instead of random-splitting (e.g. `sort -t, -k3 data.csv` then take
+   the first 80% of rows as train, the rest as test) — a random split leaks future
+   information into training when order matters. Touch the test set once, at the end.
 4. **Simple → complex.** Start with the least flexible model that could answer the
    question (linear/logistic regression, a two-sample test). Escalate only when
-   residuals prove the simple model wrong. `rush`/`Rscript -e` and `python -c` keep
-   fits scriptable; Vowpal Wabbit when the data outgrows memory.
+   residuals prove the simple model wrong. `Rscript -e` and `python -c` keep fits
+   scriptable; Vowpal Wabbit when the data outgrows memory.
 5. **Check assumptions, not just scores.** Residual plots (via `chart-viz`),
    heteroscedasticity, leakage, train/test drift. A good score with bad residuals is a
    bug that hasn't been found yet.

@@ -11,6 +11,7 @@ skills:
   - chart-viz
   - parallelize-pipeline
   - validate-results
+  - xlsx              # vendored (Anthropic): scrub-data hands off spreadsheet-file cleaning here
 tools:
   - profile-csv
 connections:

@@ -20,6 +20,10 @@ Turn raw, messy input into tidy data using small, composable Unix tools.
 - `jq` — slice, filter, and reshape JSON; flatten nested API responses to rows.
 - `iconv` — repair character encodings before anything else touches the bytes.
 
+This palette targets CSV/TSV/JSON/HTML. When the messy data is specifically a
+spreadsheet file (`.xlsx`/`.xlsm`), use the `xlsx` skill instead — it understands the
+file's internal structure (formulas, sheets, formatting) in a way CLI text tools don't.
+
 ## Workflow
 
 1. **Inspect first.** Look at the raw head/tail and run `csvstat` to learn column

@@ -6,6 +6,7 @@ skills:
   - build-deck
   - stakeholder-narrative
   - validate-results
+  - pptx            # vendored (Anthropic): build-deck hands off actual .pptx production here
 delegates_to:
   - data-science   # ask the DS agent to produce the underlying numbers
 ---

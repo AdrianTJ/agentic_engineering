@@ -15,11 +15,19 @@ same output. Everything below serves that.
 ## Workflow
 
 1. **Confirm it doesn't already exist.** Search `skills/*/` for an existing skill that
-   covers the job; extend or compose it rather than duplicating. Names must be unique
-   across category directories.
+   covers the job; extend or compose it rather than duplicating. Also check
+   `vendor/anthropic-skills/skills/` — Anthropic's actively-maintained public library.
+   Prefer referencing one of those over writing a new skill when the job is genuinely
+   the same (see AGENTS.md); this repo's own `write-skill`/`skill-creator` overlap is
+   the reference case — write-skill stays only for the repo-specific wiring below.
+   Names must be unique across category directories and vendored skill names.
 2. **Place it.** `skills/<category>/<name>/SKILL.md` — `general/` for all-purpose
    skills, `data-science/` for the OSEMN pipeline; add a category dir only when several
-   skills clearly share a new domain. Agents reference the bare `<name>`.
+   skills clearly share a new domain. Agents reference the bare `<name>`. On Claude, use
+   `skill-creator`'s interview → draft → benchmark process to develop the content, then
+   place the result here per this repo's layout — `skill-creator`'s own bundle
+   (parallel benchmark runs, eval viewer) assumes Claude Code's execution model and
+   won't run the same way on every harness this repo targets.
 3. **Write the description as the trigger.** It is the *only* thing an agent sees when
    deciding to load the skill, so it must say what the skill does AND when to use it.
    Front-load the leading verb ("Explore a dataset…"), cover the phrasings a user would
@@ -27,7 +35,8 @@ same output. Everything below serves that.
 4. **Write the body as checkable steps.** Numbered workflow where each step has a
    completion state a reader can verify; guardrails only for real failure modes;
    an Output section stating what the skill hands to whatever runs next. Name sibling
-   skills it feeds or consumes (`explore-data` → `model-data`).
+   skills it feeds or consumes (`explore-data` → `model-data`), including vendored ones
+   (`build-deck` → `pptx`, `scrub-data` → `xlsx`).
 5. **Disclose progressively.** Body holds the steps; anything consulted on demand goes
    to `scripts/`, `references/`, or `assets/` beside the SKILL.md; link out for the
    rest. Keep the body short enough to scan.

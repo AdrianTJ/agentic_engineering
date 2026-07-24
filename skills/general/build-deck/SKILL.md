@@ -18,6 +18,10 @@ Turn an agreed narrative and chart set into a clean presentation.
    back of a room.
 4. Open with the decision/ask, close with the next step. Detail goes in an appendix.
 5. Keep styling consistent and minimal — the data carries the slide, not the template.
+6. **Hand off file production.** This skill owns the narrative/slide-structure
+   discipline above, not file mechanics. When the deliverable is literally a `.pptx`,
+   use the `pptx` skill to actually produce it (templates, master layouts, speaker
+   notes) rather than reimplementing OOXML handling here.
 
 ## Output
 

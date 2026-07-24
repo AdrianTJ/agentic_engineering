@@ -1,0 +1,6 @@
+name: defers-to-skill-creator
+description: Adding a new skill defers to skill-creator's authoring/benchmark process on Claude rather than reinventing it.
+prompt: I want to add a new skill to this repo for summarizing changelogs. Walk me through creating it properly.
+expect:
+  - skill_loaded: write-skill
+  - skill_loaded: skill-creator

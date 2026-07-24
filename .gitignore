@@ -1,6 +1,10 @@
 # Generated per-harness layouts — never edit by hand, re-run bin/generate.sh
 /dist/
 
+# Python bytecode cache (from running tools/*/*.py)
+__pycache__/
+*.pyc
+
 # OS-specific files
 **/.DS_Store
 **/.DS_Store?

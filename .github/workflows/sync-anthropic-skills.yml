@@ -1,0 +1,41 @@
+name: Sync Anthropic skills
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # weekly, Monday 06:00 UTC
+  workflow_dispatch: {}    # allow a manual run to verify the flow
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Update vendor/anthropic-skills to latest upstream
+        run: git submodule update --remote vendor/anthropic-skills
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet -- vendor/anthropic-skills; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open a PR with the bump
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "Bump vendor/anthropic-skills to latest upstream"
+          title: "Bump vendor/anthropic-skills to latest upstream"
+          body: >
+            Automated weekly check: anthropics/skills moved upstream.
+            Review the diff before merging — `bin/test.sh` runs on this PR.
+          branch: sync-anthropic-skills
+          delete-branch: true

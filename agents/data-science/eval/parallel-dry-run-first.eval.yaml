@@ -7,4 +7,4 @@ expect:
   - skill_loaded: parallelize-pipeline
   - reply_contains: dry-run
 fixtures:
-  - shared/datasets/orders_sample.csv
+  - agents/fixtures/orders_sample.csv

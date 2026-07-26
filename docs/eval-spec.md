@@ -18,19 +18,18 @@ prompt:      string   # the user turn to send the agent
 expect:               # list of assertions; ALL must hold for the eval to pass
   - <assertion>: <value>
 fixtures:             # optional: data files the scenario needs, repo-relative paths
-  - shared/datasets/orders_sample.csv
+  - agents/fixtures/orders_sample.csv
 ```
 
 ## Assertion vocabulary
 
 - `skill_loaded:    <skill-name>`       the agent consulted this skill during the run
-- `connection_used: <connection-name>`  the agent used this connection
 - `tool_called:     <tool-or-op-name>`  the agent invoked this tool/operation
 - `reply_contains:     <substring>`     the final reply contains this text (case-insensitive)
 - `reply_not_contains: <substring>`     the final reply does NOT contain this text
 - `reply_matches:      <regex>`         the final reply matches this regular expression
 
-Assertions are intentionally about *observable* behavior (which skill/connection/tool
+Assertions are intentionally about *observable* behavior (which skill or tool
 was used, what the reply said), not internal state, so any runner can evaluate them
 from the structured event stream a harness already emits.
 

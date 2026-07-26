@@ -19,10 +19,10 @@ Get data onto disk reliably and reproducibly.
 - `csvkit`'s `in2csv` / `sql2csv` — convert spreadsheets and query databases to CSV.
 - `tar`, `unzip`, `gunzip` — decompress archives.
 
-For a service this environment already has a declared `connections/<name>.md` for
-(or a first-class connector/MCP tool, e.g. GitHub), use that instead of raw
-`curl`/`wget` — direct HTTP calls to those services are often blocked at the network
-level, and the declared connection is the source of truth for how to reach them.
+When the harness already exposes a connector or MCP tool for a service (GitHub, a
+warehouse, an internal API), use that instead of raw `curl`/`wget` — direct HTTP
+calls to those services are often blocked at the network level, and the harness
+holds the credentials.
 
 ## Workflow
 

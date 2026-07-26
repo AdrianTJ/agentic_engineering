@@ -35,8 +35,8 @@ curl -fsSL --netrc "$URL" -o raw/out.json   # credentials from ~/.netrc, never i
 ```
 
 Read secrets from the environment, never inline. A token in a command lands in
-shell history, `ps` output, and any log of the run — see `connections/*.md` for
-how this repo declares which env var holds what.
+shell history, `ps` output, and any log of the run. Prefer a connector or MCP
+tool the harness already provides over hand-rolling auth at all.
 
 ## Pagination
 

@@ -5,4 +5,4 @@ expect:
   - skill_loaded: chart-viz
   - reply_not_contains: truncat
 fixtures:
-  - shared/datasets/orders_sample.csv
+  - agents/fixtures/orders_sample.csv

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Validate agents/*/eval/*.eval.yaml against shared/eval-spec.md.
+"""Validate agents/*/eval/*.eval.yaml against docs/eval-spec.md.
 
 Exit 0 only if every spec passes. No arguments; repo root is derived from this
-file's location (tools/validate-evals/ -> repo root two levels up).
+file's location (bin/ -> repo root one level up).
 """
 import re
 import sys
@@ -10,11 +10,10 @@ from pathlib import Path
 
 import yaml
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_KEYS = {"name", "description", "prompt", "expect"}
 ASSERTION_VOCAB = {
     "skill_loaded",
-    "connection_used",
     "tool_called",
     "reply_contains",
     "reply_not_contains",

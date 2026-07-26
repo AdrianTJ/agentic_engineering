@@ -5,4 +5,4 @@ expect:
   - skill_loaded: model-data
   - reply_matches: "(confidence|credible|interval|±|std|standard error|uncertain)"
 fixtures:
-  - shared/datasets/orders_sample.csv
+  - agents/fixtures/orders_sample.csv

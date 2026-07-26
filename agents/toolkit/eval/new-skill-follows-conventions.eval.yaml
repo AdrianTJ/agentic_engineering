@@ -3,6 +3,5 @@ description: Adding a skill follows house conventions and rebuilds the generated
 prompt: Add a new shared skill for profiling slow shell pipelines.
 expect:
   - skill_loaded: write-skill
-  - tool_called: validate-evals
   - reply_contains: generate.sh
   - reply_contains: SKILL.md

@@ -7,9 +7,7 @@
 #   skills/<category>/<name>/SKILL.md  the shared skill library (write each skill ONCE;
 #                           category dirs are purely organizational — agents reference
 #                           skills by bare name, which must be unique across categories)
-#   agents/<name>/AGENT.md  thin agent manifests: which skills, tools + connections they compose
-#   tools/<name>/TOOL.md    executable capabilities (manifest + script), composed by agents
-#   connections/<name>.md   declarative pointers to MCP servers / APIs (env var, never secret)
+#   agents/<name>/AGENT.md  thin agent manifests: which skills they compose
 #
 # A skill name may also resolve to Anthropic's vendored public skill library at
 # vendor/anthropic-skills/skills/<name>/ (a git submodule — see vendor/README.md).
@@ -81,8 +79,6 @@ build_harness() {
   # Layout defaults — a .conf overrides only what differs.
   local SKILLS_DIR="skills"
   local AGENTS_DIR="agents"
-  local TOOLS_DIR="tools"           # empty = this harness gets no projected tools; skip
-  local CONNECTIONS_DIR=""          # empty = this harness has no connections dir; skip
   local INSTRUCTIONS_FILE="AGENTS.md"
   local ALSO_AGENTS_MD="false"
   local AGENT_FILE_EXT="md"
@@ -98,65 +94,31 @@ build_harness() {
     place "$REPO_ROOT/AGENTS.md" "$out/AGENTS.md"
   fi
 
-  # 2) Each agent's manifest, plus the shared skills and connections it composes.
-  local agent_md name skill skdir conn connfile
+  # 2) Each agent's manifest, plus the shared skills it composes.
+  local agent_md name skill skdir cand
   for agent_md in "$REPO_ROOT"/agents/*/AGENT.md; do
     [ -e "$agent_md" ] || continue
     name="$(basename "$(dirname "$agent_md")")"
     place "$agent_md" "$out/$AGENTS_DIR/$name.$AGENT_FILE_EXT"
 
-    # 2a) shared skills — bare `skills/<name>` first (back-compat), then any
-    #     category subdir `skills/<category>/<name>`, then Anthropic's vendored
-    #     public skill library at vendor/anthropic-skills/skills/<name>/; first
-    #     match wins.
+    # Skills resolve by bare name: this repo's own `skills/<category>/<name>`
+    # first, then Anthropic's vendored library at
+    # vendor/anthropic-skills/skills/<name>/. First match wins.
     while IFS= read -r skill; do
       [ -n "$skill" ] || continue
-      skdir="$REPO_ROOT/skills/$skill"
-      if [ ! -d "$skdir" ]; then
-        for cand in "$REPO_ROOT"/skills/*/"$skill"; do
-          [ -d "$cand" ] && { skdir="$cand"; break; }
-        done
+      skdir=""
+      for cand in "$REPO_ROOT"/skills/*/"$skill"; do
+        [ -d "$cand" ] && { skdir="$cand"; break; }
+      done
+      if [ -z "$skdir" ] && [ -d "$REPO_ROOT/vendor/anthropic-skills/skills/$skill" ]; then
+        skdir="$REPO_ROOT/vendor/anthropic-skills/skills/$skill"
       fi
-      if [ ! -d "$skdir" ]; then
-        cand="$REPO_ROOT/vendor/anthropic-skills/skills/$skill"
-        [ -d "$cand" ] && skdir="$cand"
-      fi
-      if [ -d "$skdir" ]; then
+      if [ -n "$skdir" ]; then
         place "$skdir" "$out/$SKILLS_DIR/$skill"
       else
         echo "  warning: agent '$name' references missing skill '$skill'" >&2
       fi
     done < <(parse_list "$agent_md" skills)
-
-    # 2b) tools (executable capabilities: TOOL.md manifest + script) — only if this
-    #     harness exposes a tools dir.
-    if [ -n "$TOOLS_DIR" ]; then
-      local tool tooldir
-      while IFS= read -r tool; do
-        [ -n "$tool" ] || continue
-        tooldir="$REPO_ROOT/tools/$tool"
-        if [ -d "$tooldir" ]; then
-          place "$tooldir" "$out/$TOOLS_DIR/$tool"
-        else
-          echo "  warning: agent '$name' references missing tool '$tool'" >&2
-        fi
-      done < <(parse_list "$agent_md" tools)
-    fi
-
-    # 2c) connections (declarative pointers to MCP servers / APIs) — only if this
-    #     harness exposes a connections dir. The file names only an env var for any
-    #     secret, never the secret itself.
-    if [ -n "$CONNECTIONS_DIR" ]; then
-      while IFS= read -r conn; do
-        [ -n "$conn" ] || continue
-        connfile="$REPO_ROOT/connections/$conn.md"
-        if [ -f "$connfile" ]; then
-          place "$connfile" "$out/$CONNECTIONS_DIR/$conn.md"
-        else
-          echo "  warning: agent '$name' references missing connection '$conn'" >&2
-        fi
-      done < <(parse_list "$agent_md" connections)
-    fi
   done
 
   echo "built dist/$harness  (mode: $LINK_MODE)"

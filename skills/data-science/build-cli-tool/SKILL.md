@@ -97,4 +97,4 @@ into "you meant this one" — solve the failure, don't defer it to the caller.
 
 An executable file with a shebang, `--help`, stdin/stdout behavior, and honest
 exit codes — verified inside a real pipeline. Once a second consumer appears,
-promote it to `tools/<name>/` with a TOOL.md manifest per this repo's conventions.
+keep it in `scripts/` beside the skill that uses it; a repo-maintenance script belongs in `bin/`.

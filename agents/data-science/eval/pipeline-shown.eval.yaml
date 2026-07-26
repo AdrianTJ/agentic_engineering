@@ -6,4 +6,4 @@ expect:
   - reply_matches: "(csvstat|csvgrep|awk|SELECT)"
   - reply_not_contains: approximately
 fixtures:
-  - shared/datasets/orders_sample.csv
+  - agents/fixtures/orders_sample.csv

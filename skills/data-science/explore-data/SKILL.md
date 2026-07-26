@@ -15,7 +15,7 @@ kills a bad assumption or becomes a hypothesis for `model-data`.
 
 ## Workflow
 
-1. **Shape first.** Run the `profile-csv` tool for the one-shot orientation
+1. **Shape first.** Run `scripts/profile.sh` for the one-shot orientation
    (shape, columns, empty counts, sample); fall back to `csvlook data.csv | head`,
    `xsv headers`, and `wc -l` when it isn't available. Know the size before
    running anything heavier.

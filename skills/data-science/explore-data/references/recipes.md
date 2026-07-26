@@ -18,7 +18,7 @@ itself is in `../SKILL.md`.
 
 | You want | Use | Why |
 |---|---|---|
-| One-shot orientation | `profile-csv` tool | shape + columns + nulls + sample in one call |
+| One-shot orientation | `scripts/profile.sh` | shape + columns + nulls + sample in one call |
 | Types, nulls, min/max/mean per column | `csvstat` | quoting-aware, no scripting |
 | Group aggregates | `datamash` | fast, streaming — **requires sorted input** |
 | Ad-hoc filtering/joining while exploring | `csvsql` | full SQL over a CSV, no DB to set up |

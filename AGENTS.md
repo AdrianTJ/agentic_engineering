@@ -13,27 +13,24 @@ layout into per-harness layouts on demand.
   `references/`, and `assets/` subfolders. Category dirs (`general/`, `data-science/`)
   are purely organizational: agents reference skills by bare name, which must therefore
   be unique across categories.
-- `tools/<name>/TOOL.md` — executable capabilities: a manifest (frontmatter `name`,
-  `description`, `entrypoint`, `runtime`) beside the script it describes. Tools differ
-  from a skill's private `scripts/`: a skill script is a helper only that skill uses,
-  while a tool is a first-class capability an agent invokes directly and any agent can
-  compose. Promote a skill script to `tools/` when a second consumer appears.
 - `agents/<name>/AGENT.md` — a thin agent manifest. It declares the agent's identity
-  and scope and lists which shared skills, tools, and connections it composes (in YAML
-  frontmatter). It does **not** contain copies of skills.
-- `connections/<name>.md` — a declarative pointer to an MCP server or API: its `url`,
-  `kind`, and the **env var** that holds its credential (never the credential itself).
-  Agents reference connections by name in their `connections:` list.
+  and scope and lists which shared skills it composes (in YAML frontmatter). It does
+  **not** contain copies of skills.
 - `agents/<name>/eval/*.eval.yaml` — declarative behavior checks for that agent. See
-  `shared/eval-spec.md` for the format. Specs are portable; running them is a runtime
-  concern delegated to a per-harness runner.
+  `docs/eval-spec.md` for the format. Specs are portable; running them is a runtime
+  concern delegated to a per-harness runner. Fixtures live in `agents/fixtures/`.
 - `harnesses/<name>.conf` — data describing where a given harness expects skills,
-  agents, connections, and instructions to live.
-- `bin/generate.sh` — reads the above and materializes `dist/<harness>/`.
+  agents, and instructions to live.
+- `bin/` — `generate.sh` materializes `dist/<harness>/`; `test.sh` runs the repo
+  checks; `validate-evals.py` checks the eval specs.
 - `vendor/anthropic-skills/skills/<name>/` — Anthropic's actively-maintained public
   skill library, vendored as a git submodule (see `vendor/README.md`). A skill name
-  resolves here as a third fallback after `skills/<name>` and `skills/*/<name>`. Kept
-  current by a weekly scheduled workflow that opens a PR when upstream moves.
+  resolves here when this repo's own `skills/` has no match. Kept current by a weekly
+  scheduled workflow that opens a PR when upstream moves.
+
+External services (warehouses, APIs) are wired up in the **harness's** own MCP config,
+not here — no credential or endpoint ever lands in this repo. An agent that needs one
+says so in its body prose.
 
 ## Conventions
 
@@ -80,22 +77,17 @@ generator discovers it, no registration needed.
   `references/`, `assets/` beside it as needed. Make it atomic and reusable so more
   than one agent can compose it. Skill names must be unique across categories and
   vendored skill names; agents reference the bare name either way.
-- **Add a tool:** create `tools/<name>/TOOL.md` (frontmatter: `name`, `description`
-  saying what AND when, `entrypoint`, `runtime`) with the executable script beside it.
-  Keep tools read-only on their inputs unless mutation is the tool's whole point.
-  Reference the tool from an agent's `tools:` list.
+- **Add a script a skill needs:** put it in `scripts/` beside that skill's SKILL.md
+  and call it by relative path. There is no separate tools/ concept — a helper
+  belongs to the skill that uses it, and a repo-maintenance script belongs in `bin/`.
 - **Add an agent:** create `agents/<name>/AGENT.md`. Frontmatter declares `name`,
-  `role`, a `skills:` list, optional `tools:` and `connections:` lists, and optional
-  `delegates_to:` (names of other agents it may call as subagents). The body is the
-  agent's identity, scope, and guardrails — keep it short; it becomes the system
-  prompt. Reference existing shared skills by name rather than writing new ones.
-- **Add a connection:** create `connections/<name>.md` with frontmatter `name`,
-  `kind` (`mcp` | `openapi` | `api`), `url`, and `auth.token_env` (the env var name —
-  never a secret). Reference it from an agent's `connections:` list.
+  `role`, a `skills:` list, and optional `delegates_to:` (names of other agents it may
+  call as subagents). The body is the agent's identity, scope, and guardrails — keep
+  it short; it becomes the system prompt. Reference existing shared skills by name
+  rather than writing new ones.
 - **Add an eval:** create `agents/<agent>/eval/<name>.eval.yaml` per
-  `shared/eval-spec.md`.
-- **After any structural change** (new/renamed skill, agent, or connection, or a
-  changed `skills:`/`connections:` list), run `bin/generate.sh --all`. Pure content
-  edits to an existing file need no rebuild — the generated layouts symlink back to
-  the canonical sources.
+  `docs/eval-spec.md`.
+- **After any structural change** (new/renamed skill or agent, or a changed `skills:`
+  list), run `bin/generate.sh --all`. Pure content edits to an existing file need no
+  rebuild — the generated layouts symlink back to the canonical sources.
 - **Never** edit anything under `dist/`; it is generated. Edit the canonical sources.

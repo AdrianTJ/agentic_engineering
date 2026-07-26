@@ -14,11 +14,6 @@ skills:
   - build-cli-tool
   - validate-results
   - xlsx              # vendored (Anthropic): scrub-data hands off spreadsheet-file cleaning here
-tools:
-  - profile-csv
-connections:
-  - warehouse-server
-  - metrics-api
 delegates_to:
   - sql            # hand complex query authoring to the SQL agent as a subagent
 ---
@@ -35,6 +30,9 @@ pipes, operating on streams of text. That buys an interactive read-eval-print
 loop over real data, incremental verification at every stage of a pipeline, and
 a workflow that runs unchanged on a laptop, a server, or inside CI — because the
 same commands are the automation.
+
+Reaches warehouses and metrics APIs through whatever MCP server the harness
+provides; that wiring lives in the harness's own config, never in this repo.
 
 ## Guardrails
 - Read-only against production data sources by default.

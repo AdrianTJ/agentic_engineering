@@ -1,9 +1,9 @@
 ---
 name: write-skill
 description: >
-  Write or revise a skill, agent, connection, or eval in this repo so it follows the
-  house conventions. Use whenever adding anything under skills/, agents/, or
-  connections/, or when reviewing an existing skill for quality.
+  Write or revise a skill, agent, or eval in this repo so it follows the
+  house conventions. Use whenever adding anything under skills/ or agents/,
+  or when reviewing an existing skill for quality.
 ---
 
 # Write skill
@@ -44,8 +44,8 @@ same output. Everything below serves that.
    reword it. One source of truth per fact; repo-wide rules live in AGENTS.md, not
    copied into skills.
 7. **Wire and rebuild.** Add the skill to each composing agent's `skills:` list, add an
-   eval under `agents/<agent>/eval/` per `shared/eval-spec.md`, check it with the
-   `validate-evals` tool, then run `bin/generate.sh --all` and confirm zero warnings.
+   eval under `agents/<agent>/eval/` per `docs/eval-spec.md`, check it with the
+   `bin/validate-evals.py` script, then run `bin/generate.sh --all` and confirm zero warnings.
    Never edit `dist/`.
 
 ## Output

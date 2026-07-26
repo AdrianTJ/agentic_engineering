@@ -23,6 +23,6 @@ when upstream moves. To update manually:
 git submodule update --remote vendor/anthropic-skills
 ```
 
-**Which skills are actually referenced from this repo** (see each for why): `skill-
-creator` (`write-skill`'s hand-off), `pptx` (`build-deck`'s), `xlsx` (`scrub-data`'s).
-`docx` and `pdf` are vendored for availability but nothing hands off to them yet.
+**Referenced from this repo:** `skill-creator` (`write-skill`'s hand-off), `pptx`
+(`build-deck`'s), and `xlsx` (`scrub-data`'s). The submodule carries all 17 upstream
+skills; those three are the ones our agents actually compose.

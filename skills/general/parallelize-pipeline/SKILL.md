@@ -39,3 +39,10 @@ including mistakes — so the unit of work is proven correct first, then fanned 
 
 The batch of per-input outputs, the job log, and a one-line reconciliation
 (inputs vs. outputs vs. failures), plus the exact fan-out command for reruns.
+
+## Related
+
+This skill fans *one* verified command across *many* inputs. When the work is
+instead a *sequence* of dependent steps that should re-run incrementally, use
+`make-pipeline` — and note `make -j` parallelizes that graph for free, so the two
+compose rather than compete.

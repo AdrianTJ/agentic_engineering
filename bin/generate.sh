@@ -11,6 +11,11 @@
 #   tools/<name>/TOOL.md    executable capabilities (manifest + script), composed by agents
 #   connections/<name>.md   declarative pointers to MCP servers / APIs (env var, never secret)
 #
+# A skill name may also resolve to Anthropic's vendored public skill library at
+# vendor/anthropic-skills/skills/<name>/ (a git submodule — see vendor/README.md).
+# Prefer one of those over writing a new skill when the job is genuinely the same;
+# see AGENTS.md.
+#
 # Each harness wants those files in a different place. Rather than maintain a copy
 # per harness, the per-harness LAYOUT is described as data in harnesses/<name>.conf,
 # and this script materializes it into dist/<name>/.
@@ -101,7 +106,9 @@ build_harness() {
     place "$agent_md" "$out/$AGENTS_DIR/$name.$AGENT_FILE_EXT"
 
     # 2a) shared skills — bare `skills/<name>` first (back-compat), then any
-    #     category subdir `skills/<category>/<name>`; first match wins.
+    #     category subdir `skills/<category>/<name>`, then Anthropic's vendored
+    #     public skill library at vendor/anthropic-skills/skills/<name>/; first
+    #     match wins.
     while IFS= read -r skill; do
       [ -n "$skill" ] || continue
       skdir="$REPO_ROOT/skills/$skill"
@@ -109,6 +116,10 @@ build_harness() {
         for cand in "$REPO_ROOT"/skills/*/"$skill"; do
           [ -d "$cand" ] && { skdir="$cand"; break; }
         done
+      fi
+      if [ ! -d "$skdir" ]; then
+        cand="$REPO_ROOT/vendor/anthropic-skills/skills/$skill"
+        [ -d "$cand" ] && skdir="$cand"
       fi
       if [ -d "$skdir" ]; then
         place "$skdir" "$out/$SKILLS_DIR/$skill"

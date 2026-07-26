@@ -22,6 +22,16 @@ ASSERTION_VOCAB = {
 }
 
 
+def skill_exists(name: str) -> bool:
+    """Mirror bin/generate.sh's three-tier skill resolution: flat skills/<name>,
+    category skills/*/<name>, then the vendored Anthropic library."""
+    if (REPO_ROOT / "skills" / name).is_dir():
+        return True
+    if any((REPO_ROOT / "skills").glob(f"*/{name}")):
+        return True
+    return (REPO_ROOT / "vendor" / "anthropic-skills" / "skills" / name).is_dir()
+
+
 def check(spec_path: Path, seen_names: set) -> list:
     errors = []
     try:
@@ -55,6 +65,11 @@ def check(spec_path: Path, seen_names: set) -> list:
                 re.compile(str(value))
             except re.error as exc:
                 errors.append(f"reply_matches regex does not compile: {exc}")
+        elif key == "skill_loaded" and not skill_exists(str(value)):
+            errors.append(
+                f"skill_loaded references '{value}', which doesn't exist in "
+                f"skills/, skills/*/, or vendor/anthropic-skills/skills/"
+            )
 
     for fixture in spec.get("fixtures") or []:
         if not (REPO_ROOT / fixture).exists():

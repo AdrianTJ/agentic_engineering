@@ -14,10 +14,12 @@ so drift is the default outcome unless something actively corrects it.
 
 ## Procedure
 
-1. **Locate the docs.** Find wherever the project keeps its documentation (commonly a
-   top-level `docs/`; respect whatever convention this project already uses) and skim
-   each doc. Read the current code it's supposed to describe (structure, entry points,
-   module responsibilities).
+1. **Locate the docs.** Find wherever the project keeps its documentation. Check, in
+   order: a top-level `docs/` directory; failing that, root-level files like
+   `README.md` and `AGENTS.md`/`CLAUDE.md` (many projects have no dedicated docs
+   directory at all — the root-level files *are* the docs). Skim each doc, then read
+   the current code it's supposed to describe (structure, entry points, module
+   responsibilities).
 2. **Diff docs against reality.** For each doc, note what is stale, missing, or wrong:
    - An architecture/design doc — does it describe the code as it exists now? Are
      components, data flow, and boundaries accurate? Are "planned vs. built" sections

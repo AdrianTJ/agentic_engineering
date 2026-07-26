@@ -1,0 +1,8 @@
+name: tool-reads-stdin
+description: A reusable script is packaged as a composable tool — stdin/stdout, help, honest exit codes.
+prompt: >
+  This awk one-liner for summarizing a column is the third time I've retyped it.
+  Turn it into something I can just call by name.
+expect:
+  - skill_loaded: build-cli-tool
+  - reply_matches: "(stdin|shebang|chmod)"

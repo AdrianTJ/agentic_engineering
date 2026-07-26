@@ -31,21 +31,28 @@ itself is in `../SKILL.md`.
 
 ```sh
 file -i data.csv                            # what encoding is it actually
-iconv -f WINDOWS-1252 -t UTF-8 data.csv > utf8.csv
 iconv -f UTF-8 -t UTF-8 data.csv >/dev/null # exit != 0 means it's NOT valid UTF-8
+iconv -f WINDOWS-1252 -t UTF-8 data.csv > utf8.csv
 
-sed -i 's/\r$//' data.csv                   # strip CRLF (Windows) line endings
-sed -i '1s/^\xEF\xBB\xBF//' data.csv        # strip a UTF-8 BOM from the header
+sed -i 's/\r$//' utf8.csv                   # strip CRLF (Windows) line endings
+sed -i '1s/^\xEF\xBB\xBF//' utf8.csv        # strip a UTF-8 BOM from the header
 ```
 
-A BOM makes the first column name literally `﻿id` instead of `id`, so every
-later `csvcut -c id` fails with a confusing "column not found". Check for it
-whenever a column that's visibly present won't select.
+**Do this before reaching for csvkit at all.** `csvstat`/`csvcut` abort on a
+non-UTF-8 file with `Your file is not "utf-8-sig" encoded` and refuse to
+inspect anything, so encoding repair necessarily precedes inspection.
+
+A BOM leaves the first column named `﻿id` rather than `id`. csvkit handles
+this itself (it reads `utf-8-sig` by default), but `awk`, `cut`, and
+`csv.DictReader(open(f, encoding="utf-8"))` all see the BOM as part of the name
+and fail to match it — Python raises `KeyError: 'id'` on a column that's plainly
+there. Strip it, or open with `encoding="utf-8-sig"`.
 
 ## Structure: delimiters, quoting, headers
 
 ```sh
-csvclean data.csv                           # writes data_out.csv + data_err.csv (ragged rows)
+csvclean --length-mismatch data.csv              # report rows whose field count is wrong
+csvclean --length-mismatch --omit-error-rows data.csv > valid.csv   # drop them
 csvformat -D';' -T data.csv                 # semicolon-delimited input → tab-delimited out
 csvformat -U1 data.csv                      # quote every field on output
 
@@ -55,7 +62,10 @@ tail -n +2 data.csv                         # drop the header
 ```
 
 `csvclean` is the fastest way to find out *which* rows are ragged rather than
-guessing — it splits the good rows and bad rows into separate files.
+guessing — it prints the offending row numbers with an explanation
+(`Expected 5 columns, found 6 columns`). In csvkit 2.x it writes the cleaned
+data to **stdout** and requires an explicit check flag; older guides describing
+`data_out.csv`/`data_err.csv` side files predate that change.
 
 ## Columns
 
@@ -87,9 +97,22 @@ commas. Use `awk` only after confirming the columns you're testing are clean.
 
 ## Values and types
 
+**Never strip commas from a CSV with line-based `sed`.** A pattern like
+`s/,\([0-9][0-9][0-9]\)/\1/g` matches *field separators* followed by a 3-digit
+value just as happily as thousands separators inside a number, silently merging
+columns: `1,2026-05-24,100.00,active` becomes `12026-05-24100.00,active` — four
+fields collapsed to two, no error. Go field-by-field instead:
+
 ```sh
-# strip currency symbols and thousands separators from a numeric column
-sed '1!s/\$//g; 1!s/,\([0-9][0-9][0-9]\)/\1/g' data.csv > numeric.csv
+# strip currency symbols and thousands separators — CSV-aware, structure-safe
+python3 -c "
+import csv, re, sys
+CURRENCY = re.compile(r'^\s*-?\\\$?\s*-?[\d,]+(\.\d+)?\s*$')
+r = csv.reader(sys.stdin); w = csv.writer(sys.stdout)
+w.writerow(next(r))
+for row in r:
+    w.writerow([c.replace('\\\$','').replace(',','').strip() if CURRENCY.match(c) else c
+                for c in row])" < data.csv > numeric.csv
 
 # trim leading/trailing whitespace in every field
 sed 's/[[:space:]]*,[[:space:]]*/,/g; s/^[[:space:]]*//; s/[[:space:]]*$//' data.csv
@@ -110,8 +133,16 @@ unusable for millions. At that scale reach for a single `python -c` pass instead
 ```sh
 csvstat --nulls data.csv                    # which columns contain nulls at all
 
-# normalize the many spellings of "missing" to a genuinely empty field
-sed '1!s/\b\(N\/A\|NA\|null\|NULL\|none\|-\)\b//g' data.csv > normalized.csv
+# normalize the many spellings of "missing" to a genuinely empty field.
+# Compare whole fields — a regex with \b silently skips "-" (a word boundary
+# needs a word character beside it, and "-" isn't one), leaving those rows dirty.
+python3 -c "
+import csv, sys
+MISSING = {'N/A','NA','n/a','null','NULL','none','None','-','--','?'}
+r = csv.reader(sys.stdin); w = csv.writer(sys.stdout)
+w.writerow(next(r))
+for row in r:
+    w.writerow(['' if c.strip() in MISSING else c for c in row])" < data.csv > normalized.csv
 
 awk -F, 'NR==1 || $4 != ""' data.csv        # drop rows missing a required field
 awk -F, -v OFS=, 'NR>1 && $4=="" { $4=0 } 1' data.csv   # fill with a sentinel

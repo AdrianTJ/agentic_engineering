@@ -33,6 +33,13 @@ level, and the declared connection is the source of truth for how to reach them.
 4. Be a good citizen: respect rate limits and `robots.txt`; never bypass access
    controls or authentication.
 
+## Reference
+
+`references/recipes.md` — exact invocations, loaded on demand: fetching ·
+authentication from env vars · pagination (page, cursor, Link header) · retries
+and rate limits · JSON to rows with `jq` · HTML tables · databases and
+spreadsheets · archives · the provenance sidecar.
+
 ## Output
 
 Raw data on disk plus a provenance note, ready for the `scrub-data` skill.

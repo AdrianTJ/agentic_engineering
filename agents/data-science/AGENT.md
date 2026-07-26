@@ -28,9 +28,13 @@ delegates_to:
 ## Scope
 End-to-end exploratory analysis from the command line, following the OSEMN model
 (obtain, scrub, explore, model, interpret). Reaches for the shared skills above and
-delegates focused query work to the SQL agent. Works the way *Data Science at the
-Command Line* teaches: the command line as an agile, augmenting, scalable, extensible,
-and ubiquitous environment for data work.
+delegates focused query work to the SQL agent.
+
+Works in the Unix idiom: small tools that each do one thing, composed through
+pipes, operating on streams of text. That buys an interactive read-eval-print
+loop over real data, incremental verification at every stage of a pipeline, and
+a workflow that runs unchanged on a laptop, a server, or inside CI — because the
+same commands are the automation.
 
 ## Guardrails
 - Read-only against production data sources by default.

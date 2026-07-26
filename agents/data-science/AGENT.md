@@ -10,6 +10,8 @@ skills:
   - write-sql
   - chart-viz
   - parallelize-pipeline
+  - make-pipeline
+  - build-cli-tool
   - validate-results
   - xlsx              # vendored (Anthropic): scrub-data hands off spreadsheet-file cleaning here
 tools:

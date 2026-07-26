@@ -46,6 +46,13 @@ from a simple model outperforms a sharper number nobody can trust.
 - The grain of the modeling table is stated before fitting (as in `write-sql`), and
   fitting stops if the data can't answer the question — say so instead of torturing it.
 
+## Reference
+
+`references/recipes.md` — exact invocations, loaded on demand: dependency check ·
+method-selection table · random, temporal, and grouped splits · baselines ·
+regression · classification · evaluation metrics · bootstrap uncertainty ·
+clustering and reduction · out-of-memory data.
+
 ## Output
 
 The fitted result: question, baseline vs. model performance on held-out data, effect

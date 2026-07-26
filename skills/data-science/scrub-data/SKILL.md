@@ -34,6 +34,13 @@ file's internal structure (formulas, sheets, formatting) in a way CLI text tools
 4. **Keep the raw input immutable.** Write cleaned output to a new file; never edit
    the source in place.
 
+## Reference
+
+`references/recipes.md` — exact invocations, loaded on demand: tool-selection
+table · encoding and line endings · delimiters, quoting, headers · column and row
+surgery · value and type normalization · missing data · deduplication ·
+reshaping · format conversion.
+
 ## Output
 
 A tidy dataset (one variable per column, one observation per row) plus a one-line

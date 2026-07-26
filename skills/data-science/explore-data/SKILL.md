@@ -42,6 +42,13 @@ kills a bad assumption or becomes a hypothesis for `model-data`.
 - On large data, summarize with streaming tools or a sample; never load the whole file
   to answer a question `csvstat` or `datamash` can answer.
 
+## Reference
+
+`references/recipes.md` — exact invocations, loaded on demand: tool-selection
+table · shape and orientation · column summaries · frequency and cardinality ·
+group summaries · distributions and percentiles · duplicates and keys · date gaps
+· sampling.
+
 ## Output
 
 The data brief (shape, types, anomalies, hypotheses) plus the commands that produced

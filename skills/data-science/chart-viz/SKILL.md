@@ -29,6 +29,12 @@ Make charts that reveal the data and never mislead.
    short matplotlib script) are fine. For stakeholder output, match the deck's style.
 4. Sanity-check that the visual conclusion matches the underlying numbers.
 
+## Reference
+
+`references/recipes.md` — exact invocations, loaded on demand: renderer-selection
+table · terminal plots · gnuplot time series and bar charts · matplotlib for
+stakeholder figures · sparklines.
+
 ## Output
 
 The chart (as an image file or inline figure) plus its one-sentence message and a note

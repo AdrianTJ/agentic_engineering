@@ -31,7 +31,11 @@ ai-toolkit/
 │       ├── obtain-data/
 │       ├── scrub-data/
 │       ├── explore-data/
+│       │   ├── SKILL.md      #     front-loaded: workflow + topic index
+│       │   └── references/   #     dense recipes, loaded only when needed
 │       ├── model-data/
+│       ├── make-pipeline/    #     reproducible multi-step pipelines (Make)
+│       ├── build-cli-tool/   #     turn a script into a composable tool
 │       └── …
 ├── tools/                    # executable capabilities: TOOL.md manifest + script
 │   ├── profile-csv/

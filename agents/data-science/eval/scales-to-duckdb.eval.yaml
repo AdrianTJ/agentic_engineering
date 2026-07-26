@@ -1,0 +1,8 @@
+name: scales-to-duckdb
+description: On a file too large for csvkit, the agent reaches for DuckDB rather than grinding through row-wise CLI tools.
+prompt: >
+  I've got a 4 GB CSV of order events and I need mean order value by region for
+  last quarter. What's the fastest way to get that number?
+expect:
+  - skill_loaded: explore-data
+  - reply_matches: "(duckdb|parquet)"

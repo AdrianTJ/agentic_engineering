@@ -36,6 +36,20 @@ readable always.
    look at the plan and optimize. See `scripts/explain.sh` for a quick way to inspect
    a query plan — it defaults to Postgres/MySQL's `EXPLAIN ANALYZE`; for SQLite, set
    `EXPLAIN_KEYWORD="EXPLAIN QUERY PLAN"` first (SQLite doesn't support `ANALYZE`).
+   DuckDB uses `EXPLAIN ANALYZE` too, so the default works there unchanged.
+
+## Querying files without a database
+
+When the data is a file rather than a warehouse table, DuckDB runs this same SQL
+directly against it — no server, no load step, no schema declaration:
+
+```sh
+duckdb -c "SELECT region, COUNT(*) n FROM 'orders/*.parquet' GROUP BY 1"
+```
+
+Everything above still applies: state the grain, build with CTEs, check join
+cardinality. See `../explore-data/references/duckdb.md` for the file-reading
+options and the guardrail on silently-dropped malformed rows.
 
 ## Style
 

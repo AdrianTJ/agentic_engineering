@@ -17,14 +17,15 @@ kills a bad assumption or becomes a hypothesis for `model-data`.
 
 1. **Shape first.** Run `scripts/profile.sh` for the one-shot orientation
    (shape, columns, empty counts, sample); fall back to `csvlook data.csv | head`,
-   `xsv headers`, and `wc -l` when it isn't available. Know the size before
-   running anything heavier.
+   `csvcut -n data.csv`, and `wc -l` when it isn't available. Know the size before
+   running anything heavier — past roughly 10⁵ rows, switch to DuckDB
+   (see `references/duckdb.md`); csvkit gets impractically slow there.
 2. **Column summaries.** `csvstat data.csv` for types, nulls, min/max/mean/stddev,
    unique counts. Note every column whose type or null count surprises you.
-3. **Sample, don't full-scan.** Eyeball random rows (`shuf -n 20`, `xsv sample 20`),
+3. **Sample, don't full-scan.** Eyeball random rows (`shuf -n 20`),
    not just the head — files are often sorted, and the head lies about the middle.
 4. **Distributions and frequencies.** Frequency tables for categoricals
-   (`csvcut -c col data.csv | sort | uniq -c | sort -rn`, `xsv frequency`); group
+   (`csvcut -c col data.csv | sort | uniq -c | sort -rn`); group
    summaries for numerics. `datamash groupby` requires input **pre-sorted by the
    group column** — it silently fragments unsorted groups into wrong sub-groups
    instead of erroring, so sort first:
@@ -48,6 +49,11 @@ kills a bad assumption or becomes a hypothesis for `model-data`.
 table · shape and orientation · column summaries · frequency and cardinality ·
 group summaries · distributions and percentiles · duplicates and keys · date gaps
 · sampling.
+
+`references/duckdb.md` — SQL straight over CSV/JSON/Parquet with no load step.
+Read this when the file is large (10⁵ rows and up, where csvkit stops being
+practical), when the question is easier said in SQL, or before using
+`ignore_errors` — it silently discards malformed rows.
 
 ## Output
 

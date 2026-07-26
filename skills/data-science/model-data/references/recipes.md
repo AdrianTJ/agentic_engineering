@@ -21,15 +21,27 @@ and is not optional.
 The baseline, split, evaluation, and bootstrap recipes below use only the Python
 standard library and core CLI tools — they run anywhere. The regression,
 classification, clustering, and reduction recipes need extra packages that are
-**not** installed by default:
+**not** installed by default.
+
+Prefer `uv` to run them with dependencies supplied per-invocation, rather than
+mutating a shared environment:
 
 ```sh
-python3 -c "import sklearn"          # check before assuming
-pip install numpy scipy scikit-learn # install if missing
+uv run --with scikit-learn --with numpy python model.py
+uv run --with scikit-learn python -c "from sklearn.linear_model import LinearRegression; ..."
 ```
 
-Check first and install explicitly rather than letting a recipe fail mid-analysis
-with a `ModuleNotFoundError`. Vowpal Wabbit (`vw`) is a separate system package.
+`uv` resolves and caches on first use (a few seconds), then reuses it; the system
+Python is left untouched, so nothing you install for one analysis breaks another.
+Where `uv` isn't available, check before assuming and install explicitly:
+
+```sh
+python3 -c "import sklearn" || pip install numpy scipy scikit-learn
+```
+
+Either way, confirm the import works *before* a long run — failing mid-analysis
+with `ModuleNotFoundError` wastes the whole pass. Vowpal Wabbit (`vw`) is a
+separate system package, not a Python one.
 
 ## Pick a method
 

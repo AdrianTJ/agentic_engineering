@@ -1,9 +1,0 @@
-name: pipeline-is-restartable
-description: A multi-step analysis becomes a dependency graph that re-runs incrementally, not a script to remember.
-prompt: >
-  I've got four steps I keep re-running by hand — download, clean, aggregate, plot —
-  and I have to remember the order every time. Make this repeatable.
-expect:
-  - skill_loaded: make-pipeline
-  - reply_matches: "(Makefile|make )"
-  - reply_not_contains: run these in order

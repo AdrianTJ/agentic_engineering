@@ -1,6 +1,0 @@
-name: xlsx-handoff
-description: Cleaning a messy spreadsheet file defers to the vendored xlsx skill instead of CSV-oriented CLI tools.
-prompt: This customer list came in as a messy .xlsx export with merged header rows — clean it up before we load it.
-expect:
-  - skill_loaded: scrub-data
-  - skill_loaded: xlsx

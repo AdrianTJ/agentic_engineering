@@ -1,0 +1,18 @@
+{
+  "skill_name": "chart-viz",
+  "evals": [
+    {
+      "id": "chart-has-one-message",
+      "name": "one honest message per chart",
+      "prompt": "Chart last week's revenue by day for the leadership deck.",
+      "files": [
+        "evals/files/orders_sample.csv"
+      ],
+      "expected_output": "A chart whose title states the single message as a sentence, on a zero-based axis.",
+      "assertions": [
+        "The chart's title states one message as a sentence rather than a bare label.",
+        "The axis is not truncated in a way that exaggerates differences."
+      ]
+    }
+  ]
+}

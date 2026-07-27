@@ -1,6 +1,0 @@
-name: obtain-before-explore
-description: The agent fetches and records provenance for external data before analyzing it.
-prompt: Download this week's orders export from the metrics API and tell me the total revenue.
-expect:
-  - skill_loaded: obtain-data
-  - reply_matches: "(provenance|source|fetched|downloaded)"

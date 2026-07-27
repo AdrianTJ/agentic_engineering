@@ -1,42 +1,72 @@
-# Eval spec format
+# Evals
 
-Evals are **declarative** and harness-agnostic, like everything else in this repo.
-A spec describes one scenario: what to ask the agent and what must be true of the run.
-It says nothing about *how* a particular harness executes it. A thin per-harness
-runner (not included — it's the one piece that must know the runtime) drives the agent
-and checks the assertions. Keeping specs declarative means the same eval grades the
-same agent no matter which harness runs the loop.
+Each skill carries its own evals in `evals/evals.json`, in the format
+[agent-skills-eval](https://github.com/darkrishabh/agent-skills-eval) reads. We
+don't define a format of our own — the runner exists, so we use its.
 
-Each eval lives next to the agent it tests: `agents/<agent>/eval/<name>.eval.yaml`.
+## Layout
 
-## Schema
-
-```yaml
-name:        string   # unique within the agent's eval/ dir
-description: string   # what behavior this checks, in one line
-prompt:      string   # the user turn to send the agent
-expect:               # list of assertions; ALL must hold for the eval to pass
-  - <assertion>: <value>
-fixtures:             # optional: data files the scenario needs, repo-relative paths
-  - agents/fixtures/orders_sample.csv
+```
+.ruler/skills/<category>/<name>/
+├── SKILL.md
+└── evals/
+    ├── evals.json
+    └── files/            # fixtures referenced by `files:`, paths relative to the skill dir
 ```
 
-## Assertion vocabulary
+## Format
 
-- `skill_loaded:    <skill-name>`       the agent consulted this skill during the run
-- `tool_called:     <tool-or-op-name>`  the agent invoked this tool/operation
-- `reply_contains:     <substring>`     the final reply contains this text (case-insensitive)
-- `reply_not_contains: <substring>`     the final reply does NOT contain this text
-- `reply_matches:      <regex>`         the final reply matches this regular expression
+```json
+{
+  "skill_name": "explore-data",
+  "evals": [
+    {
+      "id": "scales-to-duckdb",
+      "name": "reaches for DuckDB on large files",
+      "prompt": "I've got a 4 GB CSV and I need mean order value by region.",
+      "files": ["evals/files/orders_sample.csv"],
+      "expected_output": "Recommends DuckDB rather than row-wise CLI tools.",
+      "assertions": [
+        "The response recommends DuckDB or Parquet for a file of this size.",
+        "The response does not recommend grinding through the file with csvkit or awk alone."
+      ]
+    }
+  ]
+}
+```
 
-Assertions are intentionally about *observable* behavior (which skill or tool
-was used, what the reply said), not internal state, so any runner can evaluate them
-from the structured event stream a harness already emits.
+`skill_name` must match the skill's directory. `id` must be unique within the
+file. `assertions` are plain English, graded by a model; omit them and
+`expected_output` is promoted into a judge assertion automatically.
 
-## Running
+## Writing assertions
 
-There is no bundled runner yet — execution is the runtime's job, and we're keeping
-this repo out of the runtime business for now. When you add one, point it at the
-canonical repo (not a generated `dist/`), discover `agents/*/eval/*.eval.yaml`, run
-each `prompt` against the agent, and score the `expect` list. Wire it into CI as a
-deploy gate once it exists.
+Assert **behavior a reader could check**, not phrasing. "The response dry-runs
+the fan-out before executing it" survives a rewording of the skill; "the reply
+contains `--dry-run`" does not.
+
+Prefer stating the failure you're guarding against. Several assertions here came
+from bugs found by actually running the skills, which is why they read as
+"does not …".
+
+## Running them
+
+Scoring calls a real model, so it costs money and needs an API key — that's why
+it isn't in CI:
+
+```sh
+npx agent-skills-eval --skill .ruler/skills/data-science/explore-data
+```
+
+The runner executes each eval twice, **with and without** the skill loaded, so
+the result is "did this skill change the outcome" rather than "did the model
+happen to answer well." That baseline comparison is the same discipline
+`model-data` insists on.
+
+## What CI does instead
+
+`bin/validate-evals.py` checks every eval is structurally sound — valid JSON,
+`skill_name` matches its directory, unique ids, non-empty assertions, fixture
+paths resolve — plus that every SKILL.md conforms to the
+[Agent Skills spec](https://agentskills.io/specification). Free, fast, and it
+catches a malformed spec before you spend a billed run discovering it.

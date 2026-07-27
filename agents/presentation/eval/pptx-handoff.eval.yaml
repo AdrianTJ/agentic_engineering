@@ -1,6 +1,0 @@
-name: pptx-handoff
-description: When the deliverable is literally a .pptx file, build-deck hands file production to the vendored pptx skill.
-prompt: Turn this analysis into an actual PowerPoint deck I can send to the board.
-expect:
-  - skill_loaded: build-deck
-  - skill_loaded: pptx

@@ -1,49 +1,42 @@
-# AI toolkit — agent & skill workspace
+# AI toolkit — a skill library
 
-This repository is the single, harness-agnostic source of truth for a collection of
-AI agents and the skills they share. Nothing here is specific to any one harness
-(Claude Code, Codex, Cursor, Gemini CLI, …). A generator projects this canonical
-layout into per-harness layouts on demand.
+This repository is a library of [Agent Skills](https://agentskills.io/specification):
+reusable, harness-agnostic instructions an AI agent loads on demand. It defines no
+tooling of its own — [Ruler](https://github.com/intellectronica/ruler) distributes the
+skills to 30+ coding agents, and
+[agent-skills-eval](https://github.com/darkrishabh/agent-skills-eval) scores them.
 
 ## How it's organized
 
-- `skills/<category>/<name>/SKILL.md` — the shared skill library. Each skill is written
-  **once** and may be composed by any number of agents. Skills are atomic and reusable:
-  one skill does one well-defined thing (e.g. `write-sql`), with optional `scripts/`,
-  `references/`, and `assets/` subfolders. Category dirs (`general/`, `data-science/`)
-  are purely organizational: agents reference skills by bare name, which must therefore
-  be unique across categories.
-- `agents/<name>/AGENT.md` — a thin agent manifest. It declares the agent's identity
-  and scope and lists which shared skills it composes (in YAML frontmatter). It does
-  **not** contain copies of skills.
-- `agents/<name>/eval/*.eval.yaml` — declarative behavior checks for that agent. See
-  `docs/eval-spec.md` for the format. Specs are portable; running them is a runtime
-  concern delegated to a per-harness runner. Fixtures live in `agents/fixtures/`.
-- `harnesses/<name>.conf` — data describing where a given harness expects skills,
-  agents, and instructions to live.
-- `bin/` — `generate.sh` materializes `dist/<harness>/`; `test.sh` runs the repo
-  checks; `validate-evals.py` checks the eval specs.
-- `vendor/anthropic-skills/skills/<name>/` — Anthropic's actively-maintained public
-  skill library, vendored as a git submodule (see `vendor/README.md`). A skill name
-  resolves here when this repo's own `skills/` has no match. Kept current by a weekly
-  scheduled workflow that opens a PR when upstream moves.
+- `.ruler/skills/<category>/<name>/SKILL.md` — the library. Each skill is written
+  **once**. Spec rules: frontmatter `name` must match the directory name exactly
+  (lowercase alphanumerics and single hyphens); `description` says what the skill does
+  AND when to use it, in ≤1024 characters. Category dirs (`general/`,
+  `data-science/`) are organizational only — agents load skills by description, not
+  by category.
+- `.ruler/skills/<...>/references/*.md` — dense material loaded on demand. Keep
+  SKILL.md scannable and push detail here (progressive disclosure).
+- `.ruler/skills/<...>/scripts/*` — helpers a skill invokes by relative path.
+- `.ruler/skills/<...>/evals/evals.json` — that skill's evals. See `docs/eval-spec.md`.
+- `bin/test.sh` — the whole check suite; `bin/validate-evals.py` does the heavy lifting.
+- `ruler.toml` — Ruler config. Scope targets with `ruler apply --agents …`, not this
+  file (see the comment in it).
 
-External services (warehouses, APIs) are wired up in the **harness's** own MCP config,
-not here — no credential or endpoint ever lands in this repo. An agent that needs one
-says so in its body prose.
+External services (warehouses, APIs) are configured in the *harness's* own MCP config,
+never here — no credential or endpoint belongs in this repo.
 
 ## Conventions
 
-- Default every skill to the shared library. Only localize a skill (under an agent
-  folder) when it is both single-use and would be confusing to offer to other agents.
-- Keep this file short — it is loaded on every turn. Agent-specific or directory-
-  specific rules belong in a nested `AGENTS.md` next to the code they govern.
-- Skills are pulled on demand; their `description` field is the entire basis on which
-  an agent decides to use them, so write descriptions that say what AND when.
-- `dist/` is generated output. Never edit it by hand; edit the sources and re-run
-  `bin/generate.sh`.
+- Keep this file short — it is loaded on every turn.
+- A skill's `description` is the entire basis on which an agent decides to use it, so
+  write descriptions that say what AND when.
+- **Verify anything you document.** Run the commands before shipping them. Recipes here
+  have shipped bugs that only surfaced on execution.
+- Prefer a skill Anthropic already maintains
+  ([anthropics/skills](https://github.com/anthropics/skills)) over writing an
+  equivalent one here.
 - Never commit or push directly to `main`/`master` — branch first. Branch names
-  describe the actual change (`add-eval-runner`, `fix-generate-symlinks`); no generic
+  describe the actual change (`add-duckdb-recipes`, `fix-scrub-regex`); no generic
   names, no tool prefixes.
 - Commit at each logical checkpoint (don't batch a whole session into one commit).
   Commits are authored as Adrian TJ <adrian.tame.jacobo@gmail.com> with Claude credited
@@ -51,43 +44,18 @@ says so in its body prose.
 - Pull requests: describe the change, nothing more — no attribution or "Generated
   with …" block in the body.
 
-## Build
+## Check
 
 ```sh
-bin/generate.sh --list            # show available harnesses
-bin/generate.sh claude-code       # build one, into dist/claude-code/ (symlinks)
-bin/generate.sh --all             # build all harnesses
-bin/generate.sh --copy --all      # build all as real files (no symlinks)
+bin/test.sh          # spec conformance + eval structure + ruler projection + scripts
 ```
 
 ## Extending this repo (for coding agents)
 
-If you are a coding agent working in this repo, follow these conventions. Each kind of
-thing is a file (or a directory) whose name and location ARE its definition; the
-generator discovers it, no registration needed.
-
-- **Add a skill:** first check whether `vendor/anthropic-skills/skills/` already has
-  one that does the job (Anthropic actively maintains that library — prefer it over a
-  new internal skill when the job is genuinely the same; see `vendor/README.md`). If
-  not, consult the `write-skill` skill, then create
-  `skills/<category>/<name>/SKILL.md` (`general/` for all-purpose, `data-science/` for
-  the OSEMN pipeline) with YAML frontmatter (`name`, `description`) then a markdown body
-  of instructions. The `description` must say what the skill does AND when to use it —
-  it is the only thing an agent sees when deciding to load it. Bundle `scripts/`,
-  `references/`, `assets/` beside it as needed. Make it atomic and reusable so more
-  than one agent can compose it. Skill names must be unique across categories and
-  vendored skill names; agents reference the bare name either way.
-- **Add a script a skill needs:** put it in `scripts/` beside that skill's SKILL.md
-  and call it by relative path. There is no separate tools/ concept — a helper
-  belongs to the skill that uses it, and a repo-maintenance script belongs in `bin/`.
-- **Add an agent:** create `agents/<name>/AGENT.md`. Frontmatter declares `name`,
-  `role`, a `skills:` list, and optional `delegates_to:` (names of other agents it may
-  call as subagents). The body is the agent's identity, scope, and guardrails — keep
-  it short; it becomes the system prompt. Reference existing shared skills by name
-  rather than writing new ones.
-- **Add an eval:** create `agents/<agent>/eval/<name>.eval.yaml` per
-  `docs/eval-spec.md`.
-- **After any structural change** (new/renamed skill or agent, or a changed `skills:`
-  list), run `bin/generate.sh --all`. Pure content edits to an existing file need no
-  rebuild — the generated layouts symlink back to the canonical sources.
-- **Never** edit anything under `dist/`; it is generated. Edit the canonical sources.
+- **Add or revise a skill:** consult the `write-skill` skill and follow it. In short:
+  check it doesn't already exist (here or upstream), place it at
+  `.ruler/skills/<category>/<name>/SKILL.md` with `name` matching the directory, write
+  a what-and-when description, keep the body scannable with detail in `references/`,
+  verify every command you document, add `evals/evals.json`, run `bin/test.sh`.
+- **Distribute:** `ruler apply --agents claude,codex,opencode,pi,antigravity,agentsmd`.
+  Consumers usually run this from their own project with their own `ruler.toml`.

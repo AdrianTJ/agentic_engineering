@@ -1,0 +1,18 @@
+{
+  "skill_name": "write-sql",
+  "evals": [
+    {
+      "id": "revenue-by-rules",
+      "name": "applies the business rules and avoids SELECT *",
+      "prompt": "What was our revenue last week?",
+      "files": [
+        "evals/files/orders_sample.csv"
+      ],
+      "expected_output": "States the result grain and excludes refunded and internal orders, listing columns explicitly.",
+      "assertions": [
+        "The query excludes refunded and internal orders when computing revenue.",
+        "The query lists columns explicitly rather than using SELECT *."
+      ]
+    }
+  ]
+}

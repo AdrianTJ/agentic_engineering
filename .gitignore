@@ -1,7 +1,4 @@
-# Generated per-harness layouts — never edit by hand, re-run bin/generate.sh
-/dist/
-
-# Python bytecode cache (from running tools/*/*.py)
+# Python bytecode cache
 __pycache__/
 *.pyc
 

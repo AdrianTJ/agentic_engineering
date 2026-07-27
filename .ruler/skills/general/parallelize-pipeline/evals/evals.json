@@ -1,0 +1,19 @@
+{
+  "skill_name": "parallelize-pipeline",
+  "evals": [
+    {
+      "id": "parallel-dry-run-first",
+      "name": "dry-runs the fan-out before executing",
+      "prompt": "I have twelve monthly order exports, orders_2025_01.csv through orders_2025_12.csv. Run the same cleaning pipeline we used on the sample across all of them.",
+      "files": [
+        "evals/files/orders_sample.csv"
+      ],
+      "expected_output": "Verifies the pipeline on one input, previews the generated commands, then fans out with a job log and reconciles the counts.",
+      "assertions": [
+        "The response previews or dry-runs the generated commands before executing them across all inputs.",
+        "The response verifies the pipeline on a single input first.",
+        "The response reconciles output count against input count afterwards."
+      ]
+    }
+  ]
+}

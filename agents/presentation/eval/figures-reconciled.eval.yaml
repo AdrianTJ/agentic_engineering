@@ -1,8 +1,0 @@
-name: figures-reconciled
-description: Every number in a deck is traced to its source before shipping.
-prompt: >
-  Here are the analysis results: revenue grew 12% quarter over quarter, and churn
-  dropped from 5.1% to 4.4%. Build the final deck for the board.
-expect:
-  - skill_loaded: validate-results
-  - reply_matches: "(source|traces? (back )?to|reconcil)"

@@ -1,94 +1,137 @@
 #!/usr/bin/env python3
-"""Validate agents/*/eval/*.eval.yaml against docs/eval-spec.md.
+"""Validate this library's skills and their eval specs.
 
-Exit 0 only if every spec passes. No arguments; repo root is derived from this
+Two things, both free and fast enough to run on every commit:
+
+  1. Every SKILL.md conforms to the Agent Skills spec (agentskills.io):
+     `name` matches its parent directory, uses only lowercase alphanumerics and
+     single hyphens, is 1-64 chars; `description` is present and <= 1024 chars.
+  2. Every evals/evals.json is well formed for agent-skills-eval: valid JSON,
+     `skill_name` matches the containing skill, each eval has a unique `id` and
+     a `prompt`, `assertions` is a non-empty list of strings, and every path in
+     `files` resolves relative to the skill directory.
+
+Scoring the evals against a real model is a separate, paid step — see
+docs/eval-spec.md. This only checks that the specs are structurally sound, so a
+malformed one fails here rather than halfway through a billed run.
+
+Exit 0 only if everything passes. No arguments; repo root is derived from this
 file's location (bin/ -> repo root one level up).
 """
+import json
 import re
 import sys
 from pathlib import Path
 
-import yaml
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
-REQUIRED_KEYS = {"name", "description", "prompt", "expect"}
-ASSERTION_VOCAB = {
-    "skill_loaded",
-    "tool_called",
-    "reply_contains",
-    "reply_not_contains",
-    "reply_matches",
-}
+SKILLS_ROOT = REPO_ROOT / ".ruler" / "skills"
+NAME_RE = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\Z")
 
 
-def skill_exists(name: str) -> bool:
-    """Mirror bin/generate.sh's three-tier skill resolution: flat skills/<name>,
-    category skills/*/<name>, then the vendored Anthropic library."""
-    if (REPO_ROOT / "skills" / name).is_dir():
-        return True
-    if any((REPO_ROOT / "skills").glob(f"*/{name}")):
-        return True
-    return (REPO_ROOT / "vendor" / "anthropic-skills" / "skills" / name).is_dir()
+def frontmatter(text: str) -> str:
+    """Return the YAML frontmatter block, or '' if the file has none."""
+    if not text.startswith("---"):
+        return ""
+    end = text.find("\n---", 3)
+    return text[3:end] if end != -1 else ""
 
 
-def check(spec_path: Path, seen_names: set) -> list:
+def check_skill(skill_md: Path) -> list:
     errors = []
+    fm = frontmatter(skill_md.read_text())
+    if not fm:
+        return ["no YAML frontmatter"]
+
+    name_m = re.search(r"^name:[ \t]*(.+)$", fm, re.M)
+    name = name_m.group(1).strip() if name_m else None
+    parent = skill_md.parent.name
+
+    if not name:
+        errors.append("missing 'name'")
+    else:
+        if name != parent:
+            errors.append(f"name {name!r} != directory {parent!r} (spec requires they match)")
+        if not NAME_RE.match(name):
+            errors.append(f"name {name!r} must be lowercase alphanumerics separated by single hyphens")
+        if not 1 <= len(name) <= 64:
+            errors.append(f"name is {len(name)} chars, must be 1-64")
+
+    desc_m = re.search(r"^description:[ \t]*>?[ \t]*\n?((?:.|\n)*?)(?=\n[a-z][a-z-]*:|\Z)", fm, re.M)
+    if not desc_m:
+        errors.append("missing 'description'")
+    else:
+        desc = " ".join(desc_m.group(1).split())
+        if not desc:
+            errors.append("'description' is empty")
+        elif len(desc) > 1024:
+            errors.append(f"description is {len(desc)} chars, spec caps it at 1024")
+
+    return errors
+
+
+def check_evals(evals_json: Path) -> list:
+    errors = []
+    skill_dir = evals_json.parent.parent
     try:
-        spec = yaml.safe_load(spec_path.read_text())
-    except yaml.YAMLError as exc:
-        return [f"not valid YAML: {exc}"]
+        spec = json.loads(evals_json.read_text())
+    except json.JSONDecodeError as exc:
+        return [f"not valid JSON: {exc}"]
+
     if not isinstance(spec, dict):
-        return ["top level must be a mapping"]
+        return ["top level must be an object"]
 
-    missing = REQUIRED_KEYS - spec.keys()
-    if missing:
-        errors.append(f"missing keys: {sorted(missing)}")
+    if spec.get("skill_name") != skill_dir.name:
+        errors.append(f"skill_name {spec.get('skill_name')!r} != skill directory {skill_dir.name!r}")
 
-    name = spec.get("name")
-    if name:
-        if name != spec_path.name.removesuffix(".eval.yaml"):
-            errors.append(f"name '{name}' != filename stem")
-        if name in seen_names:
-            errors.append(f"duplicate name '{name}' within this agent")
-        seen_names.add(name)
+    evals = spec.get("evals")
+    if not isinstance(evals, list) or not evals:
+        return errors + ["'evals' must be a non-empty array"]
 
-    for assertion in spec.get("expect") or []:
-        if not isinstance(assertion, dict) or len(assertion) != 1:
-            errors.append(f"assertion must be a single key: value pair: {assertion!r}")
+    seen = set()
+    for i, ev in enumerate(evals):
+        where = f"evals[{i}]"
+        if not isinstance(ev, dict):
+            errors.append(f"{where}: must be an object")
             continue
-        key, value = next(iter(assertion.items()))
-        if key not in ASSERTION_VOCAB:
-            errors.append(f"unknown assertion '{key}' (vocabulary: {sorted(ASSERTION_VOCAB)})")
-        elif key == "reply_matches":
-            try:
-                re.compile(str(value))
-            except re.error as exc:
-                errors.append(f"reply_matches regex does not compile: {exc}")
-        elif key == "skill_loaded" and not skill_exists(str(value)):
-            errors.append(
-                f"skill_loaded references '{value}', which doesn't exist in "
-                f"skills/, skills/*/, or vendor/anthropic-skills/skills/"
-            )
+        eid = ev.get("id")
+        if not eid:
+            errors.append(f"{where}: missing 'id'")
+        elif eid in seen:
+            errors.append(f"{where}: duplicate id {eid!r}")
+        else:
+            seen.add(eid)
+        if not ev.get("prompt"):
+            errors.append(f"{where}: missing 'prompt'")
 
-    for fixture in spec.get("fixtures") or []:
-        if not (REPO_ROOT / fixture).exists():
-            errors.append(f"fixture not found: {fixture}")
+        assertions = ev.get("assertions")
+        if not isinstance(assertions, list) or not assertions:
+            errors.append(f"{where}: 'assertions' must be a non-empty array")
+        elif not all(isinstance(a, str) and a.strip() for a in assertions):
+            errors.append(f"{where}: every assertion must be a non-empty string")
+
+        for rel in ev.get("files") or []:
+            if not (skill_dir / rel).exists():
+                errors.append(f"{where}: file not found: {rel}")
 
     return errors
 
 
 def main() -> int:
-    specs = sorted(REPO_ROOT.glob("agents/*/eval/*.eval.yaml"))
-    if not specs:
-        print("no eval specs found under agents/*/eval/", file=sys.stderr)
+    if not SKILLS_ROOT.is_dir():
+        print(f"no skills directory at {SKILLS_ROOT.relative_to(REPO_ROOT)}", file=sys.stderr)
         return 1
 
     failed = False
-    seen_per_agent = {}
-    for spec_path in specs:
-        agent = spec_path.parent.parent.name
-        errors = check(spec_path, seen_per_agent.setdefault(agent, set()))
-        rel = spec_path.relative_to(REPO_ROOT)
+    for skill_md in sorted(SKILLS_ROOT.glob("*/*/SKILL.md")):
+        rel = skill_md.relative_to(REPO_ROOT)
+        errors = check_skill(skill_md)
+
+        evals_json = skill_md.parent / "evals" / "evals.json"
+        if evals_json.exists():
+            errors += [f"evals.json: {e}" for e in check_evals(evals_json)]
+        else:
+            errors.append("no evals/evals.json (every skill should have at least one eval)")
+
         if errors:
             failed = True
             print(f"FAIL {rel}")

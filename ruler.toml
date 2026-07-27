@@ -1,0 +1,15 @@
+# Ruler config — see https://github.com/intellectronica/ruler
+#
+# This repo is a skill library: `.ruler/skills/` is the content, and Ruler
+# distributes it into each tool's native location. Consumers normally keep their
+# own ruler.toml; this one exists so the library can be projected and tested
+# here.
+#
+# Scope which tools receive skills with the CLI flag, not this file — in Ruler
+# 0.3.x neither `default_agents` nor `[agents.<name>]` limits the run, so
+# `ruler apply` writes to all 30+ targets regardless of what is set here:
+#
+#   ruler apply --agents claude,codex,opencode,pi,antigravity,agentsmd
+
+[skills]
+enabled = true

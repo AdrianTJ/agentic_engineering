@@ -1,0 +1,27 @@
+{
+  "skill_name": "scrub-data",
+  "evals": [
+    {
+      "id": "pipeline-shown",
+      "name": "shows the actual commands",
+      "prompt": "How many non-refunded, non-internal orders were there last week?",
+      "files": [
+        "evals/files/orders_sample.csv"
+      ],
+      "expected_output": "Answers with the concrete commands used, so the number is reproducible rather than asserted.",
+      "assertions": [
+        "The response shows the actual command or query used to get the number.",
+        "The response gives a definite figure rather than an approximation."
+      ]
+    },
+    {
+      "id": "xlsx-handoff",
+      "name": "defers spreadsheet files to the xlsx skill",
+      "prompt": "This customer list came in as a messy .xlsx export with merged header rows \u2014 clean it up before we load it.",
+      "expected_output": "Recognises that a real .xlsx needs a spreadsheet-aware tool rather than CSV-oriented CLI text tools.",
+      "assertions": [
+        "The response hands off spreadsheet-specific handling to the xlsx skill rather than treating the file as plain CSV."
+      ]
+    }
+  ]
+}

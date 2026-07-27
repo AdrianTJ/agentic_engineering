@@ -200,7 +200,8 @@ in2csv -f html page.html > table.csv
 ```
 
 For a genuine `.xlsx`/`.xlsm` with formulas, merged cells, or multiple related
-sheets, hand off to the `xlsx` skill instead of forcing it through `in2csv` —
+sheets, hand off to the `xlsx` skill (Anthropic's, from anthropics/skills —
+native on Claude, installable elsewhere) instead of forcing it through `in2csv` —
 these CLI tools see a flattened export, not the workbook's structure.
 
 ### Parquet

@@ -4,7 +4,7 @@
 #
 # Checks:
 #   1. Every SKILL.md conforms to the Agent Skills spec, and every skill has a
-#      structurally valid evals/evals.json (bin/validate-evals.py).
+#      structurally valid evals/evals.json (bin/validate.py).
 #   2. Ruler can project the library — catches a malformed skill directory that
 #      is individually valid but breaks distribution. Skipped if ruler isn't
 #      installed, so the suite still runs offline.
@@ -17,7 +17,7 @@ fail=0
 err() { echo "FAIL: $*" >&2; fail=1; }
 
 echo "== 1. skills conform to the spec, evals are well formed =="
-python3 bin/validate-evals.py || err "skill/eval validation failed"
+python3 bin/validate.py || err "skill/eval validation failed"
 
 echo
 echo "== 2. ruler can project the library =="

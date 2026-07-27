@@ -18,7 +18,7 @@ skills to 30+ coding agents, and
   SKILL.md scannable and push detail here (progressive disclosure).
 - `.ruler/skills/<...>/scripts/*` — helpers a skill invokes by relative path.
 - `.ruler/skills/<...>/evals/evals.json` — that skill's evals. See `docs/eval-spec.md`.
-- `bin/test.sh` — the whole check suite; `bin/validate-evals.py` does the heavy lifting.
+- `bin/test.sh` — the whole check suite; `bin/validate.py` does the heavy lifting.
 - `ruler.toml` — Ruler config. Scope targets with `ruler apply --agents …`, not this
   file (see the comment in it).
 
@@ -52,10 +52,9 @@ bin/test.sh          # spec conformance + eval structure + ruler projection + sc
 
 ## Extending this repo (for coding agents)
 
-- **Add or revise a skill:** consult the `write-skill` skill and follow it. In short:
-  check it doesn't already exist (here or upstream), place it at
-  `.ruler/skills/<category>/<name>/SKILL.md` with `name` matching the directory, write
-  a what-and-when description, keep the body scannable with detail in `references/`,
-  verify every command you document, add `evals/evals.json`, run `bin/test.sh`.
+- **Add or revise a skill:** consult the `write-skill` skill and follow it. It covers
+  the craft; this repo adds only: place it under `.ruler/skills/general/` (all-purpose)
+  or `.ruler/skills/data-science/` (the CLI data pipeline), write its evals to
+  `evals/evals.json` per `docs/eval-spec.md`, and run `bin/test.sh` before pushing.
 - **Distribute:** `ruler apply --agents claude,codex,opencode,pi,antigravity,agentsmd`.
   Consumers usually run this from their own project with their own `ruler.toml`.

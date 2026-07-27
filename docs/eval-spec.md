@@ -65,7 +65,7 @@ happen to answer well." That baseline comparison is the same discipline
 
 ## What CI does instead
 
-`bin/validate-evals.py` checks every eval is structurally sound — valid JSON,
+`bin/validate.py` checks every eval is structurally sound — valid JSON,
 `skill_name` matches its directory, unique ids, non-empty assertions, fixture
 paths resolve — plus that every SKILL.md conforms to the
 [Agent Skills spec](https://agentskills.io/specification). Free, fast, and it

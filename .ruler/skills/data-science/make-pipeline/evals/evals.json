@@ -1,0 +1,15 @@
+{
+  "skill_name": "make-pipeline",
+  "evals": [
+    {
+      "id": "pipeline-is-restartable",
+      "name": "turns a remembered sequence into a dependency graph",
+      "prompt": "I've got four steps I keep re-running by hand \u2014 download, clean, aggregate, plot \u2014 and I have to remember the order every time. Make this repeatable.",
+      "expected_output": "Produces a Makefile expressing the steps as file dependencies, so ordering is derived and re-runs are incremental.",
+      "assertions": [
+        "The response produces a Makefile or equivalent dependency graph.",
+        "The response does not simply list the steps in order for the user to run manually."
+      ]
+    }
+  ]
+}

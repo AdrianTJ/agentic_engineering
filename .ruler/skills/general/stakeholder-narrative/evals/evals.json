@@ -1,0 +1,15 @@
+{
+  "skill_name": "stakeholder-narrative",
+  "evals": [
+    {
+      "id": "leads-with-decision",
+      "name": "opens with the decision, not the method",
+      "prompt": "Turn last week's revenue results into a two-slide summary for the leadership team.",
+      "expected_output": "Leads with the decision or recommendation the audience must act on, keeping methodology in an appendix.",
+      "assertions": [
+        "The summary opens with the decision or recommendation rather than the methodology.",
+        "The summary avoids unexplained statistical jargon."
+      ]
+    }
+  ]
+}

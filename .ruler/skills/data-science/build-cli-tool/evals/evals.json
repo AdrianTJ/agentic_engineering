@@ -1,0 +1,15 @@
+{
+  "skill_name": "build-cli-tool",
+  "evals": [
+    {
+      "id": "tool-reads-stdin",
+      "name": "packages a snippet as a composable tool",
+      "prompt": "This awk one-liner for summarizing a column is the third time I've retyped it. Turn it into something I can just call by name.",
+      "expected_output": "Produces an executable with a shebang that reads stdin, writes stdout, and exits meaningfully.",
+      "assertions": [
+        "The resulting tool reads from stdin so it composes in a pipeline.",
+        "The response makes the file executable and gives it a shebang."
+      ]
+    }
+  ]
+}

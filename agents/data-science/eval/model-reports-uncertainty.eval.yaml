@@ -1,8 +1,0 @@
-name: model-reports-uncertainty
-description: Model results come with uncertainty, never a bare point estimate.
-prompt: Estimate the weekly trend in order value from this data. How fast is it growing?
-expect:
-  - skill_loaded: model-data
-  - reply_matches: "(confidence|credible|interval|±|std|standard error|uncertain)"
-fixtures:
-  - shared/datasets/orders_sample.csv

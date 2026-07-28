@@ -3,13 +3,12 @@
 # test.sh — repo-wide checks. Run locally before pushing; CI runs the same script.
 #
 # Checks:
-#   1. vendor/anthropic-skills submodule is initialized (not an empty directory).
-#   2. bin/generate.sh parses and builds every harness with zero warnings,
-#      in both symlink and copy mode, and no dist symlink is broken.
-#   3. Skill names are unique across category directories.
-#   4. Every SKILL.md / TOOL.md / AGENT.md carries its required frontmatter.
-#   5. Every TOOL.md entrypoint exists and is executable.
-#   6. Every eval spec validates against shared/eval-spec.md (tools/validate-evals).
+#   1. Every SKILL.md conforms to the Agent Skills spec, and every skill has a
+#      structurally valid evals/evals.json (bin/validate.py).
+#   2. Ruler can project the library — catches a malformed skill directory that
+#      is individually valid but breaks distribution. Skipped if ruler isn't
+#      installed, so the suite still runs offline.
+#   3. Any script bundled with a skill is executable and parses.
 
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -17,49 +16,37 @@ cd "$REPO_ROOT"
 fail=0
 err() { echo "FAIL: $*" >&2; fail=1; }
 
-echo "== 1. vendor/anthropic-skills submodule initialized =="
-if [ ! -f vendor/anthropic-skills/README.md ]; then
-  err "vendor/anthropic-skills/ looks empty — run 'git submodule update --init --recursive'"
+echo "== 1. skills conform to the spec, evals are well formed =="
+python3 bin/validate.py || err "skill/eval validation failed"
+
+echo
+echo "== 2. ruler can project the library =="
+if command -v ruler >/dev/null 2>&1; then
+  # Project into a throwaway dir so the repo itself stays clean.
+  tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' EXIT
+  mkdir -p "$tmp/.ruler"
+  cp -R .ruler/skills "$tmp/.ruler/skills"
+  if ! (cd "$tmp" && ruler apply --agents claude --no-mcp >/dev/null 2>&1); then
+    err "ruler apply failed on this library"
+  else
+    want=$(find .ruler/skills -name SKILL.md | wc -l)
+    got=$(find "$tmp/.claude/skills" -name SKILL.md 2>/dev/null | wc -l)
+    [ "$want" -eq "$got" ] || err "ruler projected $got skills, expected $want"
+  fi
+else
+  echo "   (ruler not installed — skipping; npm i -g @intellectronica/ruler)"
 fi
 
-echo "== 2. generator builds cleanly (symlink + copy) =="
-bash -n bin/generate.sh || err "generate.sh has syntax errors"
-for mode in "" "--copy"; do
-  # shellcheck disable=SC2086
-  warnings=$(bash bin/generate.sh $mode --all 2>&1 >/dev/null | grep "warning:" || true)
-  if [ -n "$warnings" ]; then
-    err "generator warnings in mode '${mode:-symlink}':"$'\n'"$warnings"
-  fi
-done
-bash bin/generate.sh --all >/dev/null   # leave dist/ in symlink mode for the link check
-broken=$(find dist -xtype l 2>/dev/null || true)
-[ -z "$broken" ] || err "broken symlinks in dist/:"$'\n'"$broken"
-
-echo "== 3. skill and tool names unique =="
-dupes=$(find skills -mindepth 2 -maxdepth 2 -type d -printf '%f\n' | sort | uniq -d)
-[ -z "$dupes" ] || err "duplicate skill names across categories: $dupes"
-
-echo "== 4. frontmatter present =="
-while IFS= read -r f; do
-  grep -q '^name:' "$f"        || err "$f: missing 'name' frontmatter"
-  grep -q '^description:' "$f" || err "$f: missing 'description' frontmatter"
-done < <(find skills tools -name 'SKILL.md' -o -name 'TOOL.md')
-for f in agents/*/AGENT.md; do
-  grep -q '^name:' "$f" || err "$f: missing 'name' frontmatter"
-  grep -q '^role:' "$f" || err "$f: missing 'role' frontmatter"
-done
-
-echo "== 5. tool entrypoints exist and are executable =="
-for toolmd in tools/*/TOOL.md; do
-  tooldir="$(dirname "$toolmd")"
-  entry=$(awk -F': *' '/^entrypoint:/ {print $2; exit}' "$toolmd")
-  [ -n "$entry" ] || { err "$toolmd: missing 'entrypoint' frontmatter"; continue; }
-  [ -f "$tooldir/$entry" ] || err "$toolmd: entrypoint '$entry' not found"
-  [ -x "$tooldir/$entry" ] || err "$toolmd: entrypoint '$entry' not executable"
-done
-
-echo "== 6. eval specs validate =="
-python3 tools/validate-evals/validate_evals.py || err "eval spec validation failed"
+echo
+echo "== 3. bundled scripts are executable and parse =="
+while IFS= read -r s; do
+  [ -x "$s" ] || err "$s is not executable"
+  case "$s" in
+    *.sh) bash -n "$s" || err "$s has syntax errors" ;;
+    *.py) python3 -m py_compile "$s" || err "$s has syntax errors" ;;
+  esac
+done < <(find .ruler/skills -type f \( -name '*.sh' -o -name '*.py' \))
 
 if [ "$fail" -ne 0 ]; then
   echo; echo "TESTS FAILED" >&2; exit 1

@@ -1,0 +1,14 @@
+{
+  "skill_name": "build-deck",
+  "evals": [
+    {
+      "id": "pptx-handoff",
+      "name": "hands .pptx production to the pptx skill",
+      "prompt": "Turn this analysis into an actual PowerPoint deck I can send to the board.",
+      "expected_output": "Shapes the narrative and slide structure, then delegates the actual .pptx file production.",
+      "assertions": [
+        "The response hands the actual .pptx file production to the pptx skill rather than reimplementing OOXML handling."
+      ]
+    }
+  ]
+}

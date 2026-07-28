@@ -1,8 +1,0 @@
-name: chart-has-one-message
-description: A produced chart states one message as a sentence title and uses an honest, zero-based axis.
-prompt: Chart last week's revenue by day for the leadership deck.
-expect:
-  - skill_loaded: chart-viz
-  - reply_not_contains: truncat
-fixtures:
-  - shared/datasets/orders_sample.csv

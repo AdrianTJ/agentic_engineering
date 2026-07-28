@@ -146,3 +146,43 @@ Append-only. See `log-decision` skill for the entry format and rules.
   discipline, validate-results, chart-viz) held up well as originally written;
   the gaps were in specific example commands and unstated environment
   assumptions, not the underlying approach.
+
+## DEC-006: Replace our own generator with Ruler; keep only the skills
+- **Date:** 2026-07-26
+- **Status:** decided
+- **Context:** A survey of the landscape found the projection half of this repo —
+  one canonical source fanned out into per-harness layouts — is a solved and
+  crowded problem. Ruler (2.8k stars, 1,032+ commits, MIT, npm) does it for 31
+  tools against our 7, with a thousand commits of edge cases we hadn't hit.
+  Meanwhile the content, particularly the data-science recipes that were
+  executed and corrected, has no equivalent anywhere. We were maintaining 154
+  lines of bespoke bash to do a narrower version of a commodity, while the
+  actual asset was the part nobody else has.
+- **Options considered:**
+  - Keep the generator — full control, but we own every harness's quirks forever
+    and gain nothing a maintained tool doesn't already give.
+  - Adopt Ruler, keep everything else — half a migration; the agent-composition
+    model still wouldn't mean anything to Ruler.
+  - Adopt Ruler and cut to skills only — smallest surface, standard formats
+    throughout.
+- **Decision:** Adopt Ruler for distribution and agent-skills-eval's JSON format
+  for evals; delete `bin/generate.sh`, `harnesses/`, `agents/`, and the vendored
+  `anthropics/skills` submodule. Skills move to `.ruler/skills/` (Ruler's own
+  layout) and are the only content we keep. Gated on proving Ruler first:
+  verified it preserves nested categories, `references/`, `scripts/`, the
+  executable bit, and byte-identical content across 12 skill-capable targets
+  before anything was deleted.
+- **Consequences:** We give up three things, knowingly. **Hermes** is not among
+  Ruler's 31 targets (it auto-discovers `SKILL.md` from `.agents/skills/`, which
+  Ruler's Codex target writes, so it likely still works — untested). **Per-agent
+  skill composition** is gone; every tool now gets all 16 skills, which is how
+  the runtimes actually behave anyway — the `skills:` list was our invention and
+  never constrained anything at runtime. **Free CI eval verification** is gone:
+  agent-skills-eval grades with an LLM judge, so scoring needs an API key and
+  spend. Mitigated by rewriting `bin/validate-evals.py` to check structure and
+  spec conformance for free, which still catches malformed specs before a billed
+  run. In exchange: 31 distribution targets instead of 7, zero bespoke
+  projection code, standard formats end to end, and evals that measure
+  with-skill vs without-skill rather than merely asserting a skill loaded.
+  Immediate dividend — the new script check caught `write-sql/scripts/explain.sh`
+  had never been executable, which the old tool-only check couldn't see.

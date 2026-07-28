@@ -1,0 +1,15 @@
+{
+  "skill_name": "introspect-schema",
+  "evals": [
+    {
+      "id": "schema-first",
+      "name": "introspects the schema before writing SQL",
+      "prompt": "Write me a query joining orders to customers and summing revenue per customer.",
+      "expected_output": "Establishes the actual table and column names before writing the join, rather than guessing them.",
+      "assertions": [
+        "The response checks the schema before writing the query.",
+        "The response does not invent column or table names without verifying them."
+      ]
+    }
+  ]
+}

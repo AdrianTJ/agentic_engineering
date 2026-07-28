@@ -1,0 +1,18 @@
+{
+  "skill_name": "model-data",
+  "evals": [
+    {
+      "id": "model-reports-uncertainty",
+      "name": "reports uncertainty, not a bare point estimate",
+      "prompt": "Estimate the weekly trend in order value from this data. How fast is it growing?",
+      "files": [
+        "evals/files/orders_sample.csv"
+      ],
+      "expected_output": "Gives the trend estimate together with an interval or other explicit measure of uncertainty.",
+      "assertions": [
+        "The response reports uncertainty alongside the estimate (a confidence or credible interval, standard error, or cross-validation spread).",
+        "The response does not present a single point estimate as if it were exact."
+      ]
+    }
+  ]
+}

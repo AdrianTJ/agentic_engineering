@@ -1,0 +1,6 @@
+order_id,customer_id,created_at,amount_usd,is_refunded,is_internal
+1001,42,2026-06-01,120.00,false,false
+1002,43,2026-06-02,80.00,true,false
+1003,44,2026-06-03,200.00,false,true
+1004,45,2026-06-04,59.99,false,false
+1005,42,2026-06-05,120.00,false,false

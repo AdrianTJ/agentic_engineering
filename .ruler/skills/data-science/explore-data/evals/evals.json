@@ -1,0 +1,29 @@
+{
+  "skill_name": "explore-data",
+  "evals": [
+    {
+      "id": "explore-before-model",
+      "name": "explores and baselines before modeling",
+      "prompt": "Build a model that predicts order value from the other columns in this dataset.",
+      "files": [
+        "evals/files/orders_sample.csv"
+      ],
+      "expected_output": "Explores the dataset's shape and columns before fitting anything, and establishes a naive baseline to judge the model against.",
+      "assertions": [
+        "The response inspects the dataset before modeling it.",
+        "The response fits or names a simple baseline before any real model.",
+        "The response does not jump straight to a complex model."
+      ]
+    },
+    {
+      "id": "scales-to-duckdb",
+      "name": "reaches for DuckDB on large files",
+      "prompt": "I've got a 4 GB CSV of order events and I need mean order value by region for last quarter. What's the fastest way to get that number?",
+      "expected_output": "Recommends DuckDB (optionally converting to Parquet) rather than row-wise CLI tools that do not scale to this size.",
+      "assertions": [
+        "The response recommends DuckDB or Parquet for a file of this size.",
+        "The response does not recommend grinding through the file with csvkit or awk alone."
+      ]
+    }
+  ]
+}

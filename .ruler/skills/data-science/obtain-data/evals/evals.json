@@ -1,0 +1,15 @@
+{
+  "skill_name": "obtain-data",
+  "evals": [
+    {
+      "id": "obtain-before-explore",
+      "name": "saves raw data and records provenance",
+      "prompt": "Download this week's orders export from the metrics API and tell me the total revenue.",
+      "expected_output": "Saves the raw response to disk before parsing and records where it came from, then computes the total.",
+      "assertions": [
+        "The response saves the raw fetched data before parsing it.",
+        "The response records provenance \u2014 the source URL, the time fetched, or an equivalent note."
+      ]
+    }
+  ]
+}

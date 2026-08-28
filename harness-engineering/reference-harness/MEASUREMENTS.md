@@ -64,4 +64,4 @@ spent before any work happens.
 
 ## Test suite
 
-`verify.sh`: **39 assertions**, checked against `baseline.json`.
+`verify.sh`: **42 assertions**, checked against `baseline.json`.

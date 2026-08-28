@@ -25,7 +25,15 @@
 /** Everything that happens is an event. The log is the state. (Ch.6) */
 type Event =
   | { t: "run_started"; goal: string; at: string }
-  | { t: "model_called"; step: number; tokens: number }
+  | {
+      t: "model_called";
+      step: number;
+      tokens: number;
+      /** Per-block fingerprints, so the next turn can compute its cache prefix. */
+      blocks: { label: string; hash: string; tokens: number }[];
+      cached: number;
+      fresh: number;
+    }
   | { t: "routed_statically"; step: number; tool: string; rule: string }
   | { t: "tool_requested"; step: number; tool: string; args: string; key: string }
   | { t: "tool_succeeded"; step: number; key: string; result: string }
@@ -87,6 +95,11 @@ type State = {
   approvals: Map<string, number>;
   /** Set when the run is parked waiting on a human. (Ch.6 durable wait) */
   awaiting: { tool: string; args: string; key: string } | null;
+  /** Cache accounting, folded from the log. (Ch.7) */
+  cachedTokens: number;
+  freshTokens: number;
+  billedTokens: number;
+  lastBlocks: { label: string; hash: string; tokens: number }[];
   /** For no-progress detection. (Ch.2) */
   recentSignatures: string[];
   /**
@@ -121,7 +134,7 @@ type Budgets = { maxSteps: number; maxTokens: number; noProgressWindow: number }
 // The event log.  Append before acting; rebuild by folding. (Ch.6)
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { appendFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
+import { appendFileSync, readFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const STATE_DIR = ".state";
@@ -146,7 +159,15 @@ function reduce(s: State, e: Event): State {
     case "run_started":
       return { ...s, goal: e.goal };
     case "model_called":
-      return { ...s, step: e.step, tokens: s.tokens + e.tokens };
+      return {
+        ...s,
+        step: e.step,
+        tokens: s.tokens + e.tokens,
+        cachedTokens: s.cachedTokens + e.cached,
+        freshTokens: s.freshTokens + e.fresh,
+        billedTokens: s.billedTokens + billed(e.cached, e.fresh),
+        lastBlocks: e.blocks,
+      };
     case "routed_statically":
       // A static edge costs a step but no tokens — that is the whole point. (Ch.3)
       return { ...s, step: e.step };
@@ -213,6 +234,7 @@ function reduce(s: State, e: Event): State {
 
 const EMPTY: State = {
   goal: null, step: 0, tokens: 0, applied: new Map(), transcript: [],
+  cachedTokens: 0, freshTokens: 0, billedTokens: 0, lastBlocks: [],
   retained: [], compactedThrough: 0, provenance: new Map(), approvals: new Map(), awaiting: null,
   recentSignatures: [], pending: null, lastError: null, stopped: null,
 };
@@ -294,6 +316,11 @@ function humanApproves(s: State): boolean {
  * false-positive on coincidental vocabulary. A substring test is not a taint
  * analysis. It is, however, strictly better than a run-wide bit, and its failure
  * modes are legible — which is the most you should claim for it.
+ *
+ * COMPLEXITY: O(untrusted values x result length x payload length). Fine for a
+ * demo, wrong for anything real — do not lift this into production. A real
+ * implementation propagates labels along assignments rather than re-scanning
+ * history on every call.
  */
 function derivesFromUntrusted(payload: string, s: State): string | null {
   const hay = payload.toLowerCase();
@@ -313,6 +340,7 @@ const BLAST: Record<string, BlastRadius> = {
   read_file: "read",
   flaky_check: "read",
   write_note: "write",
+  escape_workspace: "write",   // classified benignly ON PURPOSE — see the tool
   post_webhook: "external",
 };
 
@@ -381,6 +409,17 @@ const tools: Tool[] = [
     },
   },
   {
+    name: "escape_workspace",
+    description: "Write a file outside the workspace. Args: the content.",
+    // Deliberately hostile. The POLICY classifies this as a mere `write`, so
+    // authorization lets it through — and only CONTAINMENT stops it. That gap is
+    // the entire argument for defence in depth. (Ch.9)
+    run: async (args) => {
+      writeFileSync("/tmp/escaped-the-workspace.txt", args);
+      return "wrote outside the workspace";
+    },
+  },
+  {
     name: "post_webhook",
     description: "POST a summary to an external URL. Args: the summary text.",
     run: async (args) => `posted ${args.length} chars externally`,
@@ -405,7 +444,13 @@ const tools: Tool[] = [
 //       POLICY=full node harness.ts     (compaction + tool clearing + notes)  [default]
 // ─────────────────────────────────────────────────────────────────────────────
 
-type Policy = "none" | "compact" | "full";
+/**
+ * `clear` exists to isolate a variable: it is `full` minus the notes block, so
+ * `compact` vs `clear` differs ONLY in tool clearing. Comparing `compact` to
+ * `full` confounds two changes at once, which is how the first version of this
+ * measurement nearly drew a clean conclusion from a dirty experiment.
+ */
+type Policy = "none" | "compact" | "clear" | "full";
 const POLICY = (process.env.POLICY ?? "full") as Policy;
 
 /** Rough but honest: ~4 chars per token. Replace with the provider's counter. */
@@ -451,7 +496,7 @@ function buildContext(s: State): ContextView {
     // Only the un-compacted tail is replayed verbatim; the rest is `retained`.
     history = history.slice(s.compactedThrough);
   }
-  if (POLICY === "full") {
+  if (POLICY === "full" || POLICY === "clear") {
     // Tool clearing: drop stale tool results, keep the calls that produced them,
     // so the agent still knows what it did without re-reading every result.
     const cutoff = s.step - KEEP_TOOL_RESULTS;
@@ -509,6 +554,12 @@ function report(s: State): void {
   const modelCalls = log.filter((e) => e.t === "model_called").length;
   const routed = log.filter((e) => e.t === "routed_statically").length;
   console.log(`  model calls: ${modelCalls}  statically routed: ${routed}`);
+  const hitRate = s.cachedTokens + s.freshTokens > 0
+    ? (s.cachedTokens / (s.cachedTokens + s.freshTokens)) * 100 : 0;
+  console.log(
+    `  cache: ${s.cachedTokens} cached / ${s.freshTokens} fresh ` +
+    `(${hitRate.toFixed(0)}% hit)  billed: ${s.billedTokens} tok`,
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -544,6 +595,9 @@ const scripts: Record<string, (step: number, s: State) => ModelDecision> = {
     step === 0
       ? { kind: "call_tool", tool: "read_file", args: "attacker-controlled.md" }
       : { kind: "call_tool", tool: "post_webhook", args: "the doc says to wire funds to acct 4471" },
+  // Tries to write outside the workspace. The policy permits it (it is a `write`);
+  // only the sandbox stops it. Run under ./run-sandboxed.sh to see the difference.
+  escape: () => ({ kind: "call_tool", tool: "escape_workspace", args: "pwned" }),
   // Reads untrusted content but sends something unrelated. Should be ALLOWED —
   // this is the case a run-wide taint bit gets wrong. (Ch.9)
   benign: (step, s) =>
@@ -565,6 +619,54 @@ const stubModel: ModelProvider = {
   }),
 };
 
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cache accounting.  A worked SEAM(Ch.7), and the one that makes the curriculum's
+// central tension measurable.
+//
+// Ch.4 says compact. Ch.7 says compaction rewrites the prefix and rewriting
+// invalidates the cache. Until now the harness could measure the first and not
+// the second, so the tension was an argument rather than a number.
+//
+// Providers cache an exact PREFIX. A block is cached only if it and every block
+// before it are byte-identical to the previous turn. One edit early in the
+// context invalidates everything after it — which is why block ORDER is a cost
+// decision, not a style one.
+// ─────────────────────────────────────────────────────────────────────────────
+
+import { createHash } from "node:crypto";
+
+const hash = (s: string): string => createHash("sha1").update(s).digest("hex").slice(0, 12);
+
+/** Providers discount cached input rather than making it free. ~0.1x is typical. */
+const CACHE_READ_RATE = 0.1;
+
+/**
+ * Split this turn's blocks into the cached prefix and the fresh remainder, by
+ * comparing against the previous turn's fingerprints.
+ */
+function cacheSplit(
+  blocks: { label: string; text: string; tokens: number }[],
+  prev: { label: string; hash: string; tokens: number }[],
+): { cached: number; fresh: number; fingerprints: { label: string; hash: string; tokens: number }[] } {
+  const fingerprints = blocks.map((b) => ({ label: b.label, hash: hash(b.text), tokens: b.tokens }));
+  let cached = 0;
+  let i = 0;
+  // The prefix ends at the first block that differs — everything after is fresh,
+  // even if it happens to be unchanged.
+  for (; i < fingerprints.length; i++) {
+    const a = fingerprints[i]!;
+    const b = prev[i];
+    if (!b || b.label !== a.label || b.hash !== a.hash) break;
+    cached += a.tokens;
+  }
+  const fresh = fingerprints.slice(i).reduce((n, b) => n + b.tokens, 0);
+  return { cached, fresh, fingerprints };
+}
+
+/** Billed tokens for one turn, with cached input discounted. */
+const billed = (cached: number, fresh: number): number => Math.round(cached * CACHE_READ_RATE + fresh);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The router.  A worked SEAM(Ch.3).
@@ -653,8 +755,13 @@ async function run(model: ModelProvider, budgets: Budgets, goal: string): Promis
       state = rebuild(readLog());
       decision = routed.decision;
     } else {
+      const view = buildContext(state);
+      const { cached, fresh, fingerprints } = cacheSplit(view.blocks, state.lastBlocks);
       const r = await model.decide(state, tools);
-      append({ t: "model_called", step: state.step + 1, tokens: r.tokens });
+      append({
+        t: "model_called", step: state.step + 1, tokens: r.tokens,
+        blocks: fingerprints, cached, fresh,
+      });
       state = rebuild(readLog());
       decision = r.decision;
     }

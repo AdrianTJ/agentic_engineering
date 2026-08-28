@@ -5,7 +5,7 @@ from an empty file twelve times.
 
 ```sh
 node harness.ts          # run it
-./verify.sh              # 29 assertions, checked against a committed baseline
+./verify.sh              # 34 assertions, checked against a committed baseline
 ./verify.sh --baseline   # re-baseline deliberately
 ./verify.sh --json       # machine-readable results
 CRASH_AT=3 node harness.ts && node harness.ts   # kill it, watch it resume
@@ -27,9 +27,10 @@ spent any money.
 | Static routing vs. dynamic edges | Ch.3 | **implemented, worked seam** |
 | Context policy — compaction, notes, clearing | Ch.4 | **implemented, worked seam** |
 | Real tool schemas and descriptions | Ch.5 | `SEAM(Ch.5)` |
-| Cost accounting and cache layout | Ch.7 | `SEAM(Ch.7)` |
+| Cost accounting and cache layout | Ch.7 | **implemented, worked seam** |
 | Verification, traces, evals | Ch.8 | `SEAM(Ch.8)` |
 | Permissions, policy engine, approval gates | Ch.9 | **implemented, worked seam** |
+| Sandboxing / containment | Ch.9 | **implemented** (runtime, not OS) |
 | Handoff artifacts, context reset, evaluator split | Ch.10 | `SEAM(Ch.10)` |
 | A real model provider | Ch.11 / Ch.12 | `SEAM(Ch.11 / Ch.12)` |
 
@@ -77,29 +78,47 @@ POLICY=compact SCRIPT=long node harness.ts   # compaction only
 POLICY=full    SCRIPT=long node harness.ts   # compaction + tool clearing + notes
 ```
 
-Measured, on the same 20-step task:
+Measured, on the same 20-step task. `clear` is `full` minus the notes block, so
+`compact` vs `clear` isolates tool clearing as the only variable:
 
-| Policy | Final occupancy | Compactions | Tokens billed |
-|---|---|---|---|
-| `none` | **105%** — overflows | 0 | 4,727 |
-| `compact` | 70% | 2 | 3,943 |
-| `full` | 69% | **0** | **3,570** |
+| Policy | Compactions | Cache hit | Raw tokens | **Billed** |
+|---|---|---|---|---|
+| `none` | 0 | 34% | 5,107 | 3,530 |
+| `compact` | 3 | **59%** | 4,168 | **1,939** |
+| `clear` | 1 | 44% | **3,935** | 2,358 |
+| `full` | 1 | 44% | 3,935 | 2,358 |
 
-**Tool clearing alone reached the same occupancy as compaction, billed 9% fewer
-tokens, and never had to compact at all.** The cheap, non-lossy technique beat the
-expensive, lossy one on this workload.
+**The ranking inverts depending on which column you optimise.** Tool clearing uses
+6% fewer raw tokens than compaction and costs 22% *more* once the cache is billed.
 
-The mechanism is visible in the per-category breakdown: after two compactions the
-`retained` contract block had grown to 169 tokens against 36 tokens of surviving
-history. Compaction moved most of the cost rather than removing it — the contract
-is the part you promised not to drop, so it accumulates. Ch.7's point lands here
-too: each compaction also rewrites the prefix, so a real provider would have
-invalidated the cache twice for a saving that tool clearing got for free.
+Pass 04 measured only the raw column and concluded "reach for eviction before
+summarization." Pass 07 added cache accounting and that advice was wrong — or
+rather, it was right about the wrong quantity.
 
-This is not an argument that compaction is wrong. It is an argument for
-**reaching for eviction before summarization**, and for measuring rather than
-assuming — which is exactly what Ch.4's exercise asks you to do, and why the
-numbers above come from `verify.sh` rather than from prose.
+The mechanism: **billed cost tracks the size of the part that changes, not the
+size of the context.** Compaction shrinks the volatile history block hard, so each
+subsequent turn re-bills very little at full price. Tool clearing keeps history
+mid-sized and mutates it every turn, so a moderate block is re-billed
+continuously. A larger context with a small volatile tail beats a smaller context
+that churns.
+
+### What this model gets wrong
+
+The cache here is **block-granular**: any change to a block invalidates that block
+entirely. Real providers cache at token-prefix granularity, where an append-only
+history stays almost fully cached and a mid-list deletion invalidates everything
+after it.
+
+That difference cuts both ways and I have not resolved it: token-granular caching
+would make a *growing* history much cheaper than modelled (favouring `clear`),
+while making compaction's rewrite of an early block more expensive (favouring
+`clear` again). **A more realistic cache model might well restore pass 04's
+ranking.**
+
+So take the transferable part and not the table: *measure billed, not raw*, and
+*the volatile tail is what you pay for*. Re-deriving this against a token-granular
+model is the Ch.7 exercise, and it is a genuinely open question rather than a
+rhetorical one.
 
 ## The router, and an honest caveat about its numbers
 
@@ -168,6 +187,33 @@ payload derive from an untrusted value?* rather than *did we ever touch
 anything untrusted?* That distinction is CaMeL's actual contribution rather than
 its silhouette.
 
+### Authorization is not containment
+
+`authorize()` decides what the agent may *ask for*. It does not decide what the
+process can *do*. Those are different layers, and the harness now has both so the
+gap between them is visible:
+
+```sh
+SCRIPT=escape node harness.ts        # policy permits it → file written outside the workspace
+./run-sandboxed.sh SCRIPT=escape     # runtime blocks it → nothing written
+```
+
+`escape_workspace` is classified as a plain `write` **on purpose**, so
+authorization lets it through. Only containment stops it. If your entire security
+story is a policy function, that first command is your security story.
+
+`run-sandboxed.sh` uses Node's permission model: `--allow-fs-write` scoped to
+`.state/`. That is a **runtime** boundary — stronger than a path check inside the
+tool (which the tool can simply not perform) and weaker than a container (which
+also bounds CPU, memory, network, and syscalls). Ch.9's point about MCP Roots
+applies here too: know which kind of boundary you have. No container is used
+because this environment has a Docker client but no daemon, and pretending
+otherwise would be worse than saying so.
+
+A pleasant side effect worth noticing: the runtime denial arrives as an ordinary
+tool failure, gets error-compacted by Ch.2's loop, and no-progress detection stops
+the run. The layers compose without any of them knowing about the others.
+
 ### The control's documented failure mode
 
 `derivesFromUntrusted()` is a substring test over distinctive tokens. It does not
@@ -235,10 +281,11 @@ resume" is verification theater. It has to check *what the work produced*.
 ## Layout
 
 ```
-harness.ts     the skeleton — types, event log, reducer, loop, stub model
-verify.sh      29 assertions, each corresponding to a claim made in a chapter
-baseline.json  committed expected results; verify.sh fails on regression
-results.json   written every run (gitignored)
+harness.ts        the skeleton — types, event log, reducer, loop, stub model
+run-sandboxed.sh  the same harness under runtime filesystem containment
+verify.sh         34 assertions, each corresponding to a claim made in a chapter
+baseline.json     committed expected results; verify.sh fails on regression
+results.json      written every run (gitignored)
 SPEC.md        the contracts, language-neutral, for the Rust track and your own port
 .state/        created at runtime: events.jsonl and NOTES.md (gitignored)
 ```

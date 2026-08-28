@@ -143,6 +143,18 @@ documents the finding that an **approval is a budget, not a predicate**: keyed b
 occurrence it spams the human, keyed logically it becomes a standing permit, and
 the fix is a use count on a separate ledger from idempotency.
 
+It also makes step 3 concrete, and the distinction is the one this chapter most
+wants you to hold:
+
+```sh
+SCRIPT=escape node harness.ts        # the POLICY permits it → file written outside the workspace
+./run-sandboxed.sh SCRIPT=escape     # the RUNTIME blocks it → nothing written
+```
+
+The escaping tool is classified as a plain `write` on purpose, so authorization
+passes it. Only containment stops it. **If your whole security story is a policy
+function, the first command is your security story.**
+
 1. **Enumerate.** List every capability: shell, filesystem paths, network destinations,
    credentials, external side effects. For each, write the worst single action.
 2. **Trifecta audit.** Does this agent have private data access, untrusted content

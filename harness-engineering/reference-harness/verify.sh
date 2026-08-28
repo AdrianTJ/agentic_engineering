@@ -70,6 +70,19 @@ echo "$comp" | grep -q "compacted:"; chk "compaction fires at the threshold"
 [ "$(bill "$full")" -lt "$(bill "$comp")" ]; chk "tool clearing bills fewer tokens than compaction"
 [ "$(bill "$full")" -lt "$(bill "$none")" ]; chk "the policy saves tokens overall"
 
+sec "Ch.7: cache accounting inverts the raw-token ranking"
+bill_raw() { echo "$1" | grep -oE '[0-9]+ tokens\)' | grep -oE '[0-9]+'; }
+bill_net() { echo "$1" | grep -oE 'billed: [0-9]+' | grep -oE '[0-9]+'; }
+hit()      { echo "$1" | grep -oE '\([0-9]+% hit' | grep -oE '[0-9]+'; }
+reset; cmp_out=$(POLICY=compact SCRIPT=long node harness.ts 2>&1)
+reset; clr_out=$(POLICY=clear   SCRIPT=long node harness.ts 2>&1)
+[ "$(bill_raw "$clr_out")" -lt "$(bill_raw "$cmp_out")" ]
+chk "tool clearing uses fewer RAW tokens than compaction"
+[ "$(bill_net "$clr_out")" -gt "$(bill_net "$cmp_out")" ]
+chk "tool clearing costs MORE once the cache is billed (the ranking inverts)"
+[ "$(hit "$cmp_out")" -gt "$(hit "$clr_out")" ]
+chk "compaction achieves the higher cache hit rate"
+
 sec "Ch.4: compaction honours the retention contract"
 reset; POLICY=compact SCRIPT=long node harness.ts >/dev/null 2>&1
 node -e '
@@ -111,6 +124,16 @@ sec "Ch.9: the control's documented failure mode (laundering)"
 # deliberate re-baseline rather than silently passing.
 reset; lau=$(SCRIPT=launder APPROVE=1 node harness.ts 2>&1)
 echo "$lau" | grep -q "posted .* chars externally"; chk "KNOWN LIMIT: a paraphrase bypasses the substring check"
+
+sec "Ch.9: authorization is not containment"
+ESC=/tmp/escaped-the-workspace.txt
+rm -f "$ESC"; reset
+SCRIPT=escape node harness.ts >/dev/null 2>&1
+[ -f "$ESC" ]; chk "unsandboxed, the policy PERMITS a write outside the workspace"
+rm -f "$ESC"; reset
+./run-sandboxed.sh SCRIPT=escape >/dev/null 2>&1
+[ ! -f "$ESC" ]; chk "sandboxed, the runtime BLOCKS the same call the policy allowed"
+rm -f "$ESC"
 
 sec "Ch.9 + Ch.6: approval is a durable wait"
 reset; park=$(SCRIPT=egress node harness.ts 2>&1)

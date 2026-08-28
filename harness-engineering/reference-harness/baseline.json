@@ -1,5 +1,5 @@
 {
-  "pass": 29,
+  "pass": 34,
   "fail": 0,
   "assertions": [
     {"status": "pass", "section": "Ch.2: the loop and its stopping conditions", "name": "clean run stops on goal_satisfied"},
@@ -16,6 +16,9 @@
     {"status": "pass", "section": "Ch.4: the context policy changes what the model sees", "name": "tool clearing bounds occupancy"},
     {"status": "pass", "section": "Ch.4: the context policy changes what the model sees", "name": "tool clearing bills fewer tokens than compaction"},
     {"status": "pass", "section": "Ch.4: the context policy changes what the model sees", "name": "the policy saves tokens overall"},
+    {"status": "pass", "section": "Ch.7: cache accounting inverts the raw-token ranking", "name": "tool clearing uses fewer RAW tokens than compaction"},
+    {"status": "pass", "section": "Ch.7: cache accounting inverts the raw-token ranking", "name": "tool clearing costs MORE once the cache is billed (the ranking inverts)"},
+    {"status": "pass", "section": "Ch.7: cache accounting inverts the raw-token ranking", "name": "compaction achieves the higher cache hit rate"},
     {"status": "pass", "section": "Ch.4: compaction honours the retention contract", "name": "every compaction preserved the goal and is auditable"},
     {"status": "pass", "section": "Ch.3: a static edge is a model call you do not pay for", "name": "static routing does exactly the same work"},
     {"status": "pass", "section": "Ch.3: a static edge is a model call you do not pay for", "name": "static routing makes strictly fewer model calls"},
@@ -26,6 +29,8 @@
     {"status": "pass", "section": "Ch.9: provenance is per-value, not run-wide", "name": "unrelated egress is NOT blocked by an unrelated untrusted read"},
     {"status": "pass", "section": "Ch.9: provenance is per-value, not run-wide", "name": "unrelated egress still reaches the approval gate"},
     {"status": "pass", "section": "Ch.9: the control's documented failure mode (laundering)", "name": "KNOWN LIMIT: a paraphrase bypasses the substring check"},
+    {"status": "pass", "section": "Ch.9: authorization is not containment", "name": "unsandboxed, the policy PERMITS a write outside the workspace"},
+    {"status": "pass", "section": "Ch.9: authorization is not containment", "name": "sandboxed, the runtime BLOCKS the same call the policy allowed"},
     {"status": "pass", "section": "Ch.9 + Ch.6: approval is a durable wait", "name": "run parks rather than blocking"},
     {"status": "pass", "section": "Ch.9 + Ch.6: approval is a durable wait", "name": "nothing sent while unapproved"},
     {"status": "pass", "section": "Ch.9 + Ch.6: approval is a durable wait", "name": "a later process can grant the approval"},

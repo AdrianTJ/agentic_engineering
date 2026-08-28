@@ -729,3 +729,104 @@ empirical sources now sit alongside them, and one **disagrees**:
 4. **`derivesFromUntrusted` is O(untrusted values × payload).** Fine at this
    scale, wrong at any real one. Worth noting in the code before someone copies it.
 5. **Still nothing read by a human.** Unchanged and unchangeable from here.
+
+---
+
+## Pass 07 — 2026-08-28 · cache accounting, containment, and a second correction
+
+**Scope.** Pass 06's four actionable gaps. The cache work overturned advice this
+curriculum had been giving for three passes.
+
+**Queries run** (0). Entirely a build pass — every gap was about the reference
+harness rather than the reading.
+
+### Cache accounting (gap 1 — closed), and what it overturned
+
+Ch.4 said compact; Ch.7 said compaction breaks your cache; and the harness could
+measure the first but not the second. The curriculum contained a tension it could
+not price.
+
+It can now. `cacheSplit()` computes the cached prefix by comparing per-block
+fingerprints against the previous turn, and bills cached input at 0.1x. Ranking on
+the same 20-step task, with `clear` added specifically to isolate tool clearing as
+the only variable against `compact`:
+
+| Policy | Compactions | Cache hit | Raw | **Billed** |
+|---|---|---|---|---|
+| none | 0 | 34% | 5,107 | 3,530 |
+| compact | 3 | **59%** | 4,168 | **1,939** |
+| clear | 1 | 44% | **3,935** | 2,358 |
+
+**The ranking inverts.** Tool clearing uses 6% fewer raw tokens and costs 22%
+more billed. Pass 04 measured only raw tokens and concluded "reach for eviction
+before summarization"; Ch.4 carried that advice for three passes. It was not wrong
+about its measurement — it was measuring the wrong quantity.
+
+The mechanism generalizes and is now the chapter's takeaway: **billed cost tracks
+the size of the part that changes, not the size of the context.** Compaction
+shrinks the volatile tail hard; tool clearing keeps a mid-sized history and
+mutates it every turn, so a moderate block is re-billed continuously.
+
+**And I have not settled it.** The model is block-granular — any change
+invalidates a whole block — while real providers cache at token-prefix
+granularity, where an append-only history stays largely cached and a mid-list
+deletion invalidates only from that point. A more realistic model might restore
+pass 04's ranking. Both the README and Ch.7 say so and set re-deriving it as the
+exercise. Replacing one over-confident conclusion with another would have been
+the easier ending.
+
+Isolating `clear` mattered methodologically: `full` differs from `compact` in two
+ways, and the first version of this comparison would have drawn a clean conclusion
+from a confounded experiment. On this script the confound turned out to be inert
+(`clear` and `full` are identical, since the notes block never fires), but that
+was luck, not design.
+
+### Containment (gap 2 — closed)
+
+Ch.9's seam stopped at authorization. `authorize()` decides what the agent may
+*ask for*; it says nothing about what the process can *do*.
+
+`escape_workspace` is classified as a plain `write` **on purpose**, so
+authorization passes it, and it writes outside the workspace. `run-sandboxed.sh`
+runs the identical harness under Node's permission model with `--allow-fs-write`
+scoped to `.state/`, and the same call is denied by the runtime. Both are
+asserted.
+
+Stated honestly in the code and the docs: this is a **runtime** boundary, not an
+OS one — stronger than a path check inside the tool (which the tool can decline to
+perform), weaker than a container (which also bounds CPU, memory, network, and
+syscalls). No container is used because this environment has a Docker client and
+no daemon; claiming containerization would have been the exact failure Ch.8 calls
+verification theater.
+
+A detail worth keeping: the runtime denial surfaces as an ordinary tool failure,
+gets error-compacted by Ch.2's loop, and trips no-progress detection. The layers
+compose without knowing about each other, which is the argument for defence in
+depth stated as behaviour rather than as advice.
+
+### Also
+
+`derivesFromUntrusted` now carries its complexity — O(untrusted values × result
+length × payload length) — and an explicit "do not lift this into production"
+(gap 4).
+
+**Validation:** 114 sources — **102 OK, 12 WARN, 0 FAIL**; `check-coverage.sh` and
+`check-refs.sh` passing; `verify.sh` **34/34** (29 → 34), re-baselined
+deliberately.
+
+### Known gaps, carried to pass 08
+
+1. **Two open technical questions, both stated rather than resolved.** Whether
+   token-granular caching restores pass 04's ranking (Ch.7), and whether the
+   laundering bypass is fixable without an interpreter (Ch.9). Both are honest
+   open questions; neither should stay open indefinitely.
+2. **Ch.2, Ch.5, Ch.8, Ch.10 still have no worked seam.** Ch.10's — handoff
+   artifact and context reset — is now the most valuable, since Ch.10 has the
+   empirical backing (SlopCodeBench) and no runnable demonstration.
+3. **`harness.ts` is ~500 lines and doing eight jobs.** It was a teaching artifact
+   when it did two. Splitting it into modules would help readers and would also
+   let each chapter point at a file.
+4. **The curriculum has never been read end-to-end by anyone, including me.**
+   Six passes of local edits; no full read-through for coherence. Cheap and
+   overdue.
+5. **Still no human reader.** Unchanged.

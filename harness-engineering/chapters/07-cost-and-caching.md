@@ -114,6 +114,11 @@ which is a genuinely different design than Chapter 4 alone would produce.
   budget stopping condition, denominated in money.
 - **Cost per successful task** — the only metric that matters. Cost per token
   rewards an agent that fails cheaply.
+- **The volatile tail** — the portion of context that changes between turns and is
+  therefore re-billed at full price. Billed cost tracks its size, not the total
+  context size. The single most useful reframing in this chapter.
+- **Raw vs. billed** — two different rankings of the same policies. Advice derived
+  from raw tokens can invert under billing, and usually nobody checks.
 - **TTFT vs. total cost** — different optimizations, occasionally opposed. Naive
   full-context caching can improve one while hurting the other.
 
@@ -133,6 +138,19 @@ Instrument, then optimize, then measure the thing you broke.
    cost instrumentation. Compaction saved tokens; what did it do to the cache hit
    rate, and was the net positive? This is the single most valuable measurement in
    the chapter, and almost nobody has made it.
+
+   [`reference-harness/`](../reference-harness/) has made it, and the answer
+   reversed Ch.4's standing advice: tool clearing uses 6% fewer raw tokens and
+   costs 22% more billed, because compaction shrinks the volatile tail while
+   clearing churns a mid-sized one. **Billed cost tracks the size of the part that
+   changes, not the size of the context.**
+
+   Its cache model is block-granular, though, and real providers cache at
+   token-prefix granularity. Re-derive the comparison under a token-granular model
+   — where an append-only history stays cached but a mid-list deletion invalidates
+   everything after it. It may well restore the original ranking. **This is an
+   open question in the curriculum, not a rhetorical one**, and working it out is
+   worth more than accepting either table.
 5. **Route.** Send one clearly-cheap step (tool selection, or a classification) to
    a small model. Run your Chapter 8 regression suite. Report cost delta *and*
    pass-rate delta. Keep the change only if the second is flat.

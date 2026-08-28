@@ -113,25 +113,41 @@ POLICY=compact SCRIPT=long node harness.ts
 POLICY=full    SCRIPT=long node harness.ts
 ```
 
-Its measured result is worth knowing before you run your own, because it is not
-the one most people expect:
+Its measured result is worth knowing before you run your own — and so is the
+fact that **the first version of this measurement gave the opposite answer.**
 
-| Policy | Occupancy | Compactions | Tokens billed |
-|---|---|---|---|
-| none | **105%** — overflows | 0 | 4,727 |
-| compact | 70% | 2 | 3,943 |
-| full | 69% | **0** | **3,570** |
+Counting raw tokens only, tool clearing wins: it matches compaction's occupancy
+using fewer tokens and compacting less. That was this chapter's advice for three
+passes: *reach for eviction before summarization.*
 
-**Tool clearing alone matched compaction's occupancy, billed less, and never
-compacted.** The per-category breakdown shows why: after two compactions the
-retained contract had grown to 169 tokens against 36 tokens of surviving history.
-Compaction moved the cost rather than removing it — the contract is precisely
-what you promised not to drop, so it accumulates. And each compaction rewrote the
-prefix, which Ch.7 will tell you costs you the cache twice over.
+Then the harness learned to bill the cache (Ch.7), and the ranking flipped:
 
-The lesson is not that compaction is wrong. It is **reach for eviction before
-summarization**, and measure rather than assume. Your workload may invert this;
-that is the point of running it.
+| Policy | Compactions | Cache hit | Raw | **Billed** |
+|---|---|---|---|---|
+| none | 0 | 34% | 5,107 | 3,530 |
+| compact | 3 | **59%** | 4,168 | **1,939** |
+| clear (tool clearing only) | 1 | 44% | **3,935** | 2,358 |
+
+Tool clearing uses 6% fewer raw tokens and costs **22% more** once cached input is
+discounted. The earlier advice was not wrong about its measurement; it was
+measuring the wrong quantity.
+
+The mechanism generalizes, and it is the thing to remember: **billed cost tracks
+the size of the part that changes, not the size of the context.** Compaction
+shrinks the volatile tail hard, so little is re-billed at full price each turn.
+Tool clearing keeps a mid-sized history and mutates it every turn, so a moderate
+block is re-billed continuously. A bigger context with a stable prefix beats a
+smaller one that churns.
+
+Two honest caveats before you act on this. The harness models the cache at
+**block granularity**, and real providers work at token-prefix granularity — a
+more realistic model might restore the original ranking, which is left as Ch.7's
+exercise rather than settled here. And your workload may differ from a
+twenty-step sequential scan in ways that matter.
+
+What survives both caveats: **measure billed, not raw**, and treat any advice in
+this chapter — including this paragraph — as conditional on which quantity was
+counted.
 
 ## Check yourself
 

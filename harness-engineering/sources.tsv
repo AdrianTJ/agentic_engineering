@@ -1,0 +1,69 @@
+id	chapter	tier	title	author	url	fetch_note
+S001	01,02,03	core	Building Effective Agents	Anthropic	https://www.anthropic.com/engineering/building-effective-agents	ok
+S002	01,04	core	Effective context engineering for AI agents	Anthropic	https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents	ok
+S003	05,07	core	Writing effective tools for AI agents	Anthropic	https://www.anthropic.com/engineering/writing-tools-for-agents	ok
+S004	03	deeper	Building a multi-agent research system	Anthropic	https://www.anthropic.com/engineering/multi-agent-research-system	ok
+S005	01	core	Harness engineering: leveraging Codex in an agent-first world	OpenAI	https://openai.com/index/harness-engineering/	bot-blocked-403
+S006	01,02,04,07	core	Harness Engineering for Self-Improvement	Lilian Weng	https://lilianweng.github.io/posts/2026-07-04-harness/	ok
+S007	01,04,08	core	The Anatomy of an Agent Harness	LangChain	https://www.langchain.com/blog/the-anatomy-of-an-agent-harness	ok
+S008	02,07	core	The Art of Loop Engineering	LangChain	https://www.langchain.com/blog/the-art-of-loop-engineering	ok
+S009	02,03,05,06,08	core	12-Factor Agents	Dex Horthy / HumanLayer	https://github.com/humanlayer/12-factor-agents	egress-403-verified-via-webfetch
+S010	01	core	Harness, Scaffold, and the AI Agent Terms Worth Getting Right	Hugging Face	https://huggingface.co/blog/agent-glossary	ok
+S011	02	core	ReAct: Synergizing Reasoning and Acting in Language Models	Yao et al. (ICLR 2023)	https://arxiv.org/abs/2210.03629	ok
+S012	03	core	LangGraph Graph API overview	LangChain	https://docs.langchain.com/oss/python/langgraph/graph-api	ok
+S013	03	core	Deep Agents overview	LangChain	https://docs.langchain.com/oss/python/deepagents/overview	ok
+S014	04	core	Context engineering: memory, compaction, and tool clearing	Claude Cookbook	https://platform.claude.com/cookbook/tool-use-context-engineering-context-engineering-tools	ok
+S015	04	core	Context management in agent harnesses: memory, files, and subagents	Arize	https://arize.com/blog/context-management-in-agent-harnesses/	ok
+S016	04	core	Context Engineering 101: How agents manage context	Victor Dibia	https://newsletter.victordibia.com/p/context-engineering-101-how-agents	ok
+S017	04	deeper	Memory as Action: Autonomous Context Curation for Long-Horizon Agentic Tasks	arXiv	https://arxiv.org/abs/2510.12635	ok
+S018	04	deeper	Awesome-Long-Horizon-Agents	RUC-NLPIR	https://github.com/RUC-NLPIR/Awesome-Long-Horizon-Agents	egress-403
+S019	04	deeper	Shedding Heavy Memories: Context Compaction in Codex, Claude Code, OpenCode	Justin3go	https://justin3go.com/en/posts/2026/04/09-context-compaction-in-codex-claude-code-and-opencode	ok
+S020	04	deeper	Less Context, Better Agents	arXiv	https://arxiv.org/abs/2606.10209	ok
+S021	05,08	core	Model Context Protocol specification	MCP	https://modelcontextprotocol.io/	ok
+S022	05	core	Harnessing Agent Skills: Architectural Patterns and a Reference Architecture	arXiv	https://arxiv.org/abs/2606.20631	ok
+S023	05,09	core	AI SDK: tools and tool calling	Vercel	https://github.com/vercel/ai/blob/main/content/docs/03-ai-sdk-core/15-tools-and-tool-calling.mdx	egress-403
+S024	05	deeper	Agent Skills specification	agentskills.io	https://agentskills.io/specification	unchecked
+S025	06	core	Durable Execution meets AI	Temporal	https://temporal.io/blog/durable-execution-meets-ai-why-temporal-is-the-perfect-foundation-for-ai	ok
+S026	03,06	core	Temporal: Beyond State Machines for Reliable Distributed Applications	Temporal	https://temporal.io/blog/temporal-replaces-state-machines-for-distributed-applications	ok
+S027	03,06	core	LangGraph State: Checkpoints, Threads, and Recovery	Easton	https://eastondev.com/blog/en/posts/ai/20260424-langgraph-agent-architecture/	ok
+S028	06	core	Agent Workflows Are Rediscovering Durable Execution	Koshy	https://medium.com/beyond-localhost/agent-workflows-are-rediscovering-durable-execution-be110661ed8c	ok
+S029	06	deeper	Durable AI Agents: Orchestrating with Fred and Temporal	fredk8.dev	https://fredk8.dev/blog/durable-ai-agents-orchestrating-the-future-with-fred-and-temporal/	ok
+S030	06	deeper	Durable Execution for AI Agents: State, Retries, Pauses	Quellix Labs	https://quellixlabs.com/insights/durable-execution-long-running-ai-agent-workflows	ok
+S031	07	core	Agent observability: the complete guide	Braintrust	https://www.braintrust.dev/articles/agent-observability-complete-guide-2026	ok
+S032	07	core	OpenTelemetry GenAI semantic conventions	Greptime	https://greptime.com/blogs/2026-05-09-opentelemetry-genai-semantic-conventions	ok
+S033	07,09	core	LLM tracing and agent observability	MLflow	https://mlflow.org/docs/latest/genai/tracing/	ok
+S034	07	deeper	AI Agent Observability	LangChain	https://www.langchain.com/resources/agent-observability	ok
+S035	07	deeper	SWE-EVO: Benchmarking Coding Agents in Long-Horizon Software Evolution	arXiv	https://arxiv.org/abs/2512.18470	ok
+S036	08	core	Understanding Model Context Protocol Security	Wiz	https://www.wiz.io/academy/ai-security/model-context-protocol-security	ok
+S037	08	core	Securing the AI Agent Revolution: A Practical Guide to MCP Security	Coalition for Secure AI	https://www.coalitionforsecureai.org/securing-the-ai-agent-revolution-a-practical-guide-to-mcp-security/	bot-blocked-403
+S038	08	core	Securing the Model Context Protocol: Risks, Controls, Governance	arXiv	https://arxiv.org/abs/2511.20920	ok
+S039	08	core	Towards Secure Agent Skills: Architecture, Threat Taxonomy, Security Analysis	arXiv	https://arxiv.org/abs/2604.02837	ok
+S040	08	deeper	AgentBound: Securing Execution Boundaries of AI Agents	arXiv	https://arxiv.org/abs/2510.21236	ok
+S041	08	deeper	Caller Identity Confusion in MCP-Based AI Systems	arXiv	https://arxiv.org/abs/2603.07473	ok
+S042	01,07,08	deeper	Exploring Gen AI (memo series)	Martin Fowler / Birgitta Boeckeler	https://martinfowler.com/articles/exploring-gen-ai.html	ok
+S043	01	deeper	awesome-harness-engineering	ai-boost	https://github.com/ai-boost/awesome-harness-engineering	egress-403-verified-via-webfetch
+S044	01	deeper	Agent Harness Engineering: A Survey	OpenReview	https://openreview.net/pdf?id=eONq7FdiHa	egress-403
+S045	01	deeper	Agent Harness Engineering	Addy Osmani	https://addyosmani.com/blog/agent-harness-engineering/	ok
+S046	09	core	Agent SDK reference — TypeScript	Anthropic	https://code.claude.com/docs/en/sdk/sdk-typescript	unchecked
+S047	09	core	Zod — defining schemas	Zod	https://zod.dev/api	unchecked
+S048	09	core	Zod — basic usage	Zod	https://zod.dev/basics	unchecked
+S049	09	core	AI SDK 6	Vercel	https://vercel.com/blog/ai-sdk-6	ok
+S050	09	deeper	Structured outputs with the Vercel AI SDK	AI Hero	https://www.aihero.dev/structured-outputs-with-vercel-ai-sdk	unchecked
+S051	09	deeper	strands-agents/sdk-typescript	Strands	https://github.com/strands-agents/sdk-typescript	egress-403
+S052	09,10	core	rmcp — official Rust MCP SDK	modelcontextprotocol	https://github.com/modelcontextprotocol/rust-sdk/blob/main/crates/rmcp/README.md	egress-403
+S053	10	core	rig-core	Rig	https://docs.rs/rig-core	ok
+S054	10	core	The Typestate Pattern in Rust	Cliffle	https://cliffle.com/blog/rust-typestate/	unchecked
+S055	10	core	Typestate Programming	The Embedded Rust Book	https://docs.rust-embedded.org/book/static-guarantees/typestate-programming.html	unchecked
+S056	10	core	How to Implement State Machines in Rust	OneUptime	https://oneuptime.com/blog/post/2026-02-01-rust-state-machines/view	unchecked
+S057	10	core	Building AI Agents from Scratch in Rust	Rustify	https://rustify.rs/articles/rust-ai-agents-from-scratch-2026	unchecked
+S058	10	deeper	Building MCP Servers in Rust	Rustify	https://rustify.rs/articles/rust-for-mcp-model-context-protocol-servers-2026	unchecked
+S059	10	deeper	Rust-Native AI Agent Frameworks: Architecture, Performance, Ecosystem	Zylos Research	https://zylos.ai/research/2026-04-01-rust-native-ai-agent-frameworks-ecosystem-2026/	unchecked
+S060	10	deeper	typestate-builder	docs.rs	https://docs.rs/typestate-builder/latest/typestate_builder/	unchecked
+S061	02	deeper	Agent Harness Architecture: Building a Coding Agent From Scratch	Plaban Nayak	https://levelup.gitconnected.com/agent-harness-architecture-building-a-coding-agent-from-scratch-ad42a86a74e8	unchecked
+S062	03,08	deeper	Deep Dive: 12 Reusable Agentic Harness Design Patterns from Claude Code	Epsilla	https://www.epsilla.com/blogs/2026-04-18-deep-dive-12-reusable-agentic-harness-design-patte	unchecked
+S063	08	core	Model Context Protocol (MCP) Security (whitepaper)	CoSAI	https://www.coalitionforsecureai.org/wp-content/uploads/2026/03/model-context-protocol-security-1.pdf	ok
+S064	01	deeper	Harness Engineering — first thoughts	Fowler / Boeckeler	https://martinfowler.com/articles/exploring-gen-ai/harness-engineering-memo.html	ok
+S065	01,04	deeper	Context Engineering for Coding Agents	Fowler / Boeckeler	https://martinfowler.com/articles/exploring-gen-ai/context-engineering-coding-agents.html	ok
+S066	01	deeper	Humans and Agents in Software Engineering Loops	Fowler / Boeckeler	https://martinfowler.com/articles/exploring-gen-ai/humans-and-agents.html	ok
+S067	07	deeper	TDD inside the agent loop — theater or actual value?	Fowler / Boeckeler	https://martinfowler.com/articles/exploring-gen-ai/tdd-in-the-agent-loop.html	ok
+S068	08	deeper	Coding Assistants Threaten the Software Supply Chain	Fowler / Boeckeler	https://martinfowler.com/articles/exploring-gen-ai/software-supply-chain-attack-surface.html	ok

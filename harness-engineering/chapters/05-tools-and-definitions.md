@@ -1,0 +1,112 @@
+# Chapter 5 — Tools, their definitions, and the protocols that carry them
+
+> **Core question:** A tool is a contract between a deterministic system and a
+> non-deterministic caller that reads the contract at runtime and may misread it.
+> How do you write that contract?
+
+## The problem
+
+Tool definitions are the most under-designed surface in most harnesses, and the
+highest-leverage one. The reason is a category error: people write tools the way
+they write functions for other programmers, or endpoints for other services. But
+the caller here is a model, the *description is the API documentation and the
+implementation prompt at once*, and every token of it is billed against Chapter 4's
+budget on every single turn.
+
+Anthropic's framing is the one to internalize: tools are a genuinely new software
+paradigm — contracts between deterministic systems and non-deterministic agents.
+The consequences are specific. Tools must be self-contained, robust to misuse,
+and unambiguous about intended use. Parameters must play to the model's strengths:
+`user_id`, never `user`. And the best-supported optimization technique in the
+literature is not clever code — it is **prompt-engineering your tool descriptions**,
+because those descriptions sit in context and steer behavior on every turn.
+
+There is also a systems problem hiding here. Tool definitions are *fixed context
+cost*. Fifty tools at 300 tokens each is 15,000 tokens gone before the task starts,
+on every request. Tool design and context engineering are the same budget.
+
+## Core reading
+
+**1. [Writing effective tools for AI agents — using AI agents](https://www.anthropic.com/engineering/writing-tools-for-agents)** — Anthropic · ~35 min
+The core text. A three-phase method — prototype, evaluate, optimize — and the
+principles that matter most:
+- **Search over listing.** A `list_all` tool floods context; a `search` tool returns what's needed. Prefer the filter at the source.
+- **Consolidation.** Fewer, better tools beat many thin wrappers. Every tool is fixed context cost *and* a chance to pick wrong.
+- **Namespacing.** `slack_send_message` over `send_message` when several services could plausibly own the verb.
+- **Response design.** What comes back is context. Return the useful fields, not the whole payload; make the shape stable.
+- **Token efficiency.** Both directions — the definition and the response.
+- **Error handling.** An error is a prompt. `"404"` teaches nothing; `"No user with id=X. Use search_users(email) to find the id."` teaches the retry.
+- **Description engineering.** Write the description as a prompt, because it is one.
+
+The methodological point is the underrated one: *evaluate* tools. Build a small
+eval set, watch where the agent misuses the tool, and fix the description before
+the code. Most tool bugs are documentation bugs.
+
+**2. [Model Context Protocol specification](https://modelcontextprotocol.io/)** — ~45 min
+The standard for exposing tools across harnesses. Learn the architecture
+precisely, because the security chapter depends on it: **Hosts** initiate and
+coordinate clients, supervise lifecycles, enforce consent policy, and route model
+calls; **Clients** manage stateful sessions; **Servers** provide tools and data
+as independent processes. Note also **Roots** — client-declared directory/URI
+boundaries a server may access — and note hard that Roots is a *coordination*
+mechanism, not a security control. Real isolation is OS-level (Ch.8).
+
+**3. [12-Factor Agents](https://github.com/humanlayer/12-factor-agents)** — factors #1, #4, #7 · ~20 min
+- **#1 Natural language to tool calls** — the primitive operation, stated plainly.
+- **#4 Tools are just structured outputs** — the demystification. A tool call is JSON the model emitted; your code decides what it means. This reframing kills a lot of magical thinking and makes tools testable.
+- **#7 Contact humans with tool calls** — human input as *a tool*, not a special case in the loop. Elegant, and it makes HITL composable with everything else (Ch.6).
+
+**4. [Harnessing Agent Skills: Architectural Patterns and a Reference Architecture for Skill-Mediated LLM Agents](https://arxiv.org/abs/2606.20631)** · ~40 min
+Skills — instructions loaded on demand — as the layer above tools. The pattern is
+**progressive disclosure**: a short always-loaded description, with detail pulled
+in only when relevant. This is Ch.4's just-in-time retrieval applied to the
+agent's own instructions, and it's how you get a large capability surface without
+paying for all of it every turn.
+
+## Going deeper
+
+- **[AI SDK: tools and tool calling](https://github.com/vercel/ai/blob/main/content/docs/03-ai-sdk-core/15-tools-and-tool-calling.mdx)** — schema-first tool definition in practice; picked up properly in Ch.9.
+- **[rig-core `Tool` trait](https://docs.rs/rig-core)** — the same contract with static types; Ch.10.
+- **[Agent Skills specification](https://agentskills.io/specification)** — the format this very repository is built on. Read `.ruler/skills/general/write-skill/SKILL.md` here for the craft, and note that a skill's `description` is the *entire* basis on which an agent decides to load it — exactly the description-engineering problem, one level up.
+- **[Understanding MCP Security](https://www.wiz.io/academy/ai-security/model-context-protocol-security)** — read after Ch.8.
+
+## Key concepts
+
+- **Tool as contract** — deterministic implementation, non-deterministic caller, natural-language specification.
+- **Description engineering** — the description is a prompt; optimize it with evals, not taste.
+- **Parameter unambiguity** — `user_id` over `user`. Names are instructions.
+- **Search over listing** — return the relevant subset, not the corpus.
+- **Consolidation & namespacing** — fewer tools, unambiguous names.
+- **Response design** — the return value is context; shape it deliberately.
+- **Errors as prompts** — every error message should name the recovery.
+- **Fixed context cost** — tool definitions are billed on every turn, before any work happens.
+- **MCP host/client/server** — the three roles; consent and policy live in the *host*.
+- **Roots** — declared boundaries; coordination, not enforcement.
+- **Skills & progressive disclosure** — capability without permanent context cost.
+
+## Build this
+
+Take five tools you have (or write five over a real API) and put them through the
+full method:
+
+1. **Baseline.** Write ten realistic tasks. Run the agent. Log every tool call and
+   classify failures: wrong tool, wrong parameters, right call/wrong interpretation
+   of the result.
+2. **Fix descriptions only.** No code changes. Re-run. Record the delta — this is
+   usually the largest single improvement you will measure all week.
+3. **Consolidate.** Merge thin wrappers; replace a `list_*` with a `search_*`.
+   Measure the token cost of definitions before and after.
+4. **Errors.** Rewrite every error message to name the recovery path. Re-run and
+   count how many failures now self-correct within one iteration.
+5. Write down the fixed context cost of your tool set as a percentage of the window.
+   If it's above 10%, you have a Ch.4 problem disguised as a Ch.5 problem.
+
+## Check yourself
+
+1. Why is `user_id` a better parameter name than `user`? Give the failure `user` produces.
+2. When does one consolidated tool beat three specific ones — and when is that wrong?
+3. Write the error message for "file not found" that maximizes the chance the next iteration succeeds.
+4. You have 40 tools. Name three mechanisms for keeping them out of the window until needed, and their costs.
+5. Roots is not a security boundary. What is, and why doesn't Roots qualify?
+6. "Tools are just structured outputs." What does that let you test that you couldn't otherwise?
+7. What does progressive disclosure of skills buy over just writing a longer system prompt? Quantify it against Ch.4's budget.

@@ -944,3 +944,112 @@ passing; `verify.sh` **34/34**.
 5. **Still no human reader.** Eight passes. This one found seven real defects in a
    single ordered read, which is the strongest evidence yet that the binding
    constraint is a reader rather than another pass.
+
+---
+
+## Pass 09 — 2026-08-28 · modularization, the Ch.10 seam, and an open question answered
+
+**Scope.** Pass 08's gaps 2 and 3, plus one of the two questions the curriculum
+had left standing. Committed in four increments rather than one, at the user's
+request. Branch renamed to `feat/long-horizon-textbook`.
+
+Zero queries. Third build-only pass in a row.
+
+### Modularization (gap 3 — closed)
+
+`harness.ts` had grown to 850 lines doing ten jobs. It is now the loop and its
+wiring (~190 lines), with one module per concern under the chapter that teaches
+it — so a chapter points at a file rather than a line range, and Ch.2's advice to
+"read the first 80 lines" is unnecessary.
+
+Done under the 34-assertion suite, and `MEASUREMENTS.md` regenerated
+**byte-identical** afterwards. That is the only reason to believe an 850-line
+refactor changed nothing, and it is the argument for having built the measurement
+harness two passes ago.
+
+### The Ch.10 seam (gap 2 — closed), and the bug it produced
+
+`POLICY=reset` implements Ch.10's alternative to compaction: clear the window at
+the occupancy threshold, continue from `HANDOFF.md` alone.
+
+The first version had **no bound on the artifact**. It listed every completed
+effect under *Done*, so it grew from 661 to 949 bytes across one run, resets fired
+ten times in twenty steps, and the handoff became the thing filling the window.
+`src/handoff.ts` contains the sentence "a handoff that accumulates is just a
+transcript with extra steps" — written in the same commit as the code that did
+exactly that.
+
+Bounding *Done* to the last five halved the resets and cut billed cost from 3,104
+to 2,578. The finding is the one that generalizes: **a context reset does not
+escape the retention problem, it relocates it.** Compaction decides what to drop
+inside an opaque summary; a handoff decides it in a file you can read. Auditable,
+not free — and anyone presenting reset as the clean alternative to compaction has
+not bounded their artifact yet.
+
+Also recorded in both READMEs and the measurements: `reset` bills more than
+compaction here, **but the harness's model is a deterministic script that cannot
+suffer context anxiety**, which is the failure Ch.10 argues reset prevents. The
+table captures reset's cost and none of its benefit. Saying so was more important
+than the number.
+
+### The cache-granularity question, answered
+
+Pass 07 measured the context policies under a block-granular cache and flagged
+that real providers cache at prefix granularity, so the result might not survive.
+`CACHE_MODEL=chunk` now measures the cached prefix in 40-char chunks.
+
+| Policy | block: billed | chunk: billed |
+|---|---|---|
+| none | 3,586 | **1,106** |
+| compact | 2,080 | **1,063** |
+| clear | 2,384 | 1,469 |
+| reset | 2,578 | 1,883 |
+
+**The ordering survives; the magnitude collapses.** Doing nothing costs 3.4×
+compaction under the coarse model and **1.04×** under the finer one, because an
+append-only context caches almost perfectly and every technique that *mutates* the
+context forfeits that.
+
+Which lands somewhere the curriculum did not intend and now says plainly: **on
+cost alone, context engineering barely pays.** It earns its keep on occupancy —
+the no-policy run exceeds the window and is unusable at any price — and on
+coherence, which a scripted model cannot exhibit. Ch.7 now warns against
+justifying a context policy on token cost without first measuring at realistic
+granularity.
+
+Three assertions pin it. The Ch.7 assessment task advances to the next question:
+a 40-char chunker is not a tokenizer.
+
+### A process failure worth recording
+
+The third commit was **pushed with `check-numbers.sh` red.** Its staleness guard —
+added last pass, for exactly this — correctly reported that `verify.sh` was newer
+than `MEASUREMENTS.md`, and I committed anyway.
+
+Only the assertion count was stale (39 → 42), so nothing published was wrong. But
+the checker was red and the push went out regardless, which is precisely the
+failure the guard exists to prevent. Fixed in the next commit and recorded here
+rather than quietly amended: **a validator you ignore is worse than one you never
+built, because it costs the same and buys nothing.**
+
+The honest gap it exposes: nothing *enforces* the checkers before a commit. They
+are run by discipline, and this pass demonstrates the reliability of that.
+
+**Validation:** 114 sources — 102 OK, 12 WARN, 0 FAIL; all four doc checkers
+passing; `verify.sh` **42/42** (34 → 42).
+
+### Known gaps, carried to pass 10
+
+1. **Nothing enforces the checkers.** A pre-commit hook running
+   `check-numbers.sh`, `check-refs.sh`, `check-coverage.sh` and `verify.sh` would
+   have caught this pass's own slip. The highest-value remaining item, and the
+   only one demonstrated necessary by evidence rather than argument.
+2. **Ch.5 and Ch.8 remain the only unworked seams.** Ch.8's is the more useful:
+   the harness has 42 assertions and no trace export, so it cannot demonstrate the
+   observability half of its own chapter.
+3. **One open question left:** does the 1.04× survive a real tokenizer and real
+   provider cache semantics (minimum block sizes, TTLs)?
+4. **The old remote branch could not be deleted.** `git push --delete` and the
+   refspec form are both refused by this environment's proxy. `feat/long-horizon-textbook`
+   carries every commit; the stale ref needs removing from GitHub's UI.
+5. **Still no human reader.** Nine passes.

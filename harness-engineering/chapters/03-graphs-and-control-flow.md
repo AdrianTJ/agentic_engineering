@@ -134,6 +134,21 @@ repo, a literature sweep, a data migration.
    with the model called at specific points. Which version is easier to test?
    Easier to change? Be honest — the answer is often not the graph.
 
+[`reference-harness/`](../reference-harness/) works this seam. `route()` makes one
+edge static — continuing a sequential scan, where the next file is arithmetic —
+and defers everything else to the model:
+
+```sh
+SCRIPT=long node harness.ts              # every edge dynamic:  20 model calls, 3,935 tokens
+ROUTER=on SCRIPT=long node harness.ts    # one static edge:      1 model call,      92 tokens
+```
+
+Identical work; `verify.sh` asserts both runs touch the same files. **Read the
+caveat in its README before quoting that number** — a sequential scan is the most
+routable thing an agent does, and 97% is not what your workload will give you.
+What transfers is the question, not the multiple: for each edge, what would you
+have to enumerate to make it static? Where the answer is short, write the code.
+
 ## Check yourself
 
 1. Give a task where routing is sufficient and multi-agent is over-engineering. What is the tell?

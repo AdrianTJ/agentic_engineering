@@ -208,6 +208,15 @@ rewards an agent that fails cheaply. Ch.7
 
 ## Long-running operations and the human interface
 
+**Task-completion horizon** — the length of task, in human time, a system
+completes at a stated reliability (METR's framing). The unit that makes
+"long-horizon" a measurement rather than a mood, and the variable a harness
+exists to extend. Ch.10
+
+**Degradation across checkpoints** — quality falling as agent output is chained
+back into agent input. Measured to resume at the same rate regardless of starting
+quality. Ch.10
+
 **Context anxiety** — losing coherence as the window fills and wrapping up
 prematurely. A stopping-condition bug, not a capability limit. Ch.10
 
@@ -275,8 +284,19 @@ untrusted data cannot alter the program. Ch.9
 context, so a compromised context has nothing to leak. Removes the target rather
 than guarding it. Ch.9
 
-**Taint** — a marker that untrusted content has entered the context. The cheap
-approximation of a capability, and enough to mechanize the trifecta check. Ch.9
+**Provenance (per value)** — a label on each value recording whether it is
+attacker-influenceable, so the policy can ask *does this payload derive from an
+untrusted value?* rather than *did we ever touch anything untrusted?* A run-wide
+taint bit is the degenerate version and is unusable in practice: one untrusted
+read blocks all egress forever. Ch.9
+
+**Laundering** — defeating a payload-inspection check by paraphrasing untrusted
+content so it shares no distinctive tokens with the source. The reason a substring
+test is not a taint analysis. Ch.9
+
+**Static vs. dynamic edge, priced** — every edge you can make static is a model
+call you do not pay for, cannot get wrong, and can unit-test. The question is
+per-edge: what would you have to enumerate to make this static? Ch.3
 
 **Approval as a budget** — an approval authorizes N executions, almost always 1;
 a boolean approval is a standing permit. Keyed by logical action, on a *separate

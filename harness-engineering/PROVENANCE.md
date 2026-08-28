@@ -619,3 +619,113 @@ credential-isolation and sealed-tool-endpoint patterns to Ch.9) but unreachable 
    audit Ch.7 just received.
 5. **Still nothing read by a human.** Five passes of self-review converge on
    internal consistency. The binding constraint on quality is now a reader.
+
+---
+
+## Pass 06 — 2026-08-28 · per-value provenance, the routing seam, and correcting pass 05
+
+**Scope.** Pass 05's four actionable gaps. One of them turned into a correction of
+pass 05 itself.
+
+**Queries run** (2): empirical long-horizon session/degradation measurement; plus
+a targeted fetch of the Codex usage study. Mostly a build pass.
+
+### Per-value provenance (gap 3 — closed)
+
+Pass 05's trifecta check used a single run-wide taint bit, and I flagged it as
+coarse. Working with it showed it was worse than coarse — it was **unusable**: one
+`read_file` poisoned the whole run, so any legitimate egress afterwards was denied
+forever with no path back. A control nobody can operate gets turned off.
+
+Provenance is now labelled **per value**, and the policy asks *does this payload
+derive from an untrusted value?* rather than *did we ever touch anything
+untrusted?* `SCRIPT=benign` is the case the old design got wrong — read untrusted
+content, send something unrelated — and it now proceeds to the approval gate.
+
+That distinction is CaMeL's actual contribution rather than its silhouette, which
+is what pass 05's version was.
+
+**The limitation is now a test, not a caveat.** `derivesFromUntrusted()` is a
+substring check over distinctive tokens and does not survive laundering: paraphrase
+the file, send the paraphrase, and it goes through. `SCRIPT=launder` demonstrates
+it, and `verify.sh` **asserts that the bypass works**. A control's known limits are
+part of its specification; pinning them means anyone who later strengthens the
+check must re-baseline deliberately rather than have the suite silently agree.
+
+### The Ch.3 routing seam (gap 1 — closed)
+
+The last of the three high-value seams. `route()` makes one edge static —
+continuing a sequential scan, where the next file is arithmetic — and defers the
+rest.
+
+| | Model calls | Tokens |
+|---|---|---|
+| all dynamic | 20 | 3,935 |
+| with the router | 1 | 92 |
+
+Identical work (asserted: both runs touch the same files). **And the number is
+not honest without its caveat**, which both the README and Ch.3 now carry: a
+sequential scan is the most routable thing an agent does, and 97% is not what a
+real workload gives you. Quoting it bare would be precisely the vendor-benchmark
+move Ch.7 tells the reader to distrust. What transfers is the per-edge question,
+not the multiple.
+
+### Correcting pass 05's measurement (gap 2 — closed, by retraction)
+
+Pass 05 measured the reading-time estimates, found no systematic bias, and
+published a table concluding they were random noise.
+
+**That measurement was wrong.** It counted whole-page text including navigation
+and footer boilerplate, which inflates short posts far more than long ones and
+manufactured the scatter. Re-measured against body text only (preferring
+`<article>`/`<main>`, stripping script/style/nav/header/footer), the estimates are
+**internally consistent at ~120 wpm** — a defensible careful-reading rate for
+technical prose, against the ~200 wpm usually quoted for skimming.
+
+They remain loose: implied rates span 68–162 wpm, so roughly ±35% on any single
+figure. The README now carries the corrected table and says what happened.
+
+The lesson is recorded there too, because it is the more useful output than the
+numbers: **the first measurement was confidently wrong in a way that looked like
+data.** Measuring the wrong thing carefully still gives a wrong answer, and a
+table is not evidence of rigor.
+
+### Ch.10 audited (gap 4 — closed)
+
+Ch.10 rested on four practitioner accounts that agree with each other. Two
+empirical sources now sit alongside them, and one **disagrees**:
+
+- **[SlopCodeBench](https://arxiv.org/abs/2603.24755)** chains agent output across
+  checkpoints and scores quality at each step. Across 11 models and 20 iterative
+  problems, **no agent solved a problem end-to-end**, and degradation resumed at
+  the same rate regardless of starting quality. That is the empirical floor under
+  the chapter's "three walls": the practitioner sources tell you how to go
+  further; this tells you that you will still stop, so the handoff is not an edge
+  case.
+- **[METR, Measuring AI Ability to Complete Long Tasks](https://arxiv.org/abs/2503.14499)**
+  gives "long-horizon" a unit — task length in human time at a stated reliability.
+  Six passes in and this had never surfaced, which is a real gap in my searching:
+  it is the paper that makes the curriculum's central adjective measurable.
+- The Codex usage study contributes one number worth having (**8+ hour task
+  requests up ~10× in H1 2026**) and several worth discounting — its productivity
+  multiples are token-output counts from the vendor's own staff, and Ch.10 says so.
+
+**Validation:** 114 sources — **102 OK, 12 WARN, 0 FAIL**; `check-coverage.sh` and
+`check-refs.sh` passing; `verify.sh` **29/29** against a re-baselined
+`baseline.json` (23 → 29).
+
+### Known gaps, carried to pass 07
+
+1. **Ch.2, Ch.5, Ch.7, Ch.8, Ch.10 still have no worked seam.** The three most
+   valuable are done (Ch.3, Ch.4, Ch.9). Ch.7's cache accounting is the most
+   useful of the remainder, since Ch.4's measurement is currently blind to the
+   cache cost it warns about.
+2. **The harness has no sandbox.** Ch.9's assessment task asks the reader to
+   containerize; the reference implementation does not, so the seam stops at
+   authorization and never reaches containment.
+3. **Ch.11's seam is a stub by construction** — the model provider is fake. That
+   is deliberate and documented, but it means the TypeScript chapter has no
+   runnable artifact of its own.
+4. **`derivesFromUntrusted` is O(untrusted values × payload).** Fine at this
+   scale, wrong at any real one. Worth noting in the code before someone copies it.
+5. **Still nothing read by a human.** Unchanged and unchangeable from here.

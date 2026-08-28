@@ -108,3 +108,8 @@ S106	09	core	AgentDojo	ETH SPY Lab	https://agentdojo.spylab.ai/	ok
 S107	09	core	Before the Tool Call: Deterministic Pre-Action Authorization	arXiv	https://arxiv.org/abs/2603.20953	ok
 S108	09	deeper	The Balkanization of Execution-Security Research for AI Coding Agents	arXiv	https://arxiv.org/abs/2607.05743	ok
 S109	09	deeper	Inside the lethal trifecta: blast radius reduction	Sophos	https://www.sophos.com/en-us/blog/inside-the-lethal-trifecta-blast-radius-reduction-in-ai-agent-deployments	webfetch-only
+S110	10	core	SlopCodeBench: How Coding Agents Degrade Over Long-Horizon Iterative Tasks	arXiv	https://arxiv.org/abs/2603.24755	ok
+S111	10	core	Measuring AI Ability to Complete Long Tasks	METR	https://arxiv.org/abs/2503.14499	ok
+S112	10	deeper	The Horizon Gap: Planning, Memory, Execution, Training, Evaluation	arXiv	https://arxiv.org/abs/2608.06663	ok
+S113	10	deeper	Wink: Recovering from Misbehaviors in Coding Agents	arXiv	https://arxiv.org/abs/2602.17037	ok
+S114	10	deeper	NL2Repo-Bench: Long-Horizon Repository Generation Evaluation	arXiv	https://arxiv.org/abs/2512.12730	ok

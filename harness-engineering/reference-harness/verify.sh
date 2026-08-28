@@ -78,12 +78,39 @@ const cs=ev.filter(e=>e.t==="context_compacted");
 process.exit(cs.length && cs.every(c=>c.keptContract.some(x=>x.startsWith("GOAL:"))) ? 0 : 1);
 ' 2>/dev/null; chk "every compaction preserved the goal and is auditable"
 
+sec "Ch.3: a static edge is a model call you do not pay for"
+reset; ROUTER=on SCRIPT=long node harness.ts >/dev/null 2>&1
+routed_files=$(node -pe '
+  const ev=require("fs").readFileSync(".state/events.jsonl","utf8").trim().split("\n").map(JSON.parse);
+  ev.filter(e=>e.t==="tool_succeeded").map(e=>e.key.split(":").slice(2).join(":")).sort().join(",")')
+rt_calls=$(node -pe 'require("fs").readFileSync(".state/events.jsonl","utf8").trim().split("\n").map(JSON.parse).filter(e=>e.t==="model_called").length')
+reset; SCRIPT=long node harness.ts >/dev/null 2>&1
+dyn_files=$(node -pe '
+  const ev=require("fs").readFileSync(".state/events.jsonl","utf8").trim().split("\n").map(JSON.parse);
+  ev.filter(e=>e.t==="tool_succeeded").map(e=>e.key.split(":").slice(2).join(":")).sort().join(",")')
+dyn_calls=$(node -pe 'require("fs").readFileSync(".state/events.jsonl","utf8").trim().split("\n").map(JSON.parse).filter(e=>e.t==="model_called").length')
+[ "$routed_files" = "$dyn_files" ]; chk "static routing does exactly the same work"
+[ "$rt_calls" -lt "$dyn_calls" ]; chk "static routing makes strictly fewer model calls"
+
 sec "Ch.9: the policy engine blocks the lethal trifecta"
 reset; exf=$(SCRIPT=exfil node harness.ts 2>&1)
-echo "$exf" | grep -q "DENIED: egress blocked"; chk "egress denied once untrusted content is in context"
+echo "$exf" | grep -q "DENIED: egress blocked"; chk "egress denied when the payload derives from untrusted data"
 ! echo "$exf" | grep -q "posted .* chars externally"; chk "nothing was sent externally"
 reset; off=$(SCRIPT=exfil POLICY_OFF=1 node harness.ts 2>&1)
 echo "$off" | grep -q "posted .* chars externally"; chk "policy-off run exfiltrates, so the control is load-bearing"
+
+sec "Ch.9: provenance is per-value, not run-wide"
+reset; ben=$(SCRIPT=benign node harness.ts 2>&1)
+echo "$ben" | grep -q "read_file -> contents of attacker-controlled"; chk "the benign run does read untrusted content"
+! echo "$ben" | grep -q "DENIED"; chk "unrelated egress is NOT blocked by an unrelated untrusted read"
+echo "$ben" | grep -q "needs approval"; chk "unrelated egress still reaches the approval gate"
+
+sec "Ch.9: the control's documented failure mode (laundering)"
+# This asserts the check DOES NOT catch a paraphrase. A control's known limits
+# are part of its spec; if someone strengthens the check, this flags for a
+# deliberate re-baseline rather than silently passing.
+reset; lau=$(SCRIPT=launder APPROVE=1 node harness.ts 2>&1)
+echo "$lau" | grep -q "posted .* chars externally"; chk "KNOWN LIMIT: a paraphrase bypasses the substring check"
 
 sec "Ch.9 + Ch.6: approval is a durable wait"
 reset; park=$(SCRIPT=egress node harness.ts 2>&1)

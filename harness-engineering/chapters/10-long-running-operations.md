@@ -82,12 +82,40 @@ rollout. Read for the interaction model — non-blocking supervision is the prop
 that makes long-horizon agents tolerable to work with, and almost nothing
 implements it.
 
+**6. [SlopCodeBench: Benchmarking How Coding Agents Degrade Over Long-Horizon Iterative Tasks](https://arxiv.org/abs/2603.24755)** · ~35 min
+Read this against the four sources above, because it is the one that disagrees
+with them. They describe patterns that make long runs work; this measures how
+long runs actually go, by chaining agent output across checkpoints and scoring
+quality at every step.
+
+Two findings worth taking seriously. Across 11 models and 20 iterative problems,
+**no agent solved a problem end-to-end.** And degradation resumes at the same
+rate regardless of initial quality — so a better starting point buys you distance,
+not immunity.
+
+That is the empirical floor under this chapter's "three walls." The practitioner
+accounts tell you how to go further; this tells you that you will still stop.
+Design the handoff, because the handoff is not an edge case.
+
+**7. [Measuring AI Ability to Complete Long Tasks](https://arxiv.org/abs/2503.14499)** — METR · ~30 min
+The measurement that gives "long-horizon" a unit. Rather than scoring tasks
+pass/fail, it asks *how long a task, measured in human time, can a model complete
+at a given reliability* — producing a task-completion horizon that has been
+lengthening on a consistent trend. Read it for the framing: **horizon is the
+variable**, and a harness is a device for extending it beyond what the model
+manages unaided. It also gives you the right way to state a capability claim —
+"50% success at four-hour tasks" says something; "it's good at agentic work"
+does not.
+
 ## Going deeper
 
 - **[Long-running AI agents that pause, resume, and never lose context (ADK)](https://developers.googleblog.com/build-long-running-ai-agents-that-pause-resume-and-never-lose-context-with-adk/)** — Google's take; pairs with Chapter 6.
 - **[Long Running Agent Engineering](https://nicolasbustamante.com/blog/long-running-agent-engineering)** — practitioner account; strong on git as the coordination substrate between a local human and a remote agent.
 - **[Awesome Agentic Patterns](https://www.agentic-patterns.com/)** — 97 patterns in 8 categories, each requiring a public reference and use by more than one team. The *UX & Collaboration* category is this chapter's bibliography; the whole catalogue is a good index for the curriculum.
-- **[The Shift to Agentic AI: Evidence from Codex](https://arxiv.org/abs/2606.26959)** — empirical study of what changes in practice when developers work this way.
+- **[The Shift to Agentic AI: Evidence from Codex](https://arxiv.org/abs/2606.26959)** — large-scale usage study. The number relevant here: requests for tasks requiring **8+ hours rose nearly tenfold** in the first half of 2026, and over 10% of users ran three or more concurrent agents weekly. Long-horizon supervision is becoming the common case, not the exotic one. (Read the productivity multiples with care — they are token-output counts from the vendor's own staff, not measures of delivered value.)
+- **[The Horizon Gap: Planning, Memory, Execution, Training, and Evaluation for Long-Horizon LLM Agents](https://arxiv.org/abs/2608.06663)** — the survey covering this chapter's territory academically.
+- **[Wink: Recovering from Misbehaviors in Coding Agents](https://arxiv.org/abs/2602.17037)** — measures *engineer interventions per session* as a first-class metric, which is the right thing to instrument if you are serious about the human interface.
+- **[NL2Repo-Bench](https://arxiv.org/abs/2512.12730)** — long-horizon repository generation; performance rises steadily as the interaction limit goes from 50 to 200 rounds, which is a useful counterweight to the degradation result above.
 
 ## Key concepts
 
@@ -151,3 +179,9 @@ Make your harness survivable by a human who was not watching.
    and how would you find out?
 8. Non-blocking supervision vs. approval gates (Ch.9): when do you want each, and
    what breaks if you use the wrong one?
+9. No agent in SlopCodeBench solved a problem end to end, and degradation resumed
+   at the same rate regardless of starting quality. What does that imply about
+   where to spend effort — on making the agent go further, or on making the stop
+   cheap? Defend your answer against the opposite one.
+10. State a capability claim about your own harness in METR's form: what task
+   length, at what reliability? If you cannot, what would you have to measure?

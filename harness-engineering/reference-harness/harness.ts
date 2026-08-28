@@ -26,6 +26,7 @@
 type Event =
   | { t: "run_started"; goal: string; at: string }
   | { t: "model_called"; step: number; tokens: number }
+  | { t: "routed_statically"; step: number; tool: string; rule: string }
   | { t: "tool_requested"; step: number; tool: string; args: string; key: string }
   | { t: "tool_succeeded"; step: number; key: string; result: string }
   | { t: "tool_failed"; step: number; key: string; error: string }
@@ -58,8 +59,16 @@ type State = {
   retained: string[];
   /** Transcript entries before this index have been compacted away. (Ch.4) */
   compactedThrough: number;
-  /** Has untrusted content entered the context? One leg of the trifecta. (Ch.9) */
-  tainted: boolean;
+  /**
+   * PER-VALUE PROVENANCE, not a run-wide taint bit. (Ch.9)
+   *
+   * Maps a value's label -> whether it is attacker-influenceable. A single
+   * run-wide bit is what the pass-05 version had, and it was unusable: one
+   * `read_file` poisoned the whole run, so a legitimate egress an hour later was
+   * blocked forever with no way back. Real systems need to know WHICH VALUES are
+   * tainted, which is CaMeL's actual contribution rather than its silhouette.
+   */
+  provenance: Map<string, "trusted" | "untrusted">;
   /**
    * Approvals, keyed by LOGICAL identity (`tool:args`) — not by the step-scoped
    * idempotency key. The two ledgers answer different questions:
@@ -138,6 +147,9 @@ function reduce(s: State, e: Event): State {
       return { ...s, goal: e.goal };
     case "model_called":
       return { ...s, step: e.step, tokens: s.tokens + e.tokens };
+    case "routed_statically":
+      // A static edge costs a step but no tokens — that is the whole point. (Ch.3)
+      return { ...s, step: e.step };
     case "tool_requested":
       return {
         ...s,
@@ -150,8 +162,11 @@ function reduce(s: State, e: Event): State {
       return {
         ...s,
         applied,
-        // Anything a read tool returned is untrusted content by default. (Ch.9)
-        tainted: s.tainted || UNTRUSTED_SOURCES.has(toolOf(e.key)),
+        // Label THIS value, rather than poisoning the whole run. (Ch.9)
+        provenance: new Map(s.provenance).set(
+          e.key,
+          UNTRUSTED_SOURCES.has(toolOf(e.key)) ? "untrusted" : "trusted",
+        ),
         pending: s.pending?.key === e.key ? null : s.pending,
         lastError: null,
         transcript: [...s.transcript, `  -> ${e.result}`],
@@ -198,7 +213,7 @@ function reduce(s: State, e: Event): State {
 
 const EMPTY: State = {
   goal: null, step: 0, tokens: 0, applied: new Map(), transcript: [],
-  retained: [], compactedThrough: 0, tainted: false, approvals: new Map(), awaiting: null,
+  retained: [], compactedThrough: 0, provenance: new Map(), approvals: new Map(), awaiting: null,
   recentSignatures: [], pending: null, lastError: null, stopped: null,
 };
 
@@ -265,6 +280,32 @@ function humanApproves(s: State): boolean {
   return readLog().filter((e) => e.t === "approval_granted").length < cap;
 }
 
+
+/**
+ * Does this payload derive from a value labelled untrusted?
+ *
+ * A crude data-flow check: tokenise every untrusted result and see whether the
+ * outbound payload carries any of its distinctive words. Crude on purpose — the
+ * point is that the question is "does THIS VALUE flow out?", not "did we ever
+ * touch anything untrusted".
+ *
+ * Its limits are the argument for CaMeL doing this properly in an interpreter:
+ * this misses laundering (summarise the file, then send the summary) and will
+ * false-positive on coincidental vocabulary. A substring test is not a taint
+ * analysis. It is, however, strictly better than a run-wide bit, and its failure
+ * modes are legible — which is the most you should claim for it.
+ */
+function derivesFromUntrusted(payload: string, s: State): string | null {
+  const hay = payload.toLowerCase();
+  for (const [key, label] of s.provenance) {
+    if (label !== "untrusted") continue;
+    const result = s.applied.get(key) ?? "";
+    const marks = result.toLowerCase().split(/[^a-z0-9.-]+/).filter((w) => w.length >= 6);
+    for (const m of marks) if (hay.includes(m)) return key;
+  }
+  return null;
+}
+
 /** Ch.9: the worst thing one call can do. The unit approval gates are sized in. */
 type BlastRadius = "read" | "write" | "external";
 
@@ -297,14 +338,17 @@ function authorize(call: { tool: string; args: string; key: string }, s: State):
   if (!radius) return { verdict: "deny", reason: `unknown tool '${call.tool}' — deny by default` };
 
   // THE TRIFECTA CHECK (Ch.9, Willison). Private data + untrusted content +
-  // external communication. We cannot remove the first two, so we cut the third:
-  // once untrusted content is in context, egress is closed. Deterministically,
-  // without consulting the model that read the untrusted content.
-  if (radius === "external" && s.tainted) {
-    return {
-      verdict: "deny",
-      reason: "egress blocked: untrusted content is in context (lethal trifecta)",
-    };
+  // external communication. We cannot remove the first two, so we cut the third
+  // — but only for the flows that actually carry untrusted data. Decided here,
+  // deterministically, never by asking the model that read the untrusted text.
+  if (radius === "external") {
+    const src = derivesFromUntrusted(call.args, s);
+    if (src) {
+      return {
+        verdict: "deny",
+        reason: `egress blocked: payload derives from untrusted value ${src} (lethal trifecta)`,
+      };
+    }
   }
 
   // Blast-radius gate: anything that leaves the process needs a human.
@@ -461,6 +505,10 @@ function report(s: State): void {
   }
   console.log(`  ${"TOTAL".padEnd(9)} ${String(v.total).padStart(5)} tok  (${(v.occupancy * 100).toFixed(0)}% of ${WINDOW})`);
   console.log(`  compactions: ${compactions}`);
+  const log = readLog();
+  const modelCalls = log.filter((e) => e.t === "model_called").length;
+  const routed = log.filter((e) => e.t === "routed_statically").length;
+  console.log(`  model calls: ${modelCalls}  statically routed: ${routed}`);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -477,15 +525,31 @@ const script: ModelDecision[] = [
 
 /** SCRIPT=thrash repeats one call forever; SCRIPT=long never finishes. Both exist
  *  so the budget and no-progress stopping conditions can be exercised. (Ch.2) */
-const scripts: Record<string, (step: number) => ModelDecision> = {
+const scripts: Record<string, (step: number, s: State) => ModelDecision> = {
   default: (step) => script[Math.min(step, script.length - 1)]!,
   thrash: () => ({ kind: "call_tool", tool: "read_file", args: "same.md" }),
   long: (step) => ({ kind: "call_tool", tool: "read_file", args: `file-${step}.md` }),
-  // Reads untrusted content, then tries to send it somewhere. The trifecta. (Ch.9)
-  exfil: (step) =>
+  // Reads untrusted content, then tries to send THAT CONTENT out. The trifecta.
+  // The payload must actually carry the data, or the test proves nothing. (Ch.9)
+  exfil: (step, s) =>
     step === 0
       ? { kind: "call_tool", tool: "read_file", args: "attacker-controlled.md" }
-      : { kind: "call_tool", tool: "post_webhook", args: "here is everything I read" },
+      : { kind: "call_tool", tool: "post_webhook", args: `exfiltrating: ${[...s.applied.values()].join(" ")}` },
+  // Launders the untrusted content: reads it, then sends a paraphrase carrying
+  // none of its distinctive tokens. The substring check DOES NOT CATCH THIS, and
+  // verify.sh asserts that it doesn't — a control's documented failure mode is
+  // part of its specification. This is why CaMeL tracks capabilities on values
+  // through an interpreter instead of pattern-matching payloads. (Ch.9)
+  launder: (step) =>
+    step === 0
+      ? { kind: "call_tool", tool: "read_file", args: "attacker-controlled.md" }
+      : { kind: "call_tool", tool: "post_webhook", args: "the doc says to wire funds to acct 4471" },
+  // Reads untrusted content but sends something unrelated. Should be ALLOWED —
+  // this is the case a run-wide taint bit gets wrong. (Ch.9)
+  benign: (step, s) =>
+    step === 0
+      ? { kind: "call_tool", tool: "read_file", args: "attacker-controlled.md" }
+      : { kind: "call_tool", tool: "post_webhook", args: "job finished, no details" },
   // Wants egress but never reads untrusted content — should reach the gate.
   egress: (step) =>
     step < 2
@@ -495,11 +559,45 @@ const scripts: Record<string, (step: number) => ModelDecision> = {
 
 const stubModel: ModelProvider = {
   decide: async (s) => ({
-    decision: (scripts[process.env.SCRIPT ?? "default"] ?? scripts.default!)(s.step),
+    decision: (scripts[process.env.SCRIPT ?? "default"] ?? scripts.default!)(s.step, s),
     // A real provider bills the built context, not the raw transcript. (Ch.4/Ch.7)
     tokens: buildContext(s).total,
   }),
 };
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The router.  A worked SEAM(Ch.3).
+//
+// Ch.3's central question is per-decision: does YOUR CODE decide the next step,
+// or does the MODEL? Every edge you can make static is a model call you do not
+// pay for, cannot get wrong, and can unit-test.
+//
+// This router handles one mechanical case — continuing a sequential scan — and
+// defers everything else to the model. That division is the design: static where
+// the rule is enumerable, dynamic where it is not.
+//
+// Try:  SCRIPT=long node harness.ts              (all dynamic)
+//       ROUTER=on SCRIPT=long node harness.ts    (static where it can be)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function route(s: State): { decision: ModelDecision; rule: string } | null {
+  if (process.env.ROUTER !== "on") return null;
+
+  // Rule: once a sequential scan is under way, the next file is arithmetic.
+  // Asking a model to compute N+1 is paying frontier prices for a successor
+  // function.
+  const last = [...s.applied.keys()].at(-1) ?? "";
+  const m = last.match(/read_file:file-(\d+)\.md$/);
+  if (m) {
+    const next = Number(m[1]) + 1;
+    return {
+      decision: { kind: "call_tool", tool: "read_file", args: `file-${next}.md` },
+      rule: "sequential-scan",
+    };
+  }
+  return null;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The loop.  Fifteen lines of substance; every failure mode lives in them. (Ch.2)
@@ -547,9 +645,19 @@ async function run(model: ModelProvider, budgets: Budgets, goal: string): Promis
       continue;
     }
 
-    const { decision, tokens } = await model.decide(state, tools);
-    append({ t: "model_called", step: state.step + 1, tokens });
-    state = rebuild(readLog());
+    // SEAM(Ch.3), worked: a static edge, taken before the model is consulted.
+    const routed = route(state);
+    let decision: ModelDecision;
+    if (routed) {
+      append({ t: "routed_statically", step: state.step + 1, tool: "read_file", rule: routed.rule });
+      state = rebuild(readLog());
+      decision = routed.decision;
+    } else {
+      const r = await model.decide(state, tools);
+      append({ t: "model_called", step: state.step + 1, tokens: r.tokens });
+      state = rebuild(readLog());
+      decision = r.decision;
+    }
 
     if (decision.kind === "done") {
       append({ t: "claimed_done", step: state.step, summary: decision.summary });

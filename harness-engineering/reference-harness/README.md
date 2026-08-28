@@ -5,7 +5,7 @@ from an empty file twelve times.
 
 ```sh
 node harness.ts          # run it
-./verify.sh              # 23 assertions, checked against a committed baseline
+./verify.sh              # 29 assertions, checked against a committed baseline
 ./verify.sh --baseline   # re-baseline deliberately
 ./verify.sh --json       # machine-readable results
 CRASH_AT=3 node harness.ts && node harness.ts   # kill it, watch it resume
@@ -24,7 +24,8 @@ spent any money.
 |---|---|---|
 | The loop, four stopping conditions, error compaction | Ch.2 | **implemented** |
 | Stateless reducer, event log, crash recovery, idempotency | Ch.6 | **implemented** |
-| Context policy — compaction, notes, clearing | Ch.4 | **implemented, as the worked seam** |
+| Static routing vs. dynamic edges | Ch.3 | **implemented, worked seam** |
+| Context policy — compaction, notes, clearing | Ch.4 | **implemented, worked seam** |
 | Real tool schemas and descriptions | Ch.5 | `SEAM(Ch.5)` |
 | Cost accounting and cache layout | Ch.7 | `SEAM(Ch.7)` |
 | Verification, traces, evals | Ch.8 | `SEAM(Ch.8)` |
@@ -100,6 +101,36 @@ This is not an argument that compaction is wrong. It is an argument for
 assuming — which is exactly what Ch.4's exercise asks you to do, and why the
 numbers above come from `verify.sh` rather than from prose.
 
+## The router, and an honest caveat about its numbers
+
+`SEAM(Ch.3)` asks the per-decision question: does your code decide the next step,
+or the model? `route()` handles one mechanical case — continuing a sequential
+scan, where the next file is arithmetic — and defers everything else.
+
+```sh
+SCRIPT=long node harness.ts             # every edge dynamic
+ROUTER=on SCRIPT=long node harness.ts   # static where the rule is enumerable
+```
+
+| | Model calls | Tokens |
+|---|---|---|
+| all dynamic | 20 | 3,935 |
+| with the router | **1** | **92** |
+
+Identical work — `verify.sh` asserts the two runs touch the same files — for 5% of
+the model calls.
+
+**Now the caveat, because that number is not honest on its own.** A sequential
+scan is the *most* routable thing an agent does: the rule is total, arithmetic,
+and known in advance. Real workloads have far fewer enumerable edges, and a
+97% saving is not what you should expect. Quoting it without this paragraph would
+be exactly the vendor-benchmark move Ch.7 tells you to distrust.
+
+What transfers is the *method*, not the multiple: for each edge, ask what you
+would have to enumerate to make it static. Where the answer is short, write the
+code. Where it isn't, pay the model. Most harnesses have never asked the question
+about any edge.
+
 ## The policy engine, and what "approved" turns out to mean
 
 `SEAM(Ch.9)` is worked too. `authorize()` is a deterministic function outside the
@@ -119,10 +150,42 @@ SCRIPT=egress APPROVE=1 node harness.ts    # a later process grants it
 ```
 
 The trifecta check is the interesting one: we cannot remove private-data access
-or untrusted content, so the policy cuts the third leg — **once untrusted content
-is in context, egress closes**, decided deterministically rather than by the
-tainted model. `POLICY_OFF=1` runs the identical script and the data leaves, which
-is how `verify.sh` proves the control is load-bearing rather than decorative.
+or untrusted content, so the policy cuts the third leg — but only for the flows
+that actually carry untrusted data. `POLICY_OFF=1` runs the identical script and
+the data leaves, which is how `verify.sh` proves the control is load-bearing
+rather than decorative.
+
+### Provenance is per-value, and the first version wasn't
+
+Pass 05 used a single run-wide taint bit. It was unusable: one `read_file`
+poisoned the entire run, so a legitimate egress an hour later was blocked forever
+with no way back. `SCRIPT=benign` is that case — read untrusted content, then send
+something unrelated — and it now proceeds to the approval gate instead of being
+denied.
+
+Provenance is therefore labelled **per value**, and the policy asks *does this
+payload derive from an untrusted value?* rather than *did we ever touch
+anything untrusted?* That distinction is CaMeL's actual contribution rather than
+its silhouette.
+
+### The control's documented failure mode
+
+`derivesFromUntrusted()` is a substring test over distinctive tokens. It does not
+survive laundering:
+
+```sh
+SCRIPT=launder APPROVE=1 node harness.ts   # paraphrase the file, send the paraphrase
+```
+
+That gets through. **`verify.sh` asserts that it gets through** — a control's known
+limits are part of its specification, and an assertion that pins them means
+someone who later strengthens the check has to re-baseline deliberately rather
+than silently.
+
+This is precisely why CaMeL tracks capabilities on values through an interpreter
+instead of pattern-matching payloads. A substring test is not a taint analysis.
+It is strictly better than a run-wide bit and strictly worse than the real thing,
+and the code says so.
 
 ### What building it taught: an approval is a budget, not a predicate
 
@@ -173,7 +236,7 @@ resume" is verification theater. It has to check *what the work produced*.
 
 ```
 harness.ts     the skeleton — types, event log, reducer, loop, stub model
-verify.sh      23 assertions, each corresponding to a claim made in a chapter
+verify.sh      29 assertions, each corresponding to a claim made in a chapter
 baseline.json  committed expected results; verify.sh fails on regression
 results.json   written every run (gitignored)
 SPEC.md        the contracts, language-neutral, for the Rust track and your own port

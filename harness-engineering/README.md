@@ -32,34 +32,41 @@ Each chapter has the same shape:
 | **Build this** | A concrete exercise that forces the idea into your hands |
 | **Check yourself** | Questions you should be able to answer without notes |
 
-### About the time estimates — checked, and not great
+### About the time estimates — measured, then re-measured
 
-Each core reading carries a `~N min`. Pass 05 measured these against actual word
-counts for a sample of nine core sources (at 200 wpm, a conventional rate for
-technical prose):
+Each core reading carries a `~N min`. Pass 05 measured these and concluded they
+were random noise. **Pass 06 found that measurement was wrong** and the conclusion
+with it: the word counts included navigation and footer boilerplate, which
+inflated some pages far more than others and manufactured the scatter.
 
-| Source | Estimated | Measured |
-|---|---|---|
-| Writing effective tools | 35 min | 17 min |
-| Harness design for long-running apps | 40 min | 27 min |
-| The lethal trifecta | 10 min | 10 min |
-| The art of loop engineering | 20 min | 29 min |
-| Anatomy of an agent harness | 20 min | 34 min |
-| Building LangGraph | 30 min | 43 min |
-| Harness engineering for self-improvement | 45 min | 72 min |
+Re-measured against body text only (preferring `<article>`/`<main>`, stripping
+script/style/nav/header/footer):
 
-**They are unreliable at the individual level** — one is 2× too high, several are
-~40% too low, one is exact. There is no systematic bias to correct for, just
-noise. Two more sources could not be measured at all (JavaScript-rendered pages).
+| Source | Estimate | Body words | Implied rate |
+|---|---|---|---|
+| Building effective agents | 25 min | 2,791 | 112 wpm |
+| Effective context engineering | 35 min | 3,178 | 91 wpm |
+| Writing effective tools | 35 min | 3,335 | 95 wpm |
+| The art of loop engineering | 20 min | 1,366 | 68 wpm |
+| Harness engineering for self-improvement | 45 min | 6,769 | 150 wpm |
+| Anatomy of an agent harness | 20 min | 2,452 | 123 wpm |
+| Harness design for long-running apps | 40 min | 5,309 | 133 wpm |
+| Building LangGraph | 30 min | 4,230 | 141 wpm |
+| The lethal trifecta | 10 min | 1,618 | 162 wpm |
 
-Treat them as a rough sense of *relative* weight — "this one is short, that one is
-a sitting" — and not as a schedule. The 200 wpm rate is itself generous for dense
-papers, and the measured counts include page boilerplate, so both columns have
-their own error. Recalibrating them properly is on the pass-06 list.
+The estimates are **internally consistent, implying ~120 wpm on average** — a
+defensible rate for careful reading of technical prose, as against the ~200 wpm
+usually quoted for skimming. So they are not arbitrary.
 
-Read in order for chapters 1–10; they build. Chapters 11 and 12 (TypeScript, Rust)
-are parallel implementation tracks — read whichever language you'll actually
-write in, or both to see how the same primitives land differently.
+They are still loose: the implied rate ranges from 68 to 162 wpm, so any single
+estimate carries roughly ±35%. The outlier at the slow end (loop engineering) is
+a short piece whose value is a taxonomy worth pausing over, which is arguably
+correct rather than an error.
+
+Use them as relative weight with a third of slack, not as a schedule. And note
+what happened here: the first measurement was confidently wrong in a way that
+looked like data. Measuring the wrong thing carefully still gives you a wrong
+answer.
 
 ## Reading ladder
 

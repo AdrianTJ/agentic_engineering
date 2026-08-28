@@ -1,6 +1,6 @@
 # Sources
 
-The full bibliography, 109 entries. Each is cited from at least one
+The full bibliography, 114 entries. Each is cited from at least one
 chapter; several are cited from three or more, which is a reasonable signal of
 which pieces are load-bearing.
 
@@ -15,7 +15,7 @@ validates that every URL linked from a chapter is registered here.
 | `ok` | Returned 2xx to an automated fetch at last check |
 | `bot-blocked-403` | Live, but rejects automated fetchers (Cloudflare or similar) |
 | `egress-403` | Blocked by this environment's egress policy, not by the host |
-| `slow-host` | Live, but intermittently exceeds the checker's timeout |
+| `webfetch-only` | Live and read, but unreachable to `curl` from this environment |
 | `…-verified-via-webfetch` | Blocked to `curl`, but content confirmed through a different fetch path |
 | `unchecked` | Registered and link-checked but not yet read end to end; only ever used for *Going deeper* entries |
 
@@ -216,7 +216,7 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S062` [Deep Dive: 12 Reusable Agentic Harness Design Patterns from Claude Code](https://www.epsilla.com/blogs/2026-04-18-deep-dive-12-reusable-agentic-harness-design-patte) — Epsilla · `unchecked`
 - `S068` [Coding Assistants Threaten the Software Supply Chain](https://martinfowler.com/articles/exploring-gen-ai/software-supply-chain-attack-surface.html) — Fowler / Boeckeler
 - `S108` [The Balkanization of Execution-Security Research for AI Coding Agents](https://arxiv.org/abs/2607.05743) — arXiv
-- `S109` [Inside the lethal trifecta: blast radius reduction](https://www.sophos.com/en-us/blog/inside-the-lethal-trifecta-blast-radius-reduction-in-ai-agent-deployments) — Sophos · `slow-host`
+- `S109` [Inside the lethal trifecta: blast radius reduction](https://www.sophos.com/en-us/blog/inside-the-lethal-trifecta-blast-radius-reduction-in-ai-agent-deployments) — Sophos · `webfetch-only`
 
 ### Chapter 10 — Long-running operations & the human interface
 
@@ -226,6 +226,8 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S082` [Long-running Agents](https://addyosmani.com/blog/long-running-agents/) — Addy Osmani
 - `S083` [Agent Handoff Patterns: human–agent interface guide](https://www.augmentcode.com/guides/agent-handoff-patterns-human-agent-interface) — Augment Code
 - `S084` [Interaction as Intelligence II: Asynchronous Human-Agent Rollout](https://arxiv.org/abs/2510.27630) — arXiv
+- `S110` [SlopCodeBench: How Coding Agents Degrade Over Long-Horizon Iterative Tasks](https://arxiv.org/abs/2603.24755) — arXiv
+- `S111` [Measuring AI Ability to Complete Long Tasks](https://arxiv.org/abs/2503.14499) — METR
 
 **Going deeper**
 
@@ -233,6 +235,9 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S085` [Long-running AI agents that pause, resume, never lose context (ADK)](https://developers.googleblog.com/build-long-running-ai-agents-that-pause-resume-and-never-lose-context-with-adk/) — Google
 - `S086` [Long Running Agent Engineering](https://nicolasbustamante.com/blog/long-running-agent-engineering) — Nicolas Bustamante
 - `S087` [The Shift to Agentic AI: Evidence from Codex](https://arxiv.org/abs/2606.26959) — arXiv · `unchecked`
+- `S112` [The Horizon Gap: Planning, Memory, Execution, Training, Evaluation](https://arxiv.org/abs/2608.06663) — arXiv
+- `S113` [Wink: Recovering from Misbehaviors in Coding Agents](https://arxiv.org/abs/2602.17037) — arXiv
+- `S114` [NL2Repo-Bench: Long-Horizon Repository Generation Evaluation](https://arxiv.org/abs/2512.12730) — arXiv
 
 ### Chapter 11 — TypeScript harness engineering
 

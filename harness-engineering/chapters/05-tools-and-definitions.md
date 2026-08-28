@@ -49,7 +49,7 @@ coordinate clients, supervise lifecycles, enforce consent policy, and route mode
 calls; **Clients** manage stateful sessions; **Servers** provide tools and data
 as independent processes. Note also **Roots** — client-declared directory/URI
 boundaries a server may access — and note hard that Roots is a *coordination*
-mechanism, not a security control. Real isolation is OS-level (Ch.8).
+mechanism, not a security control. Real isolation is OS-level (Ch.9).
 
 **3. [12-Factor Agents](https://github.com/humanlayer/12-factor-agents)** — factors #1, #4, #7 · ~20 min
 - **#1 Natural language to tool calls** — the primitive operation, stated plainly.
@@ -65,10 +65,10 @@ paying for all of it every turn.
 
 ## Going deeper
 
-- **[AI SDK: tools and tool calling](https://github.com/vercel/ai/blob/main/content/docs/03-ai-sdk-core/15-tools-and-tool-calling.mdx)** — schema-first tool definition in practice; picked up properly in Ch.9.
-- **[rig-core `Tool` trait](https://docs.rs/rig-core)** — the same contract with static types; Ch.10.
+- **[AI SDK: tools and tool calling](https://github.com/vercel/ai/blob/main/content/docs/03-ai-sdk-core/15-tools-and-tool-calling.mdx)** — schema-first tool definition in practice; picked up properly in Ch.11.
+- **[rig-core `Tool` trait](https://docs.rs/rig-core)** — the same contract with static types; Ch.12.
 - **[Agent Skills specification](https://agentskills.io/specification)** — the format this very repository is built on. Read `.ruler/skills/general/write-skill/SKILL.md` here for the craft, and note that a skill's `description` is the *entire* basis on which an agent decides to load it — exactly the description-engineering problem, one level up.
-- **[Understanding MCP Security](https://www.wiz.io/academy/ai-security/model-context-protocol-security)** — read after Ch.8.
+- **[Understanding MCP Security](https://www.wiz.io/academy/ai-security/model-context-protocol-security)** — read after Ch.9.
 
 ## Key concepts
 

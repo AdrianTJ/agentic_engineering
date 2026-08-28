@@ -21,6 +21,17 @@ something has to be dropped.
 So the discipline, stated as sharply as anyone has: **find the smallest set of
 high-signal tokens that maximizes the likelihood of the outcome you want.**
 
+Two warnings before you commit to the techniques below, because this chapter is
+the one most often applied naively:
+
+- Every technique here **rewrites the context, and rewriting invalidates the
+  prompt cache.** Compaction can save tokens and cost you more money. Ch.7.
+- Compaction is not the only answer. Teams running genuinely long tasks often
+  prefer a **full context reset plus a structured handoff artifact** — a clean
+  slate over a lossy continuous one. Ch.10.
+
+Read this chapter, then read those two, then decide.
+
 ## Core reading
 
 **1. [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)** — Anthropic · ~35 min

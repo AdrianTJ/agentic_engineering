@@ -1,4 +1,4 @@
-# Chapter 8 — Security, sandboxing & permissions
+# Chapter 9 — Security, sandboxing & permissions
 
 > **Core question:** Your agent runs for nine hours, unattended, with shell access,
 > reading content it did not write. What is the blast radius?
@@ -65,7 +65,17 @@ The systematic version: a threat taxonomy and a controls mapping. Read for
 completeness of the risk enumeration; you will find categories the practitioner
 guides skip.
 
-**5. [Towards Secure Agent Skills: Architecture, Threat Taxonomy, and Security Analysis](https://arxiv.org/abs/2604.02837)** · ~30 min
+**5. [The lethal trifecta for AI agents](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/)** — Simon Willison · ~10 min
+Short, and the origin of the term used throughout this chapter. Private data
+access, exposure to untrusted content, and the ability to communicate externally.
+The recommendation is deliberately blunt and worth taking seriously before you
+reach for a clever mitigation: **avoid combining all three.** Willison's argument
+for that severity is that guardrails and detection cannot be relied on — a 95%
+block rate is a failure rate in security — and that no vendor can protect a user
+who assembles the trifecta from tools bought separately. Read it as the strongest
+available case that this is an architecture problem, not a filtering problem.
+
+**6. [Towards Secure Agent Skills: Architecture, Threat Taxonomy, and Security Analysis](https://arxiv.org/abs/2604.02837)** · ~30 min
 Skills are instructions loaded at runtime from files, often from third parties.
 That is a supply chain, with all the properties of one. Pair with Fowler's
 [*Coding Assistants Threaten the Software Supply Chain*](https://martinfowler.com/articles/exploring-gen-ai/software-supply-chain-attack-surface.html) — the same argument about generated code and its dependencies.
@@ -81,7 +91,7 @@ That is a supply chain, with all the properties of one. Pair with Fowler's
 
 - **Blast radius** — the worst outcome of a single action. The right unit for sizing approval gates: gate on radius, not on tool identity.
 - **Prompt injection** — instructions in data. Structural, not patchable. Assume it and contain it.
-- **Lethal trifecta** — private data access + untrusted content + external communication. Any two is usually survivable; all three is exfiltration waiting to happen. Audit every agent against it.
+- **Lethal trifecta** — private data access + untrusted content + external communication ([Simon Willison, 2025](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/)). Any two is usually survivable; all three is exfiltration waiting to happen. Audit every agent against it.
 - **Confused deputy / identity confusion** — the agent acting with its own privileges on behalf of a caller who lacks them.
 - **Token exchange at trust boundaries** — never forward an upstream caller's token downstream; exchange it for one scoped to the next hop. The single highest-value control against the confused deputy.
 - **Least privilege, per-task** — credentials scoped to the task at hand, not to the agent forever.
@@ -94,7 +104,7 @@ That is a supply chain, with all the properties of one. Pair with Fowler's
 
 ## Build this
 
-Threat-model the harness you have built across Chapters 2–7, then fix the worst thing.
+Threat-model the harness you have built across Chapters 2–8, then fix the worst thing.
 
 1. **Enumerate.** List every capability: shell, filesystem paths, network destinations,
    credentials, external side effects. For each, write the worst single action.

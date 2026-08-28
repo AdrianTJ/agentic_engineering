@@ -20,8 +20,8 @@ guardrails keep it on track."* Stopping is listed first for a reason.
 The second insight of this chapter is that there is never one loop. LangChain's
 framing — a stack of four nested loops — is the cleanest statement of it, and it
 maps onto the rest of the curriculum: the inner loop is this chapter, the
-verification loop is Chapter 7, the event-driven loop is Chapter 6, and the
-hill-climbing loop is where Chapter 7 feeds back into Chapter 1.
+verification loop is Chapter 8, the event-driven loop is Chapter 6, and the
+hill-climbing loop is where Chapter 8 feeds back into Chapter 1.
 
 ## Core reading
 
@@ -80,7 +80,7 @@ never met.
 
 ## Build this
 
-Write the loop yourself, in whatever language you'll use for Ch.9 or Ch.10. No
+Write the loop yourself, in whatever language you'll use for Ch.11 or Ch.12. No
 framework. Requirements:
 
 1. Tool dispatch from the model's structured output.
@@ -91,7 +91,7 @@ framework. Requirements:
 
 Then deliberately break it: give it a tool that always fails, and a task it cannot
 complete. A loop you have not watched fail is a loop you do not understand. Keep
-the JSONL — Chapter 7 turns it into a trace.
+the JSONL — Chapter 8 turns it into a trace.
 
 ## Check yourself
 

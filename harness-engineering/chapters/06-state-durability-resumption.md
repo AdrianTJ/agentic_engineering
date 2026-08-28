@@ -44,13 +44,27 @@ transitions, and the explicit machine drifts from the real one. Relevant because
 Ch.3's graph *is* a hand-rolled state machine, and this is the strongest available
 critique of it.
 
-**4. [LangGraph State: Checkpoints, Threads, and Recovery](https://eastondev.com/blog/en/posts/ai/20260424-langgraph-agent-architecture/)** · ~25 min
+**4. [Building LangGraph: designing an agent runtime from first principles](https://www.langchain.com/blog/building-langgraph)** — LangChain · ~15 min, targeted re-read
+You read this in Ch.3 for the control-flow argument. Return for its durability
+section, which is the direct rebuttal to #2 and #3: durable execution engines
+predate LLM agents and therefore lack streaming, add latency between steps, and
+degrade as agent histories grow. Its own answer is checkpointing at discrete step
+boundaries, with state serialized so a run can resume "on any machine, an
+arbitrary amount of time after" it was saved.
+
+The detail worth stealing regardless of framework: **a pause for a human is the
+same primitive as a pause for a clock.** Checkpointing means an interrupt is a real
+interruption — nothing is held running while it waits — so approval "scales neither
+in time nor in volume." That is the property that makes Ch.10's human interface
+affordable, and most hand-rolled harnesses block a process instead.
+
+**5. [LangGraph State: Checkpoints, Threads, and Recovery](https://eastondev.com/blog/en/posts/ai/20260424-langgraph-agent-architecture/)** · ~25 min
 Durability inside a graph framework: a checkpointer (SQLite, Postgres) makes state
 persistent, so agents can crash, resume, and **rewind** — re-run from an earlier
 state with a change. Rewind is the underrated capability: it turns debugging a
 long-horizon agent from archaeology into an experiment.
 
-**5. [Agent Workflows Are Rediscovering Durable Execution](https://medium.com/beyond-localhost/agent-workflows-are-rediscovering-durable-execution-be110661ed8c)** · ~20 min
+**6. [Agent Workflows Are Rediscovering Durable Execution](https://medium.com/beyond-localhost/agent-workflows-are-rediscovering-durable-execution-be110661ed8c)** · ~20 min
 The synthesis, and the chapter's thesis in article form: the agent community
 independently reinvented durable execution. Useful for placing the vocabulary of
 Ch.2/Ch.3 onto twenty years of prior art.
@@ -101,3 +115,4 @@ Step 4 will take longer than the rest combined. That is the lesson.
 5. What does "unify execution state and business state" prevent? Describe the drift concretely.
 6. When is a full durable-execution engine over-engineering, and what's the right lighter answer?
 7. HITL approval that may take three days: what must be true of your harness for that to be ordinary rather than exceptional?
+8. Temporal and LangGraph each argue the other's approach is wrong for agents. State each case in one sentence, then say which is right *for your workload* and what fact would change your answer.

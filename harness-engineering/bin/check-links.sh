@@ -22,8 +22,14 @@ while IFS=$'\t' read -r id chapter tier title author url note; do
   [ "$id" = "id" ] && continue
   [ -z "${url:-}" ] && continue
   if [ -n "$filter" ] && [[ "$chapter" != *"$filter"* ]]; then continue; fi
-  code=$(curl -sS -o /dev/null -w '%{http_code}' -L --max-time 30 \
-           -A 'Mozilla/5.0 (curriculum-link-check)' "$url" 2>/dev/null || echo 000)
+  # Some hosts are slow enough to time out intermittently; a single slow response
+  # is not a dead link, so retry once before believing a connection-level failure.
+  code=""
+  for attempt in 1 2; do
+    code=$(curl -sS -o /dev/null -w '%{http_code}' -L --max-time 45 \
+             -A 'Mozilla/5.0 (curriculum-link-check)' "$url" 2>/dev/null || echo 000)
+    case "$code" in 000*|"") sleep 2 ;; *) break ;; esac
+  done
   case "$code" in
     2*|3*) printf '%-6s %-6s %s\n' "OK" "$id" "$url"; ok=$((ok+1)) ;;
     401|403|405|407|429)

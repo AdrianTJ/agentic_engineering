@@ -21,7 +21,7 @@ orchestrated through code paths you wrote. The line is a dial, not a switch, and
 is set per decision rather than per system. Ch.1, Ch.3
 
 **Long-horizon task** — work exceeding one context window, one process lifetime, or
-one human sitting. The three exceedances map to Ch.4, Ch.6, and Ch.8 respectively.
+one human sitting. The three exceedances map to Ch.4, Ch.6, and Ch.9 respectively.
 
 **Model–harness–environment system** — the correct unit of analysis for
 reliability. A benchmark varying only the model measures one third of it. Ch.1
@@ -44,7 +44,7 @@ calls, oscillating edits, a plateaued verification score. Ch.2
 the next iteration. Never the raw dump, never nothing. Ch.2
 
 **Loop stack** — agent loop → verification loop → event-driven loop → hill-climbing
-loop. Outer loops are slower, costlier, and permitted to modify inner ones. Ch.2, Ch.7
+loop. Outer loops are slower, costlier, and permitted to modify inner ones. Ch.2, Ch.8
 
 **Headless runtime** — the loop decoupled from any UI, so cron, webhook, and human
 terminal are all just callers. Ch.2
@@ -119,7 +119,7 @@ data. **Host** coordinates clients, supervises lifecycles, and enforces consent;
 **Client** manages sessions; **Server** provides tools as an independent process. Ch.5
 
 **Roots** — client-declared directory/URI boundaries a server may access. A
-*coordination* mechanism, **not** a security control. Ch.5, Ch.8
+*coordination* mechanism, **not** a security control. Ch.5, Ch.9
 
 **Skill** — instructions loaded on demand. **Progressive disclosure**: a short
 always-loaded description, detail pulled in only when relevant. Ch.5
@@ -152,73 +152,131 @@ knows. Unify them or they drift unrecoverably. Ch.6
 ## Verification
 
 **Verification vs. evaluation** — in-loop, changes behavior now; offline, changes
-the harness later. Ch.7
+the harness later. Ch.8
 
 **Deterministic verification** — compiler, tests, linters, schema validation.
-Cheapest, most legible, always preferred where available. Ch.7
+Cheapest, most legible, always preferred where available. Ch.8
 
 **LLM-as-a-judge** — for what cannot be checked mechanically. Needs its own eval,
-and drifts. Never the first choice. Ch.7
+and drifts. Never the first choice. Ch.8
 
 **Rubric** — the explicit criteria a verification loop checks. Writing it is most
-of the work. Ch.7
+of the work. Ch.8
 
 **Trace / span** — the execution tree; spans nest and carry inputs, outputs,
-latency, cost. Ch.7
+latency, cost. Ch.8
 
-**OTel GenAI semantic conventions** — the portability standard for agent traces. Ch.7
+**OTel GenAI semantic conventions** — the portability standard for agent traces. Ch.8
 
-**Online vs. offline eval** — live scoring on production traces vs. a fixed dataset. Ch.7
+**Online vs. offline eval** — live scoring on production traces vs. a fixed dataset. Ch.8
 
 **Regression suite** — the tasks that must keep passing; what makes harness changes
-safe to ship. Ch.7
+safe to ship. Ch.8
 
-**Hill climbing** — reading traces to change the harness, systematically. Ch.7
+**Hill climbing** — reading traces to change the harness, systematically. Ch.8
 
 **Verification theater** — checks producing a green signal without evidence of
-correctness. The dominant failure mode of enthusiastic eval adoption. Ch.7
+correctness. The dominant failure mode of enthusiastic eval adoption. Ch.8
+
+## Cost and caching
+
+**Prompt cache** — a discounted rate for a prefix the provider has already
+processed. Requires an exact, stable prefix. Ch.7
+
+**Cache breakpoint** — the boundary between the cached prefix and the volatile
+remainder. Where you put it is the central cost decision. Ch.7
+
+**Prefix stability** — the property every cache depends on, and the one every
+Ch.4 technique threatens. Ch.7
+
+**The compaction/cache tension** — compaction saves tokens now and forfeits the
+discount on everything after it. Sometimes correct, never free, rarely measured. Ch.7
+
+**Cache-first layout** — static content first, dynamic content last; the context
+layout falls out of the cache rather than the other way around. Ch.7
+
+**Model routing** — cheapest capable model per step. Largest single cost lever,
+with real quality risk. Ch.7
+
+**Soft and hard budget** — alert threshold and hard stop. Ch.2's budget stopping
+condition denominated in money. Ch.7
+
+**Cost per successful task** — the only cost metric that matters; cost per token
+rewards an agent that fails cheaply. Ch.7
+
+## Long-running operations and the human interface
+
+**Context anxiety** — losing coherence as the window fills and wrapping up
+prematurely. A stopping-condition bug, not a capability limit. Ch.10
+
+**Context reset** — clear the window entirely and restart from a handoff
+artifact, rather than compacting in place. The live disagreement with Ch.4. Ch.10
+
+**Handoff artifact** — the structured document carrying state across a reset, a
+crash, or a human absence. If it isn't written down, it doesn't survive. Ch.10
+
+**Plan file / progress file** — externalized intent and status; the minimum
+viable handoff artifact. Ch.10
+
+**Generator/evaluator separation** — different agents produce and judge, because
+self-grading fails in a predictable direction. Ch.10
+
+**Sprint contract** — agreeing what "done" means before the work, so fail criteria
+are enforceable rather than negotiable afterward. Ch.10
+
+**Hard fail threshold** — a gate, not a score. Ch.10
+
+**Refusal to stop early** — an explicit "really done?" check in a fresh context. Ch.10
+
+**Non-blocking supervision** — steering without interrupting the rollout. Ch.10
+
+**Escalation logic** — what the agent must ask about versus decide alone; decides
+whether the human is a bottleneck or a backstop. Ch.10
+
+**Harness complexity as a function of model capability** — scaffolding a better
+model makes unnecessary. Re-litigate it; don't keep it out of sentiment. Ch.10
 
 ## Security
 
 **Blast radius** — the worst outcome of a single action. The right unit for sizing
-approval gates. Ch.8
+approval gates. Ch.9
 
 **Prompt injection** — instructions arriving as data. Structural, not patchable;
-contain it architecturally. Ch.8
+contain it architecturally. Ch.9
 
 **Lethal trifecta** — private data access + untrusted content + external
-communication. All three is exfiltration waiting to happen. Ch.8
+communication. All three is exfiltration waiting to happen. Ch.9
 
 **Confused deputy** — the agent acting with its own privileges for a caller who
-lacks them. Ch.8
+lacks them. Ch.9
 
 **Token exchange at trust boundaries** — never forward an upstream token
-downstream; exchange for one scoped to the next hop. Ch.8
+downstream; exchange for one scoped to the next hop. Ch.9
 
-**Allow-list over deny-list** — for network egress and commands alike. Ch.8
+**Allow-list over deny-list** — for network egress and commands alike. Ch.9
 
 **Gateway / broker** — an interception point for inspection, redaction, and
-response sanitization. The only control that addresses injection at ingestion. Ch.8
+response sanitization. The only control that addresses injection at ingestion. Ch.9
 
 **Human-in-the-loop gate** — approval sized to blast radius, implemented as a tool
-call resolving to a durable wait. Ch.6, Ch.8
+call resolving to a durable wait. Ch.6, Ch.9
 
 ## Implementation
 
 **Schema-as-three-things** — one Zod schema serves as runtime validator, static
-type, and the JSON Schema the model sees. Ch.9
+type, and the JSON Schema the model sees. Ch.11
 
 **Object-root constraint** — providers require `type: "object"` at a tool schema's
-root; unions must be wrapped. Ch.9
+root; unions must be wrapped. Ch.11
 
 **Parse, don't cast** — every model output is untrusted input at an erased-type
-boundary. Ch.9
+boundary. Ch.11
 
 **Typestate** — state encoded in the type, so illegal transitions fail to compile.
-Awkward for dynamic state. Ch.10
+Awkward for dynamic state. Ch.12
 
 **Schema derivation** — generate the model-facing JSON Schema from the
-implementation's types so contract and code cannot drift. Ch.10
+implementation's types so contract and code cannot drift. Ch.12
 
 **The right seam** — Rust for MCP servers, sandboxes, gateways, brokers;
-faster-iterating languages for prompts, tools, and evals. Ch.10
+faster-iterating languages for prompts, tools, and evals. Ch.12

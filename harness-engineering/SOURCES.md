@@ -1,6 +1,6 @@
 # Sources
 
-The full bibliography, 68 entries. Each is cited from at least one
+The full bibliography, 88 entries. Each is cited from at least one
 chapter; several are cited from three or more, which is a reasonable signal of
 which pieces are load-bearing.
 
@@ -16,6 +16,7 @@ validates that every URL linked from a chapter is registered here.
 | `bot-blocked-403` | Live, but rejects automated fetchers (Cloudflare or similar) |
 | `egress-403` | Blocked by this environment's egress policy, not by the host |
 | `…-verified-via-webfetch` | Blocked to `curl`, but content confirmed through a different fetch path |
+| `unchecked` | Registered but not yet fetched; only ever used for *Going deeper* entries |
 
 A `403` is not a dead link. Every `403` entry below was either confirmed through
 an alternate fetch path or corroborated by multiple independent citing sources;
@@ -27,11 +28,11 @@ Cited from three or more chapters. If you read nothing else, read these.
 
 | Source | Chapters |
 |---|---|
-| [12-Factor Agents](https://github.com/humanlayer/12-factor-agents) — Dex Horthy / HumanLayer | 02,03,05,06,08 |
-| [Harness Engineering for Self-Improvement](https://lilianweng.github.io/posts/2026-07-04-harness/) — Lilian Weng | 01,02,04,07 |
+| [12-Factor Agents](https://github.com/humanlayer/12-factor-agents) — Dex Horthy / HumanLayer | 02,03,05,06,09 |
+| [Harness Engineering for Self-Improvement](https://lilianweng.github.io/posts/2026-07-04-harness/) — Lilian Weng | 01,02,04,08 |
 | [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents) — Anthropic | 01,02,03 |
-| [The Anatomy of an Agent Harness](https://www.langchain.com/blog/the-anatomy-of-an-agent-harness) — LangChain | 01,04,08 |
-| [Exploring Gen AI (memo series)](https://martinfowler.com/articles/exploring-gen-ai.html) — Martin Fowler / Birgitta Boeckeler | 01,07,08 |
+| [The Anatomy of an Agent Harness](https://www.langchain.com/blog/the-anatomy-of-an-agent-harness) — LangChain | 01,04,09 |
+| [Exploring Gen AI (memo series)](https://martinfowler.com/articles/exploring-gen-ai.html) — Martin Fowler / Birgitta Boeckeler | 01,08,09 |
 
 ## By chapter
 
@@ -45,6 +46,7 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S006` [Harness Engineering for Self-Improvement](https://lilianweng.github.io/posts/2026-07-04-harness/) — Lilian Weng
 - `S007` [The Anatomy of an Agent Harness](https://www.langchain.com/blog/the-anatomy-of-an-agent-harness) — LangChain
 - `S010` [Harness, Scaffold, and the AI Agent Terms Worth Getting Right](https://huggingface.co/blog/agent-glossary) — Hugging Face
+- `S069` [InfoQ: OpenAI Introduces Harness Engineering](https://www.infoq.com/news/2026/02/openai-harness-engineering-codex/) — InfoQ
 
 **Going deeper**
 
@@ -55,6 +57,8 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S064` [Harness Engineering — first thoughts](https://martinfowler.com/articles/exploring-gen-ai/harness-engineering-memo.html) — Fowler / Boeckeler
 - `S065` [Context Engineering for Coding Agents](https://martinfowler.com/articles/exploring-gen-ai/context-engineering-coding-agents.html) — Fowler / Boeckeler
 - `S066` [Humans and Agents in Software Engineering Loops](https://martinfowler.com/articles/exploring-gen-ai/humans-and-agents.html) — Fowler / Boeckeler
+- `S070` [Unlocking the Codex harness: how we built the App Server](https://openai.com/index/unlocking-the-codex-harness/) — OpenAI · `bot-blocked-403`
+- `S071` [Awesome Agentic Patterns](https://www.agentic-patterns.com/) — nibzard
 
 ### Chapter 02 — The loop
 
@@ -80,6 +84,7 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S013` [Deep Agents overview](https://docs.langchain.com/oss/python/deepagents/overview) — LangChain
 - `S026` [Temporal: Beyond State Machines for Reliable Distributed Applications](https://temporal.io/blog/temporal-replaces-state-machines-for-distributed-applications) — Temporal
 - `S027` [LangGraph State: Checkpoints, Threads, and Recovery](https://eastondev.com/blog/en/posts/ai/20260424-langgraph-agent-architecture/) — Easton
+- `S072` [Building LangGraph: designing an agent runtime from first principles](https://www.langchain.com/blog/building-langgraph) — LangChain
 
 **Going deeper**
 
@@ -128,13 +133,30 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S026` [Temporal: Beyond State Machines for Reliable Distributed Applications](https://temporal.io/blog/temporal-replaces-state-machines-for-distributed-applications) — Temporal
 - `S027` [LangGraph State: Checkpoints, Threads, and Recovery](https://eastondev.com/blog/en/posts/ai/20260424-langgraph-agent-architecture/) — Easton
 - `S028` [Agent Workflows Are Rediscovering Durable Execution](https://medium.com/beyond-localhost/agent-workflows-are-rediscovering-durable-execution-be110661ed8c) — Koshy
+- `S072` [Building LangGraph: designing an agent runtime from first principles](https://www.langchain.com/blog/building-langgraph) — LangChain
 
 **Going deeper**
 
 - `S029` [Durable AI Agents: Orchestrating with Fred and Temporal](https://fredk8.dev/blog/durable-ai-agents-orchestrating-the-future-with-fred-and-temporal/) — fredk8.dev
 - `S030` [Durable Execution for AI Agents: State, Retries, Pauses](https://quellixlabs.com/insights/durable-execution-long-running-ai-agent-workflows) — Quellix Labs
 
-### Chapter 07 — Verification, evals & observability
+### Chapter 07 — Cost, caching & economics
+
+**Core reading**
+
+- `S073` [Don't Break the Cache: Prompt Caching for Long-Horizon Agentic Tasks](https://arxiv.org/abs/2601.06007) — arXiv
+- `S074` [Prompt Caching with Deep Agents](https://www.langchain.com/blog/deep-agents-prompt-caching) — LangChain
+- `S075` [Agent-as-a-Router: Agentic Model Routing for Coding Tasks](https://arxiv.org/abs/2606.22902) — arXiv
+- `S076` [AI Agent Cost Optimization: cutting LLM spend with routing](https://www.requesty.ai/blog/ai-agent-cost-optimization-how-to-cut-llm-spend-by-80-percent-with-routing) — Requesty
+- `S077` [Prompt Caching Economics: cache-first agent design](https://www.digitalapplied.com/blog/prompt-caching-economics-cache-first-agent-architecture-2026) — Digital Applied
+
+**Going deeper**
+
+- `S078` [AI Agent Token Cost Optimization](https://fast.io/resources/ai-agent-token-cost-optimization/) — Fastio
+- `S079` [How LLM agent loops break caching](https://www.tensormesh.ai/blog-posts/agentic-ai-inference-cost-kv-caching-production) — Tensormesh · `unchecked`
+- `S080` [Self-Compacting Language Model Agents](https://arxiv.org/abs/2606.23525) — arXiv · `unchecked`
+
+### Chapter 08 — Verification, evals & observability
 
 **Core reading**
 
@@ -152,7 +174,7 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S042` [Exploring Gen AI (memo series)](https://martinfowler.com/articles/exploring-gen-ai.html) — Martin Fowler / Birgitta Boeckeler
 - `S067` [TDD inside the agent loop — theater or actual value?](https://martinfowler.com/articles/exploring-gen-ai/tdd-in-the-agent-loop.html) — Fowler / Boeckeler
 
-### Chapter 08 — Security, sandboxing & permissions
+### Chapter 09 — Security, sandboxing & permissions
 
 **Core reading**
 
@@ -164,6 +186,7 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S038` [Securing the Model Context Protocol: Risks, Controls, Governance](https://arxiv.org/abs/2511.20920) — arXiv
 - `S039` [Towards Secure Agent Skills: Architecture, Threat Taxonomy, Security Analysis](https://arxiv.org/abs/2604.02837) — arXiv
 - `S063` [Model Context Protocol (MCP) Security (whitepaper)](https://www.coalitionforsecureai.org/wp-content/uploads/2026/03/model-context-protocol-security-1.pdf) — CoSAI
+- `S088` [The lethal trifecta for AI agents](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/) — Simon Willison
 
 **Going deeper**
 
@@ -173,7 +196,23 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S062` [Deep Dive: 12 Reusable Agentic Harness Design Patterns from Claude Code](https://www.epsilla.com/blogs/2026-04-18-deep-dive-12-reusable-agentic-harness-design-patte) — Epsilla · `unchecked`
 - `S068` [Coding Assistants Threaten the Software Supply Chain](https://martinfowler.com/articles/exploring-gen-ai/software-supply-chain-attack-surface.html) — Fowler / Boeckeler
 
-### Chapter 09 — TypeScript harness engineering
+### Chapter 10 — Long-running operations & the human interface
+
+**Core reading**
+
+- `S081` [Harness design for long-running application development](https://www.anthropic.com/engineering/harness-design-long-running-apps) — Anthropic
+- `S082` [Long-running Agents](https://addyosmani.com/blog/long-running-agents/) — Addy Osmani
+- `S083` [Agent Handoff Patterns: human–agent interface guide](https://www.augmentcode.com/guides/agent-handoff-patterns-human-agent-interface) — Augment Code
+- `S084` [Interaction as Intelligence II: Asynchronous Human-Agent Rollout](https://arxiv.org/abs/2510.27630) — arXiv
+
+**Going deeper**
+
+- `S071` [Awesome Agentic Patterns](https://www.agentic-patterns.com/) — nibzard
+- `S085` [Long-running AI agents that pause, resume, never lose context (ADK)](https://developers.googleblog.com/build-long-running-ai-agents-that-pause-resume-and-never-lose-context-with-adk/) — Google
+- `S086` [Long Running Agent Engineering](https://nicolasbustamante.com/blog/long-running-agent-engineering) — Nicolas Bustamante
+- `S087` [The Shift to Agentic AI: Evidence from Codex](https://arxiv.org/abs/2606.26959) — arXiv · `unchecked`
+
+### Chapter 11 — TypeScript harness engineering
 
 **Core reading**
 
@@ -190,7 +229,7 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S050` [Structured outputs with the Vercel AI SDK](https://www.aihero.dev/structured-outputs-with-vercel-ai-sdk) — AI Hero · `unchecked`
 - `S051` [strands-agents/sdk-typescript](https://github.com/strands-agents/sdk-typescript) — Strands · `egress-403`
 
-### Chapter 10 — Rust harness engineering
+### Chapter 12 — Rust harness engineering
 
 **Core reading**
 

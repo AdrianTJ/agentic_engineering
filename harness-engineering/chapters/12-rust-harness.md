@@ -1,4 +1,4 @@
-# Chapter 10 — Rust harness engineering
+# Chapter 12 — Rust harness engineering
 
 > **Core question:** Rust cannot make the model more reliable. What *can* it make
 > reliable, and is that the part that's actually failing?
@@ -18,7 +18,7 @@ long-lived processes that execute untrusted work under resource limits, where
 cold start, memory footprint, and memory safety are load-bearing (the `rmcp`
 ecosystem reports sub-5ms cold starts and 5–15 MB binaries against 300–800ms and
 50–200 MB for Python — which matters exactly when Chapter 3's fan-out creates
-environments per task and Chapter 8 wants them disposable). **Gateways and
+environments per task and Chapter 9 wants them disposable). **Gateways and
 policy brokers** sit on every request. And the **typestate pattern** can make
 Chapter 6's illegal state transitions fail to compile rather than fail at hour six.
 
@@ -40,7 +40,7 @@ The most-adopted Rust LLM framework, and worth reading as a trait design study.
 Four composable traits: `CompletionModel`, `EmbeddingModel`, `VectorStore`, and
 `Tool` (a callable with name, description, typed input/output). The `Agent`
 struct is model + preamble + static context + tools. Read the `Tool` trait
-against the Zod `tool()` helper from Chapter 9 — the same contract, one enforced
+against the Zod `tool()` helper from Chapter 11 — the same contract, one enforced
 by a trait bound at compile time, one by a parser at runtime. Ask which failures
 each catches.
 
@@ -74,7 +74,7 @@ appear once the conversation history is shared across concurrent tool calls.
 - **[Building MCP servers in Rust](https://rustify.rs/articles/rust-for-mcp-model-context-protocol-servers-2026)** — the concrete version of this chapter's strongest argument.
 - **[Rust-native AI agent frameworks: architecture, performance, and the emerging ecosystem](https://zylos.ai/research/2026-04-01-rust-native-ai-agent-frameworks-ecosystem-2026/)** — ecosystem survey with measured numbers. Vendor research; read the methodology before the conclusions.
 - **[`typestate-builder`](https://docs.rs/typestate-builder/latest/typestate_builder/)** — derive macros so typestate doesn't mean hand-writing every marker type.
-- **Ecosystem worth a search each:** `tokio` structured concurrency (`JoinSet`, `select!`, cancellation tokens — the honest answer to Ch.9's manual-cancellation complaint), `serde` + `schemars` for deriving JSON Schema from Rust types, `tracing` + `tracing-opentelemetry` for Ch.7, and `wasmtime` or `landlock` for Ch.8 sandboxing.
+- **Ecosystem worth a search each:** `tokio` structured concurrency (`JoinSet`, `select!`, cancellation tokens — the honest answer to Ch.11's manual-cancellation complaint), `serde` + `schemars` for deriving JSON Schema from Rust types, `tracing` + `tracing-opentelemetry` for Ch.8, and `wasmtime` or `landlock` for Ch.9 sandboxing.
 
 ## Key concepts
 
@@ -94,7 +94,7 @@ Two exercises. The first is the realistic one.
 **A. An MCP server in Rust (do this one).**
 Take three tools from your Chapter 5 exercise and implement them as an `rmcp`
 server. Derive the JSON Schema from Rust types — no hand-written schema anywhere.
-Add resource limits and an egress allow-list (Ch.8). Point your Chapter 9
+Add resource limits and an egress allow-list (Ch.9). Point your Chapter 11
 TypeScript harness at it over stdio. You now have the polyglot shape most real
 systems converge on: fast-iterating harness, hardened tool servers.
 
@@ -129,10 +129,10 @@ short report:
 - The retention contract and measured token curve (Ch.4).
 - The tool set with its fixed context cost as a share of the window (Ch.5).
 - The event log, with a demonstrated `kill -9` recovery (Ch.6).
-- Traces and a regression suite with a committed baseline (Ch.7).
-- The threat model, including a documented injection attempt and its outcome (Ch.8).
+- Traces and a regression suite with a committed baseline (Ch.8).
+- The threat model, including a documented injection attempt and its outcome (Ch.9).
 - Three hill-climbing iterations with recorded deltas — including the one that
-  made things worse (Ch.7).
+  made things worse (Ch.8).
 
 The last item is the one that proves you understood the curriculum. A harness
 engineer is someone who changed a harness and can prove what the change did.

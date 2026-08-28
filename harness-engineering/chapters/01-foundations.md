@@ -23,7 +23,7 @@ Lilian Weng's definition is the most useful one to memorize:
 
 Note what that definition does: it enumerates the rest of this curriculum.
 Planning (Ch.2, 3), tools (Ch.5), context (Ch.4), artifacts and state (Ch.6),
-evaluation (Ch.7). Chapter 8 covers the part the definition leaves implicit —
+evaluation (Ch.8). Chapter 9 covers the part the definition leaves implicit —
 what the harness *forbids*.
 
 ## Core reading
@@ -32,9 +32,22 @@ what the harness *forbids*.
 The piece that named the discipline. A team shipped roughly a million lines of
 production code without hand-typing it, and the account is about what they built
 *around* the agents: the rules, feedback loops, docs structure, and dependency
-order. The line to sit with is that discipline didn't disappear, it moved — from
-the code into the scaffolding. Read it for the framing, not the numbers.
-*Note: this URL rejects automated fetchers (403). See `SOURCES.md`.*
+order — roughly a million lines over five months. The line to sit with is that
+discipline didn't disappear, it moved: from the code into the scaffolding.
+
+The sharpest distinction in the piece, and the one this whole curriculum turns on:
+
+> **Context engineering asks what the agent should see. Harness engineering asks
+> what the system should prevent, measure, and correct.**
+
+Two other principles worth carrying: *give the agent a map, not a manual* — a short
+`AGENTS.md` pointing at deeper sources of truth, rather than a thousand-page
+instruction file (this is Ch.5's progressive disclosure applied to documentation);
+and *role inversion* — humans steer and specify, agents execute.
+
+*Note: this URL rejects automated fetchers (403). The claims above are corroborated
+by [InfoQ's report](https://www.infoq.com/news/2026/02/openai-harness-engineering-codex/)
+and several independent summaries; see `SOURCES.md` and `PROVENANCE.md`.*
 
 **2. [Harness Engineering for Self-Improvement](https://lilianweng.github.io/posts/2026-07-04-harness/)** — Lilian Weng (Jul 2026) · ~45 min
 The most rigorous survey of the object. Weng gives the definition above, then
@@ -74,6 +87,8 @@ yourself.
 - **[awesome-harness-engineering](https://github.com/ai-boost/awesome-harness-engineering)** — the field's index. Sections: Foundations, Design Primitives, Reference Implementations, Security/Sandbox/Permissions, Evals & Verification, Templates. Use it as a bibliography to raid, not as reading.
 - **[Agent Harness Engineering: A Survey](https://openreview.net/pdf?id=eONq7FdiHa)** — academic treatment, if you want the taxonomy stated formally.
 - **[Agent Harness Engineering](https://addyosmani.com/blog/agent-harness-engineering/)** — Addy Osmani. Practitioner synthesis; good for the four-pillar framing (context architecture, agent specialization, persistent memory, structured execution).
+- **[Unlocking the Codex harness: how we built the App Server](https://openai.com/index/unlocking-the-codex-harness/)** — OpenAI's follow-up, on the harness as a product surface. Same 403 caveat.
+- **[Awesome Agentic Patterns](https://www.agentic-patterns.com/)** — 97 patterns across 8 categories, each required to be repeatable, agent-centric, and backed by a public reference. The best-curated index in the field; a good place to go when a chapter here leaves you wanting a worked example.
 
 ## Key concepts
 

@@ -17,7 +17,7 @@ Everything hard about these tasks is a harness problem.
 
 ## How to use this
 
-Ten chapters. Each is a **map plus a reading list**, not a replacement for the
+Twelve chapters. Each is a **map plus a reading list**, not a replacement for the
 reading. The chapter text tells you what the sources say, why the source is on
 the list, what to argue with, and what to build. The sources do the teaching.
 
@@ -32,7 +32,7 @@ Each chapter has the same shape:
 | **Build this** | A concrete exercise that forces the idea into your hands |
 | **Check yourself** | Questions you should be able to answer without notes |
 
-Read in order for chapters 1–8; they build. Chapters 9 and 10 (TypeScript, Rust)
+Read in order for chapters 1–10; they build. Chapters 11 and 12 (TypeScript, Rust)
 are parallel implementation tracks — read whichever language you'll actually
 write in, or both to see how the same primitives land differently.
 
@@ -43,11 +43,11 @@ Three passes, depending on how much time you have.
 **Weekend (≈6h).** Ch.1 core → Ch.2 core → Ch.4 core → Ch.5 core. This is the
 minimum that lets you read someone else's harness and say something true about it.
 
-**Two weeks (≈25h).** Chapters 1–8 core reading, one exercise per chapter, plus
-whichever of 9/10 matches your language.
+**Two weeks (≈25h).** Chapters 1–10 core reading, one exercise per chapter, plus
+whichever of 11/12 matches your language.
 
-**Full (≈60h).** Everything, including *Going deeper*, both language tracks, and
-the capstone in Chapter 10.
+**Full (≈75h).** Everything, including *Going deeper*, both language tracks, and
+the capstone in Chapter 12.
 
 ## The chapters
 
@@ -59,10 +59,17 @@ the capstone in Chapter 10.
 | [04](chapters/04-context-and-memory.md) | Context & memory | How does work survive a context window? |
 | [05](chapters/05-tools-and-definitions.md) | Tools & their definitions | What is the contract between a deterministic system and a non-deterministic caller? |
 | [06](chapters/06-state-durability-resumption.md) | State, durability, resumption | How does work survive a *crash*? |
-| [07](chapters/07-verification-and-evals.md) | Verification, evals & observability | How do you know it worked? |
-| [08](chapters/08-security-and-sandboxing.md) | Security, sandboxing & permissions | What is the blast radius? |
-| [09](chapters/09-typescript-harness.md) | TypeScript harness engineering | Building it where the ecosystem lives |
-| [10](chapters/10-rust-harness.md) | Rust harness engineering | Building it where the guarantees live |
+| [07](chapters/07-cost-and-caching.md) | Cost, caching & economics | What does all of the above cost, and what has to give? |
+| [08](chapters/08-verification-and-evals.md) | Verification, evals & observability | How do you know it worked? |
+| [09](chapters/09-security-and-sandboxing.md) | Security, sandboxing & permissions | What is the blast radius? |
+| [10](chapters/10-long-running-operations.md) | Long-running operations & the human interface | Six hours in — what does the harness owe the person watching? |
+| [11](chapters/11-typescript-harness.md) | TypeScript harness engineering | Building it where the ecosystem lives |
+| [12](chapters/12-rust-harness.md) | Rust harness engineering | Building it where the guarantees live |
+
+Three chapters form a running argument you should read as one: Ch.4 says compact
+the context, Ch.7 says compaction breaks your cache, and Ch.10 says the teams
+running the longest tasks reset the context instead. Nobody has settled it. Read
+all three before you commit to a context policy.
 
 Supporting material:
 

@@ -128,3 +128,118 @@ primitives were used as the cross-check that no major component lacked a chapter
 7. Ch.3's core disagreement (graph frameworks vs. plain control flow) is
    presented fairly but only one side is argued in depth. A strong pro-framework
    piece would improve it.
+
+---
+
+## Pass 02 — 2026-08-28 · gap-driven revision and restructure
+
+**Scope.** Work the eight open items from pass 01. Two of them turned out to be
+big enough to restructure the curriculum around.
+
+**Queries run** (8): lethal trifecta attribution; agent cost/token budget/prompt
+caching/model routing; the pro-graph-framework argument; human–agent handoff and
+asynchronous supervision; Anthropic long-running agents; OpenAI harness
+engineering corroboration; "Don't Break the Cache" specifics; awesome-agentic-patterns.
+
+**The pass-01 lesson held.** Mining an existing curated list's own citations beat
+direct search again — `awesome-agentic-patterns` (97 patterns, 8 categories, each
+required to be backed by a public reference and used by more than one team) is now
+registered as a standing index to raid in future passes.
+
+### Structural change: 10 chapters → 12
+
+Two gaps had enough real literature behind them to be chapters rather than
+sections, and both turned out to *contradict* existing chapters, which is the
+strongest possible argument for giving them their own space:
+
+- **New Ch.7, Cost, caching & economics.** Prompt caching is not an optimization
+  applied at the end; it is a constraint on context layout. And it collides
+  head-on with Ch.4: every context-engineering technique rewrites the context, and
+  rewriting invalidates the cache. A chapter that says "compact aggressively"
+  needs a chapter that says "and here is what that costs you."
+- **New Ch.10, Long-running operations & the human interface.** The person
+  supervising a nine-hour run is an engineering problem with its own failure modes
+  (context anxiety, self-grading, the handoff), and the literature converges
+  independently on the same three answers.
+
+Renumbering: old 07→08, 08→09, 09→11, 10→12. Chapters 1–6 unchanged. All
+cross-references, ranges, the README map, the glossary, and `sources.tsv`'s
+chapter column were shifted programmatically and verified (no stale `Ch.7`/`Ch.10`
+references remained before the new chapters took those slots).
+
+The renumber was done now rather than later deliberately: the curriculum is two
+passes old, every link is internal or regenerable, and the cost of this only ever
+grows.
+
+### The curriculum now contains a real disagreement, and says so
+
+Three chapters give incompatible advice about context, and the README now tells
+the reader to read all three before committing to a policy:
+
+| Chapter | Position |
+|---|---|
+| Ch.4 (Anthropic, context engineering) | Compact, take notes, retrieve just in time |
+| Ch.7 (Don't Break the Cache) | Every one of those rewrites invalidates your cache |
+| Ch.10 (Anthropic, long-running apps) | For genuinely long tasks, **reset** the context instead of compacting |
+
+Note that Ch.4 and Ch.10 are both Anthropic engineering posts. That is not an
+error — they address different task lengths — but presenting them as a single
+consistent doctrine would have been dishonest, so the chapters cross-reference
+each other and the tension is named.
+
+A second genuine disagreement was surfaced in Ch.3/Ch.6: LangGraph argues durable
+execution engines predate LLM agents and lack streaming, add inter-step latency,
+and degrade with long histories; Temporal argues hand-rolled state machines rot.
+Both are now cited, on both sides, with a check-yourself question that refuses to
+resolve it for the reader.
+
+### Gaps closed
+
+1. **OpenAI harness-engineering citation.** ✅ Corroborated. The 403 persists for
+   every automated fetcher, but the substance is confirmed by InfoQ's report
+   (S069, 200) plus several independent summaries. Ch.1 now carries the piece's
+   sharpest line — *"context engineering asks what the agent should see; harness
+   engineering asks what the system should prevent, measure, and correct"* — and
+   the note says exactly how it was corroborated. Found a second OpenAI post
+   (*Unlocking the Codex harness*, S070) in the process.
+3. **Cost as a design constraint.** ✅ Became Ch.7.
+4. **Lethal trifecta attribution.** ✅ Simon Willison, June 2025 (S088), now core
+   reading in Ch.9, with his blunt recommendation — avoid combining all three —
+   and his argument for why filtering is not a defense.
+6. **Pro-graph-framework argument.** ✅ *Building LangGraph* (S072) added as Ch.3
+   core reading. It derives six required runtime features from three properties of
+   agents, and concedes Horthy's point directly: *"the biggest competitor to any
+   code framework is always no framework."* Ch.3 now presents a real argument
+   between serious people rather than a strawman.
+7. **Human/agent handoff ergonomics.** ✅ Became Ch.10.
+
+### Tooling improvement
+
+`bin/check-links.sh` produced a false `FAIL` on a host that intermittently exceeds
+30s. Confirmed by hand (three consecutive 200s), then fixed properly: timeout
+raised to 45s and one retry added on connection-level failures only. A validator
+that cries wolf gets ignored, which would defeat the point of having one.
+
+**Validation after this pass:** 88 sources — **77 OK, 11 WARN, 0 FAIL**;
+`check-coverage.sh` passing.
+
+### Known gaps, carried to pass 03
+
+1. **Ch.11/Ch.12 depth.** Both language chapters are now the least-revised
+   material. Several *Going deeper* entries remain `unchecked`. Promote or drop on
+   evidence.
+2. **Meta Context Engineering** — the 89.1% vs. 70.7% SWE-bench figure from pass
+   01 still has no located primary. Find it or strike the note.
+3. **An unsourced number seen this pass:** "chat-only recovery achieves 8–13%
+   correctness vs. 100% for semantics-aware checkpoint/restore." It would be an
+   excellent Ch.6 citation if real. Deliberately *not* used pending a primary.
+4. **No worked reference implementation.** Every chapter says "build this" and the
+   reader starts from nothing each time. A single skeleton harness the exercises
+   accrete onto would make the sequence far more usable.
+5. **Multi-agent communication protocols** (A2A and successors) — not covered at
+   all. Possibly a Ch.3 section rather than a chapter.
+6. **RL / training-time approaches to long-horizon competence** — deliberately out
+   of scope so far (this is a harness curriculum), but the boundary should be
+   stated explicitly somewhere rather than left implicit.
+7. **No exit assessment.** The capstone in Ch.12 is good; there is no way for a
+   reader to check their own answers to *Check yourself*.

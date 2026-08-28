@@ -52,13 +52,34 @@ chosen points. Read #8 against the LangGraph docs and decide what you actually
 believe; this is the live disagreement in the field, and having a position on it
 is the point of the chapter.
 
-**4. [Deep Agents overview](https://docs.langchain.com/oss/python/deepagents/overview)** — LangChain · ~20 min
+**4. [Building LangGraph: designing an agent runtime from first principles](https://www.langchain.com/blog/building-langgraph)** — LangChain · ~30 min
+Read this immediately after #3, because it is the strongest available answer to
+it. The argument starts from three properties of LLM agents — latency (slow,
+many calls), unreliability (long runs fail, and naive retry is expensive), and
+non-determinism (needs oversight and tracing) — and derives six things a runtime
+must therefore provide: parallelization, streaming, task queuing, checkpointing,
+human-in-the-loop, and tracing. The claim is that you will build all six
+eventually, and that building them badly, one at a time, is worse than adopting
+them.
+
+It also disposes of both neighbours directly: **DAG frameworks** can't express the
+agent loop at all, and **durable execution engines** like Temporal were designed
+before LLM agents — no streaming, latency between steps, and degradation as agent
+histories grow. Hold that thought until Ch.6, which reads the same comparison from
+Temporal's side.
+
+The concession is the most credible part, and it is Horthy's point conceded:
+*"the biggest competitor to any code framework is always no framework."*
+Read #3 and #4 as a genuine disagreement between serious people, not as a
+vendor pitch and its rebuttal.
+
+**5. [Deep Agents overview](https://docs.langchain.com/oss/python/deepagents/overview)** — LangChain · ~20 min
 A worked opinionated topology for long-horizon work: planning tools, virtual
 filesystem, sub-agent delegation, context engineering, persistent memory, skills,
 sandboxed execution, human-in-the-loop. Read it as an *assembled* system — this
 is what Ch.1's parts list looks like once someone has committed to a shape.
 
-**5. [Building a multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system)** — Anthropic · ~30 min
+**6. [Building a multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system)** — Anthropic · ~30 min
 Orchestrator–workers at production scale, with the costs stated honestly:
 token multiplication, coordination overhead, and the difficulty of getting a lead
 agent to write good subagent instructions. The most useful section is where
@@ -107,3 +128,4 @@ repo, a literature sweep, a data migration.
 5. What does `Command`-style routing-from-a-tool cost you in testability?
 6. Anthropic reports multi-agent underperforming on tightly interdependent subtasks. Explain the mechanism — what specifically goes wrong at the subagent boundary?
 7. State a rule of thumb for when a graph framework earns its complexity over plain code.
+8. LangGraph derives six required runtime features from three properties of agents. Which of the six would you genuinely build yourself, and which would you rather not? Does that answer settle the disagreement for your case?

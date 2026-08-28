@@ -1,4 +1,4 @@
-# Chapter 7 — Verification, evals & observability
+# Chapter 8 — Verification, evals & observability
 
 > **Core question:** The agent says it finished. Is it right — and how would you
 > know at 3am, on run 4,000, without reading a transcript?
@@ -48,7 +48,7 @@ The standard. Instrument to OTel GenAI conventions and your traces are portable
 across vendors; instrument ad hoc and you will migrate twice. Covers LLM calls,
 agent orchestration, MCP tool calling, content capture, and quality evaluation.
 The section on content capture deserves a slow read — it is also a privacy
-decision (Ch.8).
+decision (Ch.9).
 
 **4. [LLM tracing and agent observability](https://mlflow.org/docs/latest/genai/tracing/)** — MLflow · ~30 min, hands-on
 An OTel-compatible open implementation. Read for what a trace *contains*: the

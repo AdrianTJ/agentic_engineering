@@ -1,6 +1,6 @@
-# Chapter 9 — TypeScript harness engineering
+# Chapter 11 — TypeScript harness engineering
 
-> **Core question:** Chapters 1–8 are language-agnostic. What does TypeScript
+> **Core question:** Chapters 1–10 are language-agnostic. What does TypeScript
 > specifically give you, what does it specifically cost you, and where does its
 > type system stop being load-bearing?
 
@@ -19,7 +19,7 @@ have to be treated as disposable (Ch.6), because they are. And structured
 concurrency is not a thing the language gives you: parallel tool calls, timeouts,
 and cancellation are all manual (Ch.3).
 
-Prerequisite: Chapters 1–8. This chapter assumes the vocabulary.
+Prerequisite: Chapters 1–10. This chapter assumes the vocabulary.
 
 ## Core reading
 
@@ -27,10 +27,10 @@ Prerequisite: Chapters 1–8. This chapter assumes the vocabulary.
 The most complete production harness you can read the API of, and it maps
 one-to-one onto this curriculum. Work through it as a checklist:
 - **`query()` vs. a stateful client** — Ch.6's stateless-reducer question, made an API choice.
-- **The three tool layers** — built-in tools, custom in-process tools, external MCP servers. Three different context-cost and trust profiles (Ch.5, Ch.8).
+- **The three tool layers** — built-in tools, custom in-process tools, external MCP servers. Three different context-cost and trust profiles (Ch.5, Ch.9).
 - **`tool()` with Zod** — name, description, input schema, implementation. Chapter 5's contract, typed.
 - **`createSdkMcpServer`** — in-process MCP, no subprocess.
-- **`allowedTools` / `permissionMode`** — Ch.8's permission model as configuration.
+- **`allowedTools` / `permissionMode`** — Ch.9's permission model as configuration.
 - **Hooks** — interception points for policy, logging, and approval gates.
 - **Session management** — Ch.6's thread identity.
 
@@ -67,14 +67,14 @@ prompt. Notice that Zod lets you put the documentation exactly where the model
 reads it.
 
 **5. [rust-sdk `rmcp` README](https://github.com/modelcontextprotocol/rust-sdk/blob/main/crates/rmcp/README.md)** — skim, ~10 min
-Read the *shape* of the Rust MCP SDK before Chapter 10, so the comparison there
+Read the *shape* of the Rust MCP SDK before Chapter 12, so the comparison there
 lands. If you're only doing the TS track, skip.
 
 ## Going deeper
 
 - **[Structured outputs with the AI SDK](https://www.aihero.dev/structured-outputs-with-vercel-ai-sdk)** — the generate-object path, and when structured output beats a tool call.
 - **[strands-agents/sdk-typescript](https://github.com/strands-agents/sdk-typescript)** — a third runtime; useful for triangulating which abstractions are essential and which are house style.
-- **[MLflow tracing](https://mlflow.org/docs/latest/genai/tracing/)** — instrument the TS harness per Ch.7.
+- **[MLflow tracing](https://mlflow.org/docs/latest/genai/tracing/)** — instrument the TS harness per Ch.8.
 - **Node specifics** worth a search each: `AbortController` for cancellation and timeouts, `AsyncLocalStorage` for trace context propagation across the loop, worker threads vs. child processes for sandboxed execution, and graceful-shutdown handling for Ch.6's crash tests.
 
 ## Key concepts
@@ -84,7 +84,7 @@ lands. If you're only doing the TS track, skip.
 - **Object-root constraint** — providers need `type: "object"` at the root; unions must be wrapped.
 - **`.describe()` as prompt surface** — parameter docs go where the model reads them.
 - **Type erasure at the boundary** — parse, don't cast. Every model output is untrusted input.
-- **In-process MCP vs. subprocess MCP** — no IPC and no isolation, versus IPC and real isolation (Ch.8). A security decision wearing a performance costume.
+- **In-process MCP vs. subprocess MCP** — no IPC and no isolation, versus IPC and real isolation (Ch.9). A security decision wearing a performance costume.
 - **Hooks** — the interception seam for permissions, logging, and approval.
 - **`AbortController`** — the cancellation primitive Ch.2's budgets need.
 - **`AsyncLocalStorage`** — how a trace ID survives an async loop without threading it through every call.
@@ -92,7 +92,7 @@ lands. If you're only doing the TS track, skip.
 
 ## Build this
 
-Port your Chapters 2–7 harness to TypeScript, or build it natively.
+Port your Chapters 2–10 harness to TypeScript, or build it natively.
 
 1. **Schemas first.** Every tool defined once in Zod; derive both the TS type and
    the JSON Schema sent to the model. Zero hand-written duplicates.
@@ -103,9 +103,9 @@ Port your Chapters 2–7 harness to TypeScript, or build it natively.
    step, token, and wall-clock budgets by aborting, and verify a tool actually
    stops when aborted.
 4. **Trace context.** Use `AsyncLocalStorage` so every span in a run carries the
-   run ID without being passed explicitly. Emit OTel spans (Ch.7).
+   run ID without being passed explicitly. Emit OTel spans (Ch.8).
 5. **Permissions.** Implement an allow-list and a hook that gates high-blast-radius
-   tools behind approval (Ch.8).
+   tools behind approval (Ch.9).
 6. **Prove the constraint.** Deliberately define a tool with a `z.discriminatedUnion`
    at the root, watch it get rejected, then fix it. Write the failure down — this
    is the kind of knowledge that only comes from hitting it.
@@ -114,7 +114,7 @@ Port your Chapters 2–7 harness to TypeScript, or build it natively.
 
 1. Why does a Zod schema at a tool boundary do three jobs at once, and what breaks if you hand-maintain any of the three separately?
 2. What exactly fails when a tool's input schema has a union at the root, and where in the stack does the error appear?
-3. In-process MCP server vs. subprocess: give the case for each, and name the Ch.8 property you give up choosing the first.
+3. In-process MCP server vs. subprocess: give the case for each, and name the Ch.9 property you give up choosing the first.
 4. How do you enforce a wall-clock budget on a tool call that ignores cancellation? What's the honest answer?
 5. Why is `AsyncLocalStorage` a better fit for trace context than a parameter, and what does it cost in testability?
 6. Model returns a tool call whose arguments fail schema validation. Design the recovery: what goes back into context, and what stops an infinite retry?

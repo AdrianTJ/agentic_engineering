@@ -58,6 +58,46 @@ if(!stopped) { console.error("no run_stopped"); process.exit(1); }
 if(reqs!==outs){ console.error(`${reqs} requests vs ${outs} outcomes`); process.exit(1); }
 ' && ok "every request has exactly one outcome; log brackets the run" || bad "log is malformed"
 
+echo "== Ch.4: the context policy actually changes what the model sees =="
+reset
+none=$(POLICY=none  SCRIPT=long node harness.ts 2>&1)
+reset
+comp=$(POLICY=compact SCRIPT=long node harness.ts 2>&1)
+reset
+full=$(POLICY=full  SCRIPT=long node harness.ts 2>&1)
+
+occ() { echo "$1" | grep -oE '\([0-9]+% of' | grep -oE '[0-9]+'; }
+bill() { echo "$1" | grep -oE '[0-9]+ tokens\)' | grep -oE '[0-9]+'; }
+
+[ "$(occ "$none")" -gt 100 ] \
+  && ok "no policy overflows the window ($(occ "$none")%)" \
+  || bad "no-policy run did not overflow — the demo no longer demonstrates anything"
+
+echo "$comp" | grep -q "compacted:" && ok "compaction fires at the threshold" || bad "compaction never fired"
+[ "$(occ "$comp")" -le 100 ] && ok "compaction keeps occupancy in budget ($(occ "$comp")%)" || bad "compaction did not bound occupancy"
+[ "$(occ "$full")" -le 100 ] && ok "tool clearing alone keeps occupancy in budget ($(occ "$full")%)" || bad "full policy did not bound occupancy"
+
+# The finding this seam exists to teach: the cheaper, non-lossy technique wins.
+[ "$(bill "$full")" -lt "$(bill "$comp")" ] \
+  && ok "tool clearing bills fewer tokens than compaction ($(bill "$full") < $(bill "$comp"))" \
+  || bad "expected tool clearing to be cheaper than compaction"
+[ "$(bill "$full")" -lt "$(bill "$none")" ] \
+  && ok "the policy saves tokens overall ($(bill "$full") < $(bill "$none"))" \
+  || bad "policy did not save tokens"
+
+echo "== Ch.4: compaction honours the retention contract =="
+reset
+POLICY=compact SCRIPT=long node harness.ts >/dev/null 2>&1
+node -e '
+const fs=require("fs");
+const ev=fs.readFileSync(".state/events.jsonl","utf8").trim().split("\n").map(JSON.parse);
+const cs=ev.filter(e=>e.t==="context_compacted");
+if(!cs.length){ console.error("no compaction logged"); process.exit(1); }
+for(const c of cs){
+  if(!c.keptContract.some(x=>x.startsWith("GOAL:"))){ console.error("a compaction dropped the GOAL"); process.exit(1); }
+}
+' && ok "every compaction preserved the goal, and is auditable in the log" || bad "contract violated"
+
 reset
 echo
 echo "pass=$pass fail=$fail"

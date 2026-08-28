@@ -11,7 +11,7 @@ of one, and being precise about which is the whole content of this chapter.
 The honest case against: the model call dominates latency by three orders of
 magnitude, so harness performance rarely matters; the ecosystem is younger; and
 iteration speed on prompts and tool descriptions — the highest-leverage work in
-Chapters 4, 5, and 7 — is faster in a scripting language.
+Chapters 4, 5, and 8 — is faster in a scripting language.
 
 The honest case for is narrower and real. **Sandboxes and MCP servers** are
 long-lived processes that execute untrusted work under resource limits, where

@@ -101,6 +101,21 @@ full method:
 5. Write down the fixed context cost of your tool set as a percentage of the window.
    If it's above 10%, you have a Ch.4 problem disguised as a Ch.5 problem.
 
+If you want the measurement without building an API integration first,
+[`reference-harness/`](../reference-harness/) already reports tool-definition cost
+as its own line in the context breakdown:
+
+```sh
+SCRIPT=long node harness.ts   # look at the `tools` row
+```
+
+In its default configuration three tools cost 58 tokens against a 400-token
+window — **14.5% of the budget spent before any work happens**, and it climbs
+linearly with every tool you add. Add five plausible tools with realistic
+descriptions, re-run, and watch the share. That number is the argument for
+consolidation and progressive disclosure, and it is more persuasive as a
+measurement than as advice.
+
 ## Check yourself
 
 1. Why is `user_id` a better parameter name than `user`? Give the failure `user` produces.

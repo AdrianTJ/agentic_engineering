@@ -104,6 +104,35 @@ only, compaction + notes + clearing. Log tokens and outcome. This is the single
 most instructive exercise in the curriculum, because the failure of the
 no-policy run is *specific* and you will recognize it forever afterward.
 
+[`reference-harness/`](../reference-harness/) implements this chapter as its
+**worked seam**, so the experiment is three commands:
+
+```sh
+POLICY=none    SCRIPT=long node harness.ts
+POLICY=compact SCRIPT=long node harness.ts
+POLICY=full    SCRIPT=long node harness.ts
+```
+
+Its measured result is worth knowing before you run your own, because it is not
+the one most people expect:
+
+| Policy | Occupancy | Compactions | Tokens billed |
+|---|---|---|---|
+| none | **105%** — overflows | 0 | 4,727 |
+| compact | 70% | 2 | 3,943 |
+| full | 69% | **0** | **3,570** |
+
+**Tool clearing alone matched compaction's occupancy, billed less, and never
+compacted.** The per-category breakdown shows why: after two compactions the
+retained contract had grown to 169 tokens against 36 tokens of surviving history.
+Compaction moved the cost rather than removing it — the contract is precisely
+what you promised not to drop, so it accumulates. And each compaction rewrote the
+prefix, which Ch.7 will tell you costs you the cache twice over.
+
+The lesson is not that compaction is wrong. It is **reach for eviction before
+summarization**, and measure rather than assume. Your workload may invert this;
+that is the point of running it.
+
 ## Check yourself
 
 1. Why is a 1M-token window not a solution to long-horizon context? Give the mechanism, not the slogan.

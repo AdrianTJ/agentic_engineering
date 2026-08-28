@@ -94,3 +94,8 @@ S092	03	deeper	Agent2Agent (A2A) Protocol	Linux Foundation	https://a2a-protocol.
 S093	03	deeper	Announcing the Agent2Agent Protocol	Google	https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/	ok
 S094	03	deeper	A survey of agent interoperability protocols: MCP, ACP, A2A, ANP	arXiv	https://arxiv.org/abs/2505.02279	ok
 S095	03	deeper	Governance Gaps in Agent Interoperability Protocols	arXiv	https://arxiv.org/abs/2606.31498	ok
+S096	01	core	Harness-Bench: Measuring Harness Effects across Models in Realistic Agent Workflows	arXiv	https://arxiv.org/abs/2605.27922	ok
+S097	01	deeper	Claw-SWE-Bench: Evaluating Agent Harnesses on Coding Tasks	arXiv	https://arxiv.org/abs/2606.12344	ok
+S098	01	deeper	AgentMeter: Evaluating Model-CLI Matching for CLI-Based Agents	arXiv	https://arxiv.org/abs/2606.21140	ok
+S099	08	core	Terminal-Bench	tbench.ai	https://www.tbench.ai/	ok
+S100	08	core	The SWE-bench harness	SWE-bench	https://www.swebench.com/SWE-bench/reference/harness/	ok

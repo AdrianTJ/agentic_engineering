@@ -29,6 +29,7 @@ type Event =
   | { t: "tool_requested"; step: number; tool: string; args: string; key: string }
   | { t: "tool_succeeded"; step: number; key: string; result: string }
   | { t: "tool_failed"; step: number; key: string; error: string }
+  | { t: "context_compacted"; step: number; droppedTokens: number; keptContract: string[] }
   | { t: "claimed_done"; step: number; summary: string }
   | { t: "run_stopped"; reason: StopReason; at: string };
 
@@ -46,8 +47,13 @@ type State = {
   tokens: number;
   /** Idempotency ledger: tool calls whose effect has already been applied. (Ch.6) */
   applied: Map<string, string>;
-  /** What the model sees. In a real harness this is a context policy. SEAM(Ch.4) */
+  /** Raw history. What the model actually SEES is derived from this by the
+   *  context policy below — the two are not the same thing. (Ch.4) */
   transcript: string[];
+  /** What compaction preserved. Grows; never silently drops a contract item. (Ch.4) */
+  retained: string[];
+  /** Transcript entries before this index have been compacted away. (Ch.4) */
+  compactedThrough: number;
   /** For no-progress detection. (Ch.2) */
   recentSignatures: string[];
   /**
@@ -136,6 +142,8 @@ function reduce(s: State, e: Event): State {
             ? s.transcript
             : [...s.transcript, `  -> ERROR: ${e.error}`],
       };
+    case "context_compacted":
+      return { ...s, retained: e.keptContract, compactedThrough: s.transcript.length };
     case "claimed_done":
       return { ...s, transcript: [...s.transcript, `claimed done: ${e.summary}`] };
     case "run_stopped":
@@ -145,6 +153,7 @@ function reduce(s: State, e: Event): State {
 
 const EMPTY: State = {
   goal: null, step: 0, tokens: 0, applied: new Map(), transcript: [],
+  retained: [], compactedThrough: 0,
   recentSignatures: [], pending: null, lastError: null, stopped: null,
 };
 
@@ -206,6 +215,121 @@ const tools: Tool[] = [
   },
 ];
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The context policy.  A worked SEAM(Ch.4) — the pattern the other seams follow.
+//
+// This is the only part of the harness that decides WHAT THE MODEL SEES. The
+// transcript is raw history; the context is a derived, budgeted view of it.
+// Conflating the two is the most common Ch.4 mistake.
+//
+// Try:  POLICY=none node harness.ts     (no policy — watch occupancy climb)
+//       POLICY=compact node harness.ts  (compaction only)
+//       POLICY=full node harness.ts     (compaction + tool clearing + notes)  [default]
+// ─────────────────────────────────────────────────────────────────────────────
+
+type Policy = "none" | "compact" | "full";
+const POLICY = (process.env.POLICY ?? "full") as Policy;
+
+/** Rough but honest: ~4 chars per token. Replace with the provider's counter. */
+const estimate = (s: string): number => Math.ceil(s.length / 4);
+
+const SYSTEM_PROMPT = "You are a coding agent. Work the goal; stop when it is done.";
+const WINDOW = 400;                // deliberately tiny, so policy effects are visible
+const COMPACT_AT = 0.7;            // compact at 70% occupancy (Ch.4)
+const KEEP_TOOL_RESULTS = 2;       // tool clearing horizon, in steps (Ch.4)
+
+/**
+ * THE RETENTION CONTRACT (Ch.4).
+ *
+ * The explicit list of what compaction may never drop. Written down, because a
+ * compaction policy without one is just amnesia with extra steps. Everything
+ * here survives; everything else is negotiable.
+ */
+function retentionContract(s: State): string[] {
+  return [
+    `GOAL: ${s.goal}`,
+    // What has been tried and what it cost — so the agent does not redo it.
+    ...[...s.applied.values()].map((r) => `DONE: ${r}`),
+    // Failures are contract items: repeating a known-failing call is the
+    // classic post-compaction regression.
+    ...(s.lastError ? [`FAILED: ${s.lastError}`] : []),
+  ];
+}
+
+type ContextView = {
+  blocks: { label: string; text: string; tokens: number }[];
+  total: number;
+  occupancy: number;
+};
+
+/** Build what the model sees, and account for it by category. (Ch.4, Ch.7) */
+function buildContext(s: State): ContextView {
+  const notes = existsSync(join(STATE_DIR, "NOTES.md"))
+    ? readFileSync(join(STATE_DIR, "NOTES.md"), "utf8")
+    : "";
+
+  let history = s.transcript;
+  if (POLICY !== "none") {
+    // Only the un-compacted tail is replayed verbatim; the rest is `retained`.
+    history = history.slice(s.compactedThrough);
+  }
+  if (POLICY === "full") {
+    // Tool clearing: drop stale tool results, keep the calls that produced them,
+    // so the agent still knows what it did without re-reading every result.
+    const cutoff = s.step - KEEP_TOOL_RESULTS;
+    history = history.filter((line) => !(line.startsWith("  -> ") && lineStep(line, history) < cutoff));
+  }
+
+  // ORDERING IS A CACHE DECISION, NOT A STYLE DECISION (Ch.7).
+  // Static first, volatile last, so the cached prefix stays stable.
+  const blocks = [
+    { label: "system", text: SYSTEM_PROMPT },
+    { label: "tools", text: tools.map((t) => `${t.name}: ${t.description}`).join("\n") },
+    { label: "retained", text: s.retained.join("\n") },
+    { label: "notes", text: POLICY === "full" ? notes : "" },
+    { label: "history", text: history.join("\n") },
+  ].map((b) => ({ ...b, tokens: estimate(b.text) }));
+
+  const total = blocks.reduce((n, b) => n + b.tokens, 0);
+  return { blocks, total, occupancy: total / WINDOW };
+}
+
+/** Which step a transcript line belongs to; used only for tool clearing. */
+function lineStep(line: string, history: string[]): number {
+  const i = history.indexOf(line);
+  for (let j = i; j >= 0; j--) {
+    const m = history[j]?.match(/^step (\d+):/);
+    if (m) return Number(m[1]);
+  }
+  return 0;
+}
+
+/** Compact if over threshold, honouring the contract. Logged, so it is auditable. */
+function maybeCompact(s: State): State {
+  if (POLICY === "none") return s;
+  const view = buildContext(s);
+  if (view.occupancy < COMPACT_AT) return s;
+
+  const contract = retentionContract(s);
+  const dropped = estimate(s.transcript.slice(s.compactedThrough).join("\n"));
+  append({ t: "context_compacted", step: s.step, droppedTokens: dropped, keptContract: contract });
+  console.log(`  ⇊ compacted: dropped ~${dropped} tokens, kept ${contract.length} contract items`);
+  return rebuild(readLog());
+}
+
+/** Per-run context report. This is the measurement Ch.4's exercise asks for. */
+function report(s: State): void {
+  const v = buildContext(s);
+  const compactions = readLog().filter((e) => e.t === "context_compacted").length;
+  console.log(`\ncontext report (POLICY=${POLICY})`);
+  for (const b of v.blocks) {
+    if (b.tokens) console.log(`  ${b.label.padEnd(9)} ${String(b.tokens).padStart(5)} tok`);
+  }
+  console.log(`  ${"TOTAL".padEnd(9)} ${String(v.total).padStart(5)} tok  (${(v.occupancy * 100).toFixed(0)}% of ${WINDOW})`);
+  console.log(`  compactions: ${compactions}`);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // The model.  A deterministic stub, so this file runs offline. SEAM(Ch.11/Ch.12)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -229,7 +353,8 @@ const scripts: Record<string, (step: number) => ModelDecision> = {
 const stubModel: ModelProvider = {
   decide: async (s) => ({
     decision: (scripts[process.env.SCRIPT ?? "default"] ?? scripts.default!)(s.step),
-    tokens: 120 + s.transcript.length * 20,
+    // A real provider bills the built context, not the raw transcript. (Ch.4/Ch.7)
+    tokens: buildContext(s).total,
   }),
 };
 
@@ -252,6 +377,8 @@ async function run(model: ModelProvider, budgets: Budgets, goal: string): Promis
   while (true) {
     const stop = budgetStop(state, budgets);
     if (stop) return finish(stop);
+
+    state = maybeCompact(state);   // SEAM(Ch.4), worked
 
     // Recover an interrupted call before asking for a new one. Without this,
     // a crash between intent and effect silently loses the work. (Ch.6)
@@ -314,9 +441,10 @@ async function run(model: ModelProvider, budgets: Budgets, goal: string): Promis
   function finish(reason: StopReason): State {
     append({ t: "run_stopped", reason, at: new Date().toISOString() });
     console.log(`■ stopped: ${reason} (${state.step} steps, ${state.tokens} tokens)`);
+    report(state);
     return rebuild(readLog());
   }
 }
 
-const budgets: Budgets = { maxSteps: 12, maxTokens: 20_000, noProgressWindow: 3 };
+const budgets: Budgets = { maxSteps: 20, maxTokens: 200_000, noProgressWindow: 3 };
 await run(stubModel, budgets, "read the README and leave notes");

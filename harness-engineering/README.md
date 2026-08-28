@@ -104,6 +104,7 @@ side of it.
 
 Supporting material:
 
+- [`ASSESSMENT.md`](ASSESSMENT.md) — one objective task per chapter, against the reference harness. The *Check yourself* questions have no answer key by design; this is the substitute, and a better test.
 - [`GLOSSARY.md`](GLOSSARY.md) — terms the field uses inconsistently, pinned down
 - [`SOURCES.md`](SOURCES.md) — the full annotated bibliography, one row per source
 - [`sources.tsv`](sources.tsv) — the same list, machine-checkable

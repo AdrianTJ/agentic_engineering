@@ -1,6 +1,6 @@
 # Sources
 
-The full bibliography, 95 entries. Each is cited from at least one
+The full bibliography, 100 entries. Each is cited from at least one
 chapter; several are cited from three or more, which is a reasonable signal of
 which pieces are load-bearing.
 
@@ -47,6 +47,7 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S007` [The Anatomy of an Agent Harness](https://www.langchain.com/blog/the-anatomy-of-an-agent-harness) — LangChain
 - `S010` [Harness, Scaffold, and the AI Agent Terms Worth Getting Right](https://huggingface.co/blog/agent-glossary) — Hugging Face
 - `S069` [InfoQ: OpenAI Introduces Harness Engineering](https://www.infoq.com/news/2026/02/openai-harness-engineering-codex/) — InfoQ
+- `S096` [Harness-Bench: Measuring Harness Effects across Models in Realistic Agent Workflows](https://arxiv.org/abs/2605.27922) — arXiv
 
 **Going deeper**
 
@@ -60,6 +61,8 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S070` [Unlocking the Codex harness: how we built the App Server](https://openai.com/index/unlocking-the-codex-harness/) — OpenAI · `bot-blocked-403`
 - `S071` [Awesome Agentic Patterns](https://www.agentic-patterns.com/) — nibzard
 - `S091` [From Question Answering to Task Completion: A Survey on Agent System and Harness Design](https://arxiv.org/abs/2606.20683) — arXiv
+- `S097` [Claw-SWE-Bench: Evaluating Agent Harnesses on Coding Tasks](https://arxiv.org/abs/2606.12344) — arXiv
+- `S098` [AgentMeter: Evaluating Model-CLI Matching for CLI-Based Agents](https://arxiv.org/abs/2606.21140) — arXiv
 
 ### Chapter 02 — The loop
 
@@ -173,6 +176,8 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S031` [Agent observability: the complete guide](https://www.braintrust.dev/articles/agent-observability-complete-guide-2026) — Braintrust
 - `S032` [OpenTelemetry GenAI semantic conventions](https://greptime.com/blogs/2026-05-09-opentelemetry-genai-semantic-conventions) — Greptime
 - `S033` [LLM tracing and agent observability](https://mlflow.org/docs/latest/genai/tracing/) — MLflow
+- `S099` [Terminal-Bench](https://www.tbench.ai/) — tbench.ai
+- `S100` [The SWE-bench harness](https://www.swebench.com/SWE-bench/reference/harness/) — SWE-bench
 
 **Going deeper**
 

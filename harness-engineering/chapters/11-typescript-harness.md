@@ -36,7 +36,33 @@ one-to-one onto this curriculum. Work through it as a checklist:
 
 Read the options object closely. It is a compact statement of what a mature
 harness has to be configurable about, and it is a better summary of Chapters 5, 6,
-and 8 than most prose.
+and 9 than most prose.
+
+Three parts deserve a slower read, because each is a chapter of this curriculum
+made concrete:
+
+**The six permission modes** (Ch.9). `default` routes unmatched tools to your
+`canUseTool` callback; `dontAsk` denies anything not pre-approved; `acceptEdits`
+auto-approves file edits; `bypassPermissions` approves everything (trusted
+environments only); `plan` explores without editing; `auto` uses a model
+classifier to approve each call. Notice this is a **blast-radius dial, not a
+security boundary** — every one of these still runs inside whatever sandbox you
+gave it, which is Ch.9's point about Roots restated at the SDK level.
+`canUseTool` is where your own blast-radius policy lives.
+
+**The hook surface** (Ch.2, Ch.9, Ch.10). `PreToolUse`, `PostToolUse`,
+`PostToolUseFailure`, `PermissionRequest`, `PreCompact`, `SessionStart`,
+`SessionEnd`, `Stop`, `SubagentStart`/`SubagentStop`, among others. These are the
+interception seams: `PreToolUse` is where an approval gate goes,
+`PostToolUseFailure` is where Ch.2's error compaction goes, and `PreCompact` is
+where you enforce Ch.4's retention contract *before* the window is rewritten.
+
+**Compaction is observable.** A `system/compact_boundary` message carries the
+trigger (`manual` or `auto`) and `pre_tokens` — Ch.4's measurement exercise,
+available for free. And `SessionStart` carries a `source` of `startup`, `resume`,
+`clear`, `compact`, or `fork`: Ch.6's thread identity and Ch.10's context-reset
+distinction, surfaced in the API. A harness that ignores `source` cannot tell a
+fresh start from a resumption.
 
 **2. [Zod — defining schemas](https://zod.dev/api)** and **[basics](https://zod.dev/basics)** · ~35 min
 The schema layer that makes everything else typed. Learn `z.infer`, refinements,
@@ -93,6 +119,12 @@ lands. If you're only doing the TS track, skip.
 ## Build this
 
 Port your Chapters 2–10 harness to TypeScript, or build it natively.
+
+[`reference-harness/`](../reference-harness/) is already TypeScript, so the
+fastest version of this exercise is to take it and replace one function —
+`ModelProvider.decide` — with a real SDK call, then re-run `verify.sh` and see
+which of its 15 assertions still hold once the model is non-deterministic. The
+ones that break are the interesting ones.
 
 1. **Schemas first.** Every tool defined once in Zod; derive both the TS type and
    the JSON Schema sent to the model. Zero hand-written duplicates.

@@ -91,6 +91,27 @@ yourself.
 - **[Unlocking the Codex harness: how we built the App Server](https://openai.com/index/unlocking-the-codex-harness/)** — OpenAI's follow-up, on the harness as a product surface. Same 403 caveat.
 - **[Awesome Agentic Patterns](https://www.agentic-patterns.com/)** — 97 patterns across 8 categories, each required to be repeatable, agent-centric, and backed by a public reference. The best-curated index in the field; a good place to go when a chapter here leaves you wanting a worked example.
 
+## The claim, measured
+
+Chapter 1 opens with an assertion — reliability is a property of the
+model–harness–environment system. As of 2026 that is no longer only an
+assertion. **[Harness-Bench](https://arxiv.org/abs/2605.27922)** holds the model
+fixed and varies the harness across 106 sandboxed tasks and 5,194 execution
+trajectories, and finds substantial variation in completion, process quality,
+efficiency, and failure behavior across model–harness pairings. Its conclusion is
+the sentence to quote at anyone who benchmarks a model and calls it an agent:
+
+> Agent capability should be reported at the model–harness configuration level
+> rather than attributed to the base model alone.
+
+Also worth knowing: **[Claw-SWE-Bench](https://arxiv.org/abs/2606.12344)**
+evaluates agent *harnesses* on coding tasks specifically, and
+**[AgentMeter](https://arxiv.org/abs/2606.21140)** measures model–CLI matching —
+the same insight at the level of which agent suits which command-line tool.
+
+Read at least the Harness-Bench abstract before Chapter 2. It converts this
+curriculum's premise from a plausible story into a measured effect.
+
 ## Key concepts
 
 - **Harness** — everything around the model: loop, tools, context policy, state, verification, permissions.
@@ -108,7 +129,7 @@ primitives, name the concrete mechanism that implements it, or write "none."
 
 The "none" entries are the point. Nearly every harness has at least two, and the
 gaps predict its failure modes with unnerving accuracy. Keep this page — you will
-revise it after Chapters 4, 6, and 7.
+revise it after Chapters 4, 6, and 8.
 
 ## Check yourself
 

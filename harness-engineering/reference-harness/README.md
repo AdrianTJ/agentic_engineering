@@ -22,13 +22,18 @@ spent any money.
 |---|---|---|
 | The loop, four stopping conditions, error compaction | Ch.2 | **implemented** |
 | Stateless reducer, event log, crash recovery, idempotency | Ch.6 | **implemented** |
-| Context policy — compaction, notes, clearing | Ch.4 | `SEAM(Ch.4)` |
+| Context policy — compaction, notes, clearing | Ch.4 | **implemented, as the worked seam** |
 | Real tool schemas and descriptions | Ch.5 | `SEAM(Ch.5)` |
 | Cost accounting and cache layout | Ch.7 | `SEAM(Ch.7)` |
 | Verification, traces, evals | Ch.8 | `SEAM(Ch.8)` |
 | Sandboxing, permissions, approval gates | Ch.9 | `SEAM(Ch.9)` |
 | Handoff artifacts, context reset, evaluator split | Ch.10 | `SEAM(Ch.10)` |
 | A real model provider | Ch.11 / Ch.12 | `SEAM(Ch.11 / Ch.12)` |
+
+Ch.4 is implemented rather than stubbed for a different reason: it is the
+**worked seam**, the example the other attachment points follow. If you are about
+to attach a permission model or a trace exporter, read how the context policy
+attaches first.
 
 Grep for `SEAM(` to find every attachment point. **The gaps are the curriculum** —
 this file is a scaffold with the interesting parts removed on purpose, not a
@@ -53,6 +58,45 @@ node harness.ts                  # completes normally
 SCRIPT=thrash node harness.ts    # repeats one call — trips no-progress detection
 SCRIPT=long   node harness.ts    # never finishes — trips the step budget
 ```
+
+## The context policy, and what measuring it revealed
+
+`buildContext()` is the only function that decides what the model sees. The
+transcript is raw history; the context is a derived, budgeted view of it.
+Conflating those two is the most common Ch.4 mistake, so the code keeps them
+separate and the run prints an occupancy report broken down by category.
+
+Three policies, so the Ch.4 exercise is a command rather than a project:
+
+```sh
+POLICY=none    SCRIPT=long node harness.ts   # no policy
+POLICY=compact SCRIPT=long node harness.ts   # compaction only
+POLICY=full    SCRIPT=long node harness.ts   # compaction + tool clearing + notes
+```
+
+Measured, on the same 20-step task:
+
+| Policy | Final occupancy | Compactions | Tokens billed |
+|---|---|---|---|
+| `none` | **105%** — overflows | 0 | 4,727 |
+| `compact` | 70% | 2 | 3,943 |
+| `full` | 69% | **0** | **3,570** |
+
+**Tool clearing alone reached the same occupancy as compaction, billed 9% fewer
+tokens, and never had to compact at all.** The cheap, non-lossy technique beat the
+expensive, lossy one on this workload.
+
+The mechanism is visible in the per-category breakdown: after two compactions the
+`retained` contract block had grown to 169 tokens against 36 tokens of surviving
+history. Compaction moved most of the cost rather than removing it — the contract
+is the part you promised not to drop, so it accumulates. Ch.7's point lands here
+too: each compaction also rewrites the prefix, so a real provider would have
+invalidated the cache twice for a saving that tool clearing got for free.
+
+This is not an argument that compaction is wrong. It is an argument for
+**reaching for eviction before summarization**, and for measuring rather than
+assuming — which is exactly what Ch.4's exercise asks you to do, and why the
+numbers above come from `verify.sh` rather than from prose.
 
 ## A bug this skeleton shipped, and what it teaches
 

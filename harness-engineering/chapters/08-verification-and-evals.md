@@ -61,6 +61,27 @@ The tightest worked example of eval-driven harness development in the literature
 build the eval set, watch the misuse, fix the description, measure. Generalize the
 method beyond tools — it's how you should change *any* part of a harness.
 
+**6. [Terminal-Bench](https://www.tbench.ai/)** and **[the SWE-bench harness](https://www.swebench.com/SWE-bench/reference/harness/)** · ~30 min
+Read an evaluation harness as a design artifact, because it is one — and because
+building your regression suite is building a small one.
+
+A Terminal-Bench task is four things: a natural-language instruction, a sandboxed
+workspace, **an executable test script**, and a reference solution. Success is
+defined as transforming the environment into a passing state — not as producing
+the right text. That is the shape your own eval tasks should take, and the third
+item is the one hobby evals omit.
+
+The design note worth carrying: terminal interaction is a good evaluation
+substrate precisely because it *jointly* exercises observation design, context
+management, control-loop policy, action exposure, state persistence, and
+verification. Those are Chapters 4, 2, 5, 6 and this one. An eval that touches
+only one of them tells you about one of them.
+
+Note also the scale of the human effort — 93 contributors produced 229 candidate
+tasks, of which 89 survived review by three experienced reviewers. **Roughly 60%
+of proposed tasks were rejected.** Budget accordingly when you write your own;
+task quality, not task count, is what makes a suite informative.
+
 ## Going deeper
 
 - **[Harness Engineering for Self-Improvement](https://lilianweng.github.io/posts/2026-07-04-harness/)** — evolutionary search over harness configurations and joint optimization with weights. Where hill-climbing goes when you take it seriously.

@@ -345,3 +345,146 @@ surface in two prior passes of direct searching and turned up incidentally.
 5. **No coverage of evaluation harnesses as products** (Terminal-Bench,
    SWE-bench harness design) — relevant to Ch.8 and now cited only incidentally
    through Crab.
+
+---
+
+## Pass 04 — 2026-08-28 · the worked seam, the exit assessment, and a renumber bug
+
+**Scope.** Pass 03's five gaps. The two structural ones — an undemonstrated seam
+and a missing exit assessment — both got built.
+
+**Queries run** (2): Terminal-Bench / SWE-bench harness design; Claude Agent SDK
+TypeScript hooks and permissions. A build pass again, not a search pass.
+
+### Scheduling note
+
+This pass was invoked by a fresh `/loop 30m …`, which under the skill's rules
+means "create a cron." **I did not**, because the durable Routine created after
+the last session restart already fires this cadence, and adding a `CronCreate` job
+would have produced two schedulers at 30m — the exact duplication avoided in pass
+02, with the ephemeral mechanism that already failed once. Verified the Routine
+was live via `list_triggers`, then ran the pass directly.
+
+### The worked seam (gap 3 — closed)
+
+`SEAM(Ch.4)` is no longer a comment. The reference harness now implements a real
+context policy: `buildContext()` derives what the model sees from the raw
+transcript, with a written **retention contract**, compaction at 70% occupancy,
+tool clearing, notes injection, and a per-category occupancy report.
+
+Three policies via `POLICY=none|compact|full`, so Ch.4's central exercise is three
+commands rather than a project.
+
+**The measurement produced a result I did not expect, and it is now the most
+valuable thing in the chapter.** On the same 20-step task:
+
+| Policy | Occupancy | Compactions | Tokens billed |
+|---|---|---|---|
+| none | **105%** — overflows | 0 | 4,727 |
+| compact | 70% | 2 | 3,943 |
+| full | 69% | **0** | **3,570** |
+
+**Tool clearing alone matched compaction's occupancy, billed 9% less, and never
+compacted at all.** The per-category breakdown shows the mechanism: after two
+compactions the retained contract had grown to 169 tokens against 36 tokens of
+surviving history. Compaction *moved* the cost rather than removing it — the
+contract is by definition what you promised to keep, so it accumulates. Ch.7
+compounds it: each compaction rewrites the prefix, so a real provider would have
+invalidated the cache twice to buy what eviction got for free.
+
+This is now stated in Ch.4 as **reach for eviction before summarization, and
+measure rather than assume**, with the caveat that another workload may invert it.
+It came from running the thing, not from any source in the bibliography.
+
+Getting there required tuning: the first working version never triggered
+compaction at all (4% occupancy), so the most important technique in the chapter
+was silently untested. A demo that cannot reach its own threshold demonstrates
+nothing. Window dropped to 400 tokens and the step budget raised to 20.
+
+Six new `verify.sh` assertions cover it, including that every compaction preserved
+the `GOAL` contract item. **15/15.**
+
+### The exit assessment (gap 2 — closed)
+
+`ASSESSMENT.md`: one objective task per chapter, against the reference harness,
+each with a pass condition you can check. Deliberately *not* an answer key for the
+*Check yourself* questions — most have several defensible answers and a key would
+turn a thinking exercise into recall.
+
+Two design choices worth recording. Ch.6's task ("find a crash point that still
+breaks it") accepts *either* a reproducible divergence or a written argument that
+none remains — the second being harder. And the overall exit condition is Ch.8's:
+change the harness and prove what the change did, **including at least one change
+that made things worse and which you kept in the log**.
+
+### A renumber bug from pass 02, found now (unlogged gap)
+
+`check-refs.sh`, added this pass, passed clean — and was not what found the bug.
+Three chapter references were **wrong but in range**, stranded by pass 02's
+renumber:
+
+```
+Ch.1  "revise it after Chapters 4, 6, and 7."      → 8
+Ch.11 "a better summary of Chapters 5, 6, and 8"   → 9
+Ch.12 "highest-leverage work in Chapters 4, 5, 7"  → 8
+```
+
+The pass-02 regex matched `Chapter(s) N` and shifted the number *directly after*
+the word. In a list — "Chapters 5, 6, and 8" — only the first number is adjacent,
+so the tail silently kept pointing at the old numbering. Every reference still
+resolved to a real chapter, so nothing was detectably broken; they just pointed at
+the wrong one for two passes.
+
+Found by grepping list-style patterns by hand while a *different* edit failed its
+assertion — i.e. by accident. `check-refs.sh` now guards the case it can guard
+(references outside the chapter range, and chapters missing from the README) and
+its header states plainly that **it cannot catch an in-range-but-wrong reference,
+which is exactly what a renumber produces.** A validator that overstates its
+coverage is worse than none.
+
+### Gaps also closed
+
+- **1. Ch.11 depth.** Deepened from the SDK reference: the six permission modes as
+  a *blast-radius dial rather than a security boundary*; the hook surface mapped
+  to chapters (`PreToolUse` → approval, `PostToolUseFailure` → error compaction,
+  `PreCompact` → retention contract); and `compact_boundary`/`pre_tokens` plus
+  `SessionStart.source` as Ch.4 and Ch.6 surfaced in an API.
+- **4. Ch.5 exercise.** Now measurable against the harness: three tools cost 58
+  tokens of a 400-token window — **14.5% spent before any work happens.**
+- **5. Eval harnesses as products.** Ch.8 gained Terminal-Bench and the SWE-bench
+  harness, read as design artifacts. The task shape (instruction + sandboxed
+  workspace + **executable test script** + reference solution) is what hobby evals
+  omit, and the ~60% task rejection rate is a useful expectation-setter.
+
+Also: **Harness-Bench** (arXiv 2605.27922) is now Ch.1 core reading. It holds the
+model fixed and varies the harness across 106 tasks and 5,194 trajectories,
+concluding that capability should be reported at the model–harness configuration
+level rather than attributed to the base model. That converts this curriculum's
+opening premise from a plausible story into a measured effect — which after four
+passes is the single most useful citation found.
+
+**Validation:** 100 sources — **89 OK, 11 WARN, 0 FAIL**; `check-coverage.sh` and
+`check-refs.sh` passing; `verify.sh` **15/15**.
+
+One honest note: a link-check run mid-pass reported a single transient `FAIL` that
+cleared on re-run. The 45s-plus-one-retry hardening from pass 02 reduces this but
+does not eliminate it; a genuinely slow host can still exceed it. Treat an
+isolated `FAIL` as worth re-running before believing.
+
+### Known gaps, carried to pass 05
+
+1. **Ch.3 and Ch.9 have no worked seam.** Ch.4's is done and is the template;
+   routing and permissions are the two most valuable remaining, and Ch.9's is the
+   only one that would materially change the harness's safety posture.
+2. **`verify.sh` is a bash script asserting on grepped stdout.** It is honest but
+   brittle, and Ch.8's own assessment task asks the reader to replace it with
+   structured output and a committed baseline. The curriculum should arguably ship
+   what it asks for.
+3. **No source read end-to-end for Ch.7's vendor claims.** The routing and caching
+   magnitudes come from vendor posts, flagged as such but not independently
+   corroborated the way the OpenAI citation eventually was.
+4. **The reading-time estimates have never been validated** against anyone
+   actually reading. They are plausible and entirely unverified — which, by this
+   curriculum's own standards, means they should either be checked or marked.
+5. **Nothing has been read by a human yet.** Four passes of self-review converge
+   on self-consistency, not usefulness. The highest-value next input is a reader.

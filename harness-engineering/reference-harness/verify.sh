@@ -83,6 +83,19 @@ chk "tool clearing costs MORE once the cache is billed (the ranking inverts)"
 [ "$(hit "$cmp_out")" -gt "$(hit "$clr_out")" ]
 chk "compaction achieves the higher cache hit rate"
 
+sec "Ch.7: the cache-granularity result"
+reset; cn=$(CACHE_MODEL=chunk POLICY=none    SCRIPT=long node harness.ts 2>&1)
+reset; cc=$(CACHE_MODEL=chunk POLICY=compact SCRIPT=long node harness.ts 2>&1)
+reset; cl=$(CACHE_MODEL=chunk POLICY=clear   SCRIPT=long node harness.ts 2>&1)
+nb=$(bill_net "$cn"); cb=$(bill_net "$cc"); lb=$(bill_net "$cl")
+[ "$cb" -lt "$lb" ]; chk "chunk granularity: the compact-beats-clear ordering survives"
+# The magnitude collapse: doing nothing goes from ~3.4x compaction to near parity.
+[ "$((nb * 100 / cb))" -lt 150 ]
+chk "chunk granularity: no-policy comes within 50% of compaction (magnitude collapses)"
+reset; bn=$(bill_net "$(POLICY=none SCRIPT=long node harness.ts 2>&1)")
+[ "$((bn * 100 / nb))" -gt 200 ]
+chk "the coarse model overstates no-policy cost by more than 2x"
+
 sec "Ch.10: context reset hands off through an artifact"
 reset; rst=$(POLICY=reset SCRIPT=long node harness.ts 2>&1)
 echo "$rst" | grep -q "context reset:"; chk "reset fires at the occupancy threshold"

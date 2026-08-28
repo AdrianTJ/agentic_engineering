@@ -37,6 +37,7 @@ export function reduce(s: State, e: Event): State {
         freshTokens: s.freshTokens + e.fresh,
         billedTokens: s.billedTokens + billed(e.cached, e.fresh),
         lastBlocks: e.blocks,
+        lastChunks: e.chunks ?? [],
       };
     case "routed_statically":
       // A static edge costs a step but no tokens — that is the whole point. (Ch.3)
@@ -108,7 +109,7 @@ export function reduce(s: State, e: Event): State {
 
 export const EMPTY: State = {
   goal: null, step: 0, tokens: 0, applied: new Map(), transcript: [],
-  cachedTokens: 0, freshTokens: 0, billedTokens: 0, lastBlocks: [],
+  cachedTokens: 0, freshTokens: 0, billedTokens: 0, lastBlocks: [], lastChunks: [],
   retained: [], compactedThrough: 0, wasReset: false, provenance: new Map(), approvals: new Map(), awaiting: null,
   recentSignatures: [], pending: null, lastError: null, stopped: null,
 };

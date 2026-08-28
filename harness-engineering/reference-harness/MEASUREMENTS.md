@@ -26,6 +26,30 @@ is that it prevents context anxiety — losing coherence as the window fills —
 this harness's model is a deterministic script that cannot exhibit that failure.
 So this table shows what reset costs and says nothing about what it buys.
 
+## Cache granularity (Ch.7) — the open question, measured
+
+Billed cost under two cache models. `block` re-bills a whole block on any edit;
+`chunk` measures the cached prefix in 40-char chunks, much closer to how
+providers actually cache.
+
+| Policy | block: hit / billed | chunk: hit / billed |
+|---|---|---|
+| none | 38% / 3586 | 89% / 1106 |
+| compact | 59% / 2080 | 85% / 1063 |
+| clear | 49% / 2384 | 73% / 1469 |
+| reset | 47% / 2578 | 64% / 1883 |
+
+**The ordering survives** — `compact` still bills least, `clear` still bills more
+than `compact`. Pass 07's finding holds under finer granularity.
+
+**The magnitude collapses.** Under `block`, doing nothing costs 3.4x compaction.
+Under `chunk` it costs 1.04x, because an append-only context caches almost
+perfectly and every technique that *mutates* the context forfeits that.
+
+So on cost alone, context engineering barely pays. It earns its keep on
+**occupancy** — `none` exceeds the window and is unusable regardless of price —
+and on coherence, which this scripted model cannot exhibit at all.
+
 ## Static routing (Ch.3)
 
 | | Model calls | Raw tokens |

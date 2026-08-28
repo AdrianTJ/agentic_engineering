@@ -129,7 +129,7 @@ attach to, so you are not starting from an empty file twelve times:
 
 ```sh
 node harness.ts                                  # run it (Node 22.6+, no deps)
-reference-harness/verify.sh                      # 39 assertions from the chapters
+reference-harness/verify.sh                      # 42 assertions from the chapters
 CRASH_AT=3 node harness.ts && node harness.ts    # kill it, watch it resume
 ./run-sandboxed.sh SCRIPT=escape                 # containment, not just policy
 ```

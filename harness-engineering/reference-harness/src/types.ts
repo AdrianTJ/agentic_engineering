@@ -15,6 +15,7 @@ export type Event =
       blocks: { label: string; hash: string; tokens: number }[];
       cached: number;
       fresh: number;
+      chunks?: string[];
     }
   | { t: "routed_statically"; step: number; tool: string; rule: string }
   | { t: "tool_requested"; step: number; tool: string; args: string; key: string }
@@ -85,6 +86,7 @@ export type State = {
   freshTokens: number;
   billedTokens: number;
   lastBlocks: { label: string; hash: string; tokens: number }[];
+  lastChunks: string[];
   /** For no-progress detection. (Ch.2) */
   recentSignatures: string[];
   /**

@@ -106,15 +106,19 @@ second is harder.
 *block-granular* — any change invalidates a whole block — while real providers
 cache at token-prefix granularity.
 
-Re-derive it. Implement a token-prefix cache model, where an append-only history
-stays cached and a mid-list deletion invalidates everything after it. Re-run the
-four policies.
+That question has since been **answered** (`CACHE_MODEL=chunk`): the ordering
+survives, but the margin between doing nothing and compacting collapses from 3.4×
+to 1.04×. See `MEASUREMENTS.md`.
 
-**Pass condition.** A measured answer to an open question: does the ranking hold,
-or does token-granular caching restore tool clearing's win? Either result passes.
-Stating which assumptions your answer depends on is the actual test — and if you
-get a clean result, it belongs upstream in this repository rather than in your
-notes.
+So the task is now the next question down. A 40-char chunker is not a tokenizer;
+real boundaries fall elsewhere, and a real provider's cache has minimum block
+sizes and TTLs the harness ignores. **Redo the comparison against a real
+tokenizer, or against actual provider cache telemetry.**
+
+**Pass condition.** A measured answer with its assumptions stated: does 1.04%
+survive contact with a real tokenizer? If your result is clean it belongs upstream
+in this repository, not in your notes — that is the standard the curriculum holds
+itself to, twice now.
 
 ---
 

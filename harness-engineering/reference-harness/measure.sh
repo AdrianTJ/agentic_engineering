@@ -14,12 +14,15 @@ cd "$(dirname "$0")"
 field() { echo "$1" | grep -oE "$2" | grep -oE '[0-9]+' | head -1; }
 run() { rm -rf .state; env "$@" node harness.ts 2>&1; }
 
-declare -A RAW BILL HIT CMP RST
+declare -A RAW BILL HIT CMP RST CBILL CHIT
 for p in none compact clear full reset; do
   o=$(run POLICY=$p SCRIPT=long)
   RAW[$p]=$(field "$o" '[0-9]+ tokens\)')
   BILL[$p]=$(field "$o" 'billed: [0-9]+')
   HIT[$p]=$(field "$o" '\([0-9]+% hit')
+  oc=$(run CACHE_MODEL=chunk POLICY=$p SCRIPT=long)
+  CBILL[$p]=$(field "$oc" 'billed: [0-9]+')
+  CHIT[$p]=$(field "$oc" '\([0-9]+% hit')
   CMP[$p]=$(field "$o" 'compactions: [0-9]+')
   RST[$p]=$(field "$o" 'resets: [0-9]+')
 done
@@ -60,6 +63,30 @@ costs more **billed**. The ranking inverts depending on which column you optimis
 is that it prevents context anxiety — losing coherence as the window fills — and
 this harness's model is a deterministic script that cannot exhibit that failure.
 So this table shows what reset costs and says nothing about what it buys.
+
+## Cache granularity (Ch.7) — the open question, measured
+
+Billed cost under two cache models. \`block\` re-bills a whole block on any edit;
+\`chunk\` measures the cached prefix in 40-char chunks, much closer to how
+providers actually cache.
+
+| Policy | block: hit / billed | chunk: hit / billed |
+|---|---|---|
+| none | ${HIT[none]}% / ${BILL[none]} | ${CHIT[none]}% / ${CBILL[none]} |
+| compact | ${HIT[compact]}% / ${BILL[compact]} | ${CHIT[compact]}% / ${CBILL[compact]} |
+| clear | ${HIT[clear]}% / ${BILL[clear]} | ${CHIT[clear]}% / ${CBILL[clear]} |
+| reset | ${HIT[reset]}% / ${BILL[reset]} | ${CHIT[reset]}% / ${CBILL[reset]} |
+
+**The ordering survives** — \`compact\` still bills least, \`clear\` still bills more
+than \`compact\`. Pass 07's finding holds under finer granularity.
+
+**The magnitude collapses.** Under \`block\`, doing nothing costs 3.4x compaction.
+Under \`chunk\` it costs 1.04x, because an append-only context caches almost
+perfectly and every technique that *mutates* the context forfeits that.
+
+So on cost alone, context engineering barely pays. It earns its keep on
+**occupancy** — \`none\` exceeds the window and is unusable regardless of price —
+and on coherence, which this scripted model cannot exhibit at all.
 
 ## Static routing (Ch.3)
 

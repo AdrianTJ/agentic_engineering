@@ -145,12 +145,33 @@ Instrument, then optimize, then measure the thing you broke.
    clearing churns a mid-sized one. **Billed cost tracks the size of the part that
    changes, not the size of the context.**
 
-   Its cache model is block-granular, though, and real providers cache at
-   token-prefix granularity. Re-derive the comparison under a token-granular model
-   — where an append-only history stays cached but a mid-list deletion invalidates
-   everything after it. It may well restore the original ranking. **This is an
-   open question in the curriculum, not a rhetorical one**, and working it out is
-   worth more than accepting either table.
+   That first result used a **block-granular** cache model, and real providers
+   cache at token-prefix granularity — so the curriculum went and measured it a
+   second way (`CACHE_MODEL=chunk`, a 40-char-chunk prefix, much closer to the
+   truth). The answer is more interesting than either "it holds" or "it flips":
+
+   | Policy | block: billed | chunk: billed |
+   |---|---|---|
+   | none | 3,586 | **1,106** |
+   | compact | 2,080 | **1,063** |
+   | clear | 2,384 | 1,469 |
+   | reset | 2,578 | 1,883 |
+
+   **The ordering survives; the magnitude collapses.** Under the coarse model,
+   doing nothing costs 3.4× compaction. Under the finer one it costs 1.04×,
+   because an append-only context caches almost perfectly and every technique that
+   *mutates* the context forfeits that.
+
+   Which forces a conclusion this chapter did not expect: **on cost alone, context
+   engineering barely pays.** It earns its keep on **occupancy** — the no-policy
+   run exceeds the window and is unusable at any price — and on coherence, which a
+   scripted model cannot exhibit. If you justify a context policy on token cost,
+   measure it at realistic cache granularity first; you may be buying something
+   you already had.
+
+   Still open, and now the sharper question: a real tokenizer places boundaries
+   where a fixed-width chunker does not. Redo it against actual provider cache
+   telemetry and see whether 1.04× holds.
 5. **Route.** Send one clearly-cheap step (tool selection, or a classification) to
    a small model. Run your Chapter 8 regression suite. Report cost delta *and*
    pass-rate delta. Keep the change only if the second is flat.

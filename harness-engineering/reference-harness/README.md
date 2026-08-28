@@ -5,7 +5,7 @@ from an empty file twelve times.
 
 ```sh
 node harness.ts          # run it
-./verify.sh              # 39 assertions, checked against a committed baseline
+./verify.sh              # 42 assertions, checked against a committed baseline
 ./verify.sh --baseline   # re-baseline deliberately
 ./verify.sh --json       # machine-readable results
 CRASH_AT=3 node harness.ts && node harness.ts   # kill it, watch it resume
@@ -104,23 +104,32 @@ mid-sized and mutates it every turn, so a moderate block is re-billed
 continuously. A larger context with a small volatile tail beats a smaller context
 that churns.
 
-### What this model gets wrong
+### Then the model was checked, and it mattered
 
-The cache here is **block-granular**: any change to a block invalidates that block
-entirely. Real providers cache at token-prefix granularity, where an append-only
-history stays almost fully cached and a mid-list deletion invalidates everything
-after it.
+The table above uses a **block-granular** cache: any change to a block re-bills
+the whole block. Real providers cache at prefix granularity. `CACHE_MODEL=chunk`
+measures the cached prefix in 40-char chunks instead — coarser than a tokenizer,
+far finer than a block:
 
-That difference cuts both ways and I have not resolved it: token-granular caching
-would make a *growing* history much cheaper than modelled (favouring `clear`),
-while making compaction's rewrite of an early block more expensive (favouring
-`clear` again). **A more realistic cache model might well restore pass 04's
-ranking.**
+| Policy | block: billed | chunk: billed |
+|---|---|---|
+| none | 3,586 | **1,106** |
+| compact | 2,080 | **1,063** |
+| clear | 2,384 | 1,469 |
+| reset | 2,578 | 1,883 |
 
-So take the transferable part and not the table: *measure billed, not raw*, and
-*the volatile tail is what you pay for*. Re-deriving this against a token-granular
-model is the Ch.7 exercise, and it is a genuinely open question rather than a
-rhetorical one.
+**The ordering survives; the magnitude collapses.** Doing nothing costs 3.4×
+compaction under the coarse model and 1.04× under the finer one, because an
+append-only context caches almost perfectly and every technique that *mutates* the
+context gives that up.
+
+Which lands somewhere the curriculum did not intend: **on cost alone, context
+engineering barely pays.** It earns its keep on occupancy — the no-policy run
+exceeds the window and is unusable at any price — and on coherence, which a
+scripted model cannot exhibit.
+
+Still open: a 40-char chunker is not a tokenizer, and real caches have minimum
+block sizes and TTLs this ignores. That is now the Ch.7 assessment task.
 
 ## The router, and an honest caveat about its numbers
 
@@ -326,7 +335,7 @@ src/model.ts      Ch.11/12  the one function you swap for a real SDK call
 run-sandboxed.sh  the same harness under runtime filesystem containment
 measure.sh        regenerates MEASUREMENTS.md (run after changing the harness)
 MEASUREMENTS.md   generated: every figure the chapters quote
-verify.sh         39 assertions, each corresponding to a claim made in a chapter
+verify.sh         42 assertions, each corresponding to a claim made in a chapter
 baseline.json     committed expected results; verify.sh fails on regression
 results.json      written every run (gitignored)
 SPEC.md        the contracts, language-neutral, for the Rust track and your own port

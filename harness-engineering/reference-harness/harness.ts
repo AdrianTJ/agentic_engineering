@@ -93,11 +93,11 @@ async function run(model: ModelProvider, budgets: Budgets, goal: string): Promis
       decision = routed.decision;
     } else {
       const view = buildContext(state);
-      const { cached, fresh, fingerprints } = cacheSplit(view.blocks, state.lastBlocks);
+      const { cached, fresh, fingerprints, chunks } = cacheSplit(view.blocks, state.lastBlocks, state.lastChunks);
       const r = await model.decide(state, tools);
       append({
         t: "model_called", step: state.step + 1, tokens: r.tokens,
-        blocks: fingerprints, cached, fresh,
+        blocks: fingerprints, cached, fresh, chunks,
       });
       state = rebuild(readLog());
       decision = r.decision;

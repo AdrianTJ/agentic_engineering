@@ -177,14 +177,26 @@ Link rot is the failure mode of any curriculum. Every URL cited here is in
 `sources.tsv` and checkable:
 
 ```sh
-bin/check-links.sh                # every source still resolves
-bin/check-coverage.sh             # every cited URL is registered in sources.tsv
-bin/check-refs.sh                 # every Ch.N reference points at a real chapter
-bin/check-numbers.sh              # every quoted measurement matches the harness
-reference-harness/verify.sh       # the harness does what the chapters claim
+bin/check-all.sh                  # all of the below, in dependency order
+bin/check-all.sh --links          # …plus link rot (slow: ~114 network requests)
+bin/install-hooks.sh              # run check-all.sh on every relevant commit
 ```
 
-Each exists because something went wrong that it would have caught. Coverage came
+Individually:
+
+```sh
+reference-harness/measure.sh      # regenerate MEASUREMENTS.md (run this first)
+reference-harness/verify.sh       # the harness does what the chapters claim
+bin/check-refs.sh                 # every Ch.N reference points at a real chapter
+bin/check-coverage.sh             # every cited URL is registered in sources.tsv
+bin/check-numbers.sh              # every quoted measurement matches the harness
+bin/check-links.sh                # every source still resolves
+```
+
+Each exists because something went wrong that it would have caught — including
+`check-all.sh` itself, which exists because pass 09 pushed a commit with
+`check-numbers.sh` red. The checkers were run by discipline; discipline is what
+failed. Coverage came
 from a bare link that escaped the link checker; refs from a renumber that stranded
 three cross-references; numbers from published figures that went stale twice.
 

@@ -1040,10 +1040,14 @@ passing; `verify.sh` **42/42** (34 → 42).
 
 ### Known gaps, carried to pass 10
 
-1. **Nothing enforces the checkers.** A pre-commit hook running
-   `check-numbers.sh`, `check-refs.sh`, `check-coverage.sh` and `verify.sh` would
-   have caught this pass's own slip. The highest-value remaining item, and the
-   only one demonstrated necessary by evidence rather than argument.
+1. ~~Nothing enforces the checkers.~~ **Closed within the pass.**
+   `bin/check-all.sh` runs everything in dependency order (regenerating
+   `MEASUREMENTS.md` first, so the comparison is never against a stale file), and
+   `bin/install-hooks.sh` installs it as a pre-commit hook scoped to commits that
+   touch `harness-engineering/`. Verified by staging a deliberately wrong
+   assertion count: the commit was refused, exit 1, nothing written. Checked by
+   reading git's own exit code and the log rather than through a pipe — the
+   mistake this repository has now made twice.
 2. **Ch.5 and Ch.8 remain the only unworked seams.** Ch.8's is the more useful:
    the harness has 42 assertions and no trace export, so it cannot demonstrate the
    observability half of its own chapter.

@@ -32,6 +32,31 @@ Each chapter has the same shape:
 | **Build this** | A concrete exercise that forces the idea into your hands |
 | **Check yourself** | Questions you should be able to answer without notes |
 
+### About the time estimates — checked, and not great
+
+Each core reading carries a `~N min`. Pass 05 measured these against actual word
+counts for a sample of nine core sources (at 200 wpm, a conventional rate for
+technical prose):
+
+| Source | Estimated | Measured |
+|---|---|---|
+| Writing effective tools | 35 min | 17 min |
+| Harness design for long-running apps | 40 min | 27 min |
+| The lethal trifecta | 10 min | 10 min |
+| The art of loop engineering | 20 min | 29 min |
+| Anatomy of an agent harness | 20 min | 34 min |
+| Building LangGraph | 30 min | 43 min |
+| Harness engineering for self-improvement | 45 min | 72 min |
+
+**They are unreliable at the individual level** — one is 2× too high, several are
+~40% too low, one is exact. There is no systematic bias to correct for, just
+noise. Two more sources could not be measured at all (JavaScript-rendered pages).
+
+Treat them as a rough sense of *relative* weight — "this one is short, that one is
+a sitting" — and not as a schedule. The 200 wpm rate is itself generous for dense
+papers, and the measured counts include page boilerplate, so both columns have
+their own error. Recalibrating them properly is on the pass-06 list.
+
 Read in order for chapters 1–10; they build. Chapters 11 and 12 (TypeScript, Rust)
 are parallel implementation tracks — read whichever language you'll actually
 write in, or both to see how the same primitives land differently.

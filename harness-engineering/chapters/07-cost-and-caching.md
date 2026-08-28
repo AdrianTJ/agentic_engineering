@@ -56,8 +56,26 @@ Read for how routing decisions get made and what they cost in quality — the ho
 version, rather than the vendor version, which always reports the savings and not
 the regressions.
 
+**3b. [RouteLLM: Learning to Route LLMs with Preference Data](https://arxiv.org/abs/2406.18665)** — Ong et al. / LMSYS · ~35 min
+Read this **instead of trusting the vendor numbers below**. It is the independent
+measurement of the routing claim, with the quality axis reported rather than
+omitted: up to ~85% cost reduction while retaining ~95% of GPT-4 performance on
+MT-Bench, and matrix-factorization routers hitting 95% of GPT-4 quality using 26%
+GPT-4 calls. The [LMSYS write-up](https://www.lmsys.org/blog/2024-07-01-routellm/)
+is the readable version.
+
+Two things to take from it. First, savings depend heavily on query distribution —
+published ranges span roughly 40–98%, so any single headline number is a claim
+about someone else's traffic, not yours. Second, routing is evaluated on public
+benchmarks (RouterBench, RouterEval), which means **you need your own eval before
+you route** — Ch.8's regression suite is the prerequisite for this chapter's
+biggest lever, not an optional follow-up. See also the
+[survey of dynamic routing and cascading](https://arxiv.org/abs/2603.04445).
+
 **4. [AI Agent Cost Optimization: cutting LLM spend with routing](https://www.requesty.ai/blog/ai-agent-cost-optimization-how-to-cut-llm-spend-by-80-percent-with-routing)** — Requesty · ~20 min
-Vendor-authored — the company sells routing, so discount the totals. Read it
+Vendor-authored — the company sells routing, so discount the totals, and note
+that its 60–80% routing figure sits inside RouteLLM's measured range while
+omitting the quality cost that paper reports. Read it
 anyway for the practitioner's stack of levers and rough magnitudes: routing
 (60–80%), caching (40–90% of input tokens), context optimization (30–60%), and
 hard/soft budget limits. The last one is the least glamorous and the one that

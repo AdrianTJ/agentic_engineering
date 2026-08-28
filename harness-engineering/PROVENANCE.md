@@ -488,3 +488,134 @@ isolated `FAIL` as worth re-running before believing.
    curriculum's own standards, means they should either be checked or marked.
 5. **Nothing has been read by a human yet.** Four passes of self-review converge
    on self-consistency, not usefulness. The highest-value next input is a reader.
+
+---
+
+## Pass 05 — 2026-08-28 · the security seam, structured evals, and honest time estimates
+
+**Scope.** Pass 04's five gaps. Two builds, one corroboration, one measurement
+that did not flatter the curriculum.
+
+**Queries run** (3): LLM routing cost/quality measurement; agent permission and
+blast-radius policy engines; CaMeL. All three were targeted at named gaps.
+
+### The Ch.9 worked seam (gap 1 — closed)
+
+`SEAM(Ch.9)` is now implemented, following CaMeL's structure: **the model
+proposes, a deterministic engine outside it decides.** Per-tool blast radius
+(`read`/`write`/`external`), a taint bit set when a tool reads untrusted content,
+and a trifecta check that closes egress once tainted — decided without consulting
+the model that read the untrusted text.
+
+The code states plainly that this is CaMeL's *structure*, not its mechanism: one
+taint bit rather than capabilities enforced in a custom interpreter. It
+demonstrates the pattern without delivering the guarantees, and pretending
+otherwise would be the exact failure Ch.8 calls verification theater.
+
+`POLICY_OFF=1` runs the identical script and the data leaves, which is how
+`verify.sh` proves the control is load-bearing rather than decorative. **A
+security control that is never observed failing open has not been tested.**
+
+### What building it taught: an approval is a budget, not a predicate
+
+Two wrong designs before the right one, both discovered by running it:
+
+1. **Approvals keyed by idempotency key** (`step:tool:args`): one human decision,
+   three prompts — the agent retried at new steps and each retry read as a new
+   action.
+2. **Approvals keyed logically** (`tool:args`) as a boolean: one prompt, then
+   **four sends off a single approval.** A boolean approval is a standing permit.
+
+The resolution is that these are two ledgers answering different questions and
+they must be keyed differently — idempotency by *occurrence*, approval by
+*action* — and that an approval's value is a **use count**, almost always 1.
+`verify.sh` asserts one grant authorises exactly one send, and that the next send
+re-prompts.
+
+None of the Ch.9 sources say this. It is the second time the reference harness has
+taught the curriculum something rather than the other way round.
+
+### Structured evals with a committed baseline (gap 2 — closed)
+
+Ch.8's assessment task tells the reader to emit structured results and commit a
+baseline instead of eyeballing printed lines. `verify.sh` was a bash script
+grepping stdout. It now writes `results.json`, compares against a committed
+`baseline.json`, and exits non-zero on regression. `--baseline` re-baselines
+deliberately; `--json` emits machine-readable results.
+
+**A bug found while testing it.** The first version recorded a *different
+assertion name* on the pass and fail branches (`ok "X"` / `bad "Y"`), so a genuine
+regression appeared in the diff as one assertion DISAPPEARING and another
+arriving — indistinguishable from a rename. Assertion names are now stable
+identities via a single `chk <name>` helper that consumes the preceding exit
+status.
+
+Verified by injecting a real regression (disabling the trifecta check): reports
+`REGRESSED`, exits 1. Restored: exits 0. **23 assertions, up from 15.**
+
+Also worth recording: my first test of the exit code read `tail`'s status through
+a pipe rather than the script's, and appeared to show the gate failing open. The
+gate was fine; the test was wrong. Testing a test is not optional.
+
+### Vendor claims corroborated (gap 3 — closed)
+
+Ch.7's routing and caching magnitudes came from vendor posts, flagged but
+unverified. **RouteLLM** (arXiv 2406.18665, LMSYS) is now core reading *ahead of*
+the vendor piece: ~85% cost reduction retaining ~95% of GPT-4 quality on MT-Bench,
+matrix-factorization routers reaching 95% quality on 26% frontier calls, and a
+published range across query distributions of roughly 40–98%.
+
+Two things the vendor framing omits and the chapter now states: the quality axis,
+and that any single headline figure describes someone else's traffic. Also added:
+routing is evaluated on benchmarks, so **Ch.8's regression suite is a prerequisite
+for Ch.7's biggest lever**, not an optional follow-up.
+
+### The time estimates, measured (gap 4 — closed, unflatteringly)
+
+Every core reading carries a `~N min` that had never been checked. Measured nine
+of them against word counts at 200 wpm:
+
+| Source | Estimated | Measured |
+|---|---|---|
+| Writing effective tools | 35 | 17 |
+| Harness design for long-running apps | 40 | 27 |
+| The lethal trifecta | 10 | 10 |
+| The art of loop engineering | 20 | 29 |
+| Anatomy of an agent harness | 20 | 34 |
+| Building LangGraph | 30 | 43 |
+| Harness engineering for self-improvement | 45 | 72 |
+
+**Unreliable at the individual level** — one 2× high, several ~40% low, one exact,
+no systematic bias to correct for. Two more could not be measured at all
+(JavaScript-rendered pages). The README now says this plainly, with the table, and
+tells the reader to use the numbers as relative weight rather than a schedule.
+
+Leaving unvalidated numbers in place would have been the easy option; so would
+quietly deleting them. Publishing the error is the one consistent with what this
+curriculum tells its reader to do.
+
+### Tooling
+
+`check-links.sh` gained a `webfetch-only` category: a connection failure on a
+source whose note records verification by another path is an environment
+limitation, not a dead link — the same treatment bot-blocked hosts already got.
+The Sophos article is live (confirmed by fetch, and it contributed the
+credential-isolation and sealed-tool-endpoint patterns to Ch.9) but unreachable to
+`curl` from here.
+
+**Validation:** 109 sources — **97 OK, 12 WARN, 0 FAIL**; `check-coverage.sh` and
+`check-refs.sh` passing; `verify.sh` **23/23** against baseline.
+
+### Known gaps, carried to pass 06
+
+1. **Ch.3 has no worked seam** — routing is the last of the three most valuable.
+2. **Recalibrate all reading estimates** from measured lengths, and find a method
+   for the JS-rendered pages. Currently honest but wrong.
+3. **The trifecta taint bit is coarse.** It taints the whole run on any untrusted
+   read, so a legitimate egress after any file read is blocked forever. Real
+   systems need per-value taint — which is CaMeL's actual contribution and the
+   thing the seam most obviously simplifies away.
+4. **No source read end-to-end for Ch.10's vendor/practitioner claims** — the same
+   audit Ch.7 just received.
+5. **Still nothing read by a human.** Five passes of self-review converge on
+   internal consistency. The binding constraint on quality is now a reader.

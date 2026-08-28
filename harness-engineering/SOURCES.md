@@ -1,6 +1,6 @@
 # Sources
 
-The full bibliography, 100 entries. Each is cited from at least one
+The full bibliography, 109 entries. Each is cited from at least one
 chapter; several are cited from three or more, which is a reasonable signal of
 which pieces are load-bearing.
 
@@ -15,6 +15,7 @@ validates that every URL linked from a chapter is registered here.
 | `ok` | Returned 2xx to an automated fetch at last check |
 | `bot-blocked-403` | Live, but rejects automated fetchers (Cloudflare or similar) |
 | `egress-403` | Blocked by this environment's egress policy, not by the host |
+| `slow-host` | Live, but intermittently exceeds the checker's timeout |
 | `…-verified-via-webfetch` | Blocked to `curl`, but content confirmed through a different fetch path |
 | `unchecked` | Registered and link-checked but not yet read end to end; only ever used for *Going deeper* entries |
 
@@ -159,12 +160,15 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S075` [Agent-as-a-Router: Agentic Model Routing for Coding Tasks](https://arxiv.org/abs/2606.22902) — arXiv
 - `S076` [AI Agent Cost Optimization: cutting LLM spend with routing](https://www.requesty.ai/blog/ai-agent-cost-optimization-how-to-cut-llm-spend-by-80-percent-with-routing) — Requesty
 - `S077` [Prompt Caching Economics: cache-first agent design](https://www.digitalapplied.com/blog/prompt-caching-economics-cache-first-agent-architecture-2026) — Digital Applied
+- `S101` [RouteLLM: Learning to Route LLMs with Preference Data](https://arxiv.org/abs/2406.18665) — Ong et al. / LMSYS
+- `S102` [RouteLLM (LMSYS write-up)](https://www.lmsys.org/blog/2024-07-01-routellm/) — LMSYS
 
 **Going deeper**
 
 - `S078` [AI Agent Token Cost Optimization](https://fast.io/resources/ai-agent-token-cost-optimization/) — Fastio
 - `S079` [How LLM agent loops break caching](https://www.tensormesh.ai/blog-posts/agentic-ai-inference-cost-kv-caching-production) — Tensormesh · `unchecked`
 - `S080` [Self-Compacting Language Model Agents](https://arxiv.org/abs/2606.23525) — arXiv · `unchecked`
+- `S103` [Dynamic Model Routing and Cascading for Efficient LLM Inference: A Survey](https://arxiv.org/abs/2603.04445) — arXiv
 
 ### Chapter 08 — Verification, evals & observability
 
@@ -199,6 +203,10 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S039` [Towards Secure Agent Skills: Architecture, Threat Taxonomy, Security Analysis](https://arxiv.org/abs/2604.02837) — arXiv
 - `S063` [Model Context Protocol (MCP) Security (whitepaper)](https://www.coalitionforsecureai.org/wp-content/uploads/2026/03/model-context-protocol-security-1.pdf) — CoSAI
 - `S088` [The lethal trifecta for AI agents](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/) — Simon Willison
+- `S104` [Defeating Prompt Injections by Design (CaMeL)](https://arxiv.org/abs/2503.18813) — Debenedetti et al. (Google DeepMind)
+- `S105` [CaMeL offers a promising new direction for mitigating prompt injection](https://simonwillison.net/2025/Apr/11/camel/) — Simon Willison
+- `S106` [AgentDojo](https://agentdojo.spylab.ai/) — ETH SPY Lab
+- `S107` [Before the Tool Call: Deterministic Pre-Action Authorization](https://arxiv.org/abs/2603.20953) — arXiv
 
 **Going deeper**
 
@@ -207,6 +215,8 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S042` [Exploring Gen AI (memo series)](https://martinfowler.com/articles/exploring-gen-ai.html) — Martin Fowler / Birgitta Boeckeler
 - `S062` [Deep Dive: 12 Reusable Agentic Harness Design Patterns from Claude Code](https://www.epsilla.com/blogs/2026-04-18-deep-dive-12-reusable-agentic-harness-design-patte) — Epsilla · `unchecked`
 - `S068` [Coding Assistants Threaten the Software Supply Chain](https://martinfowler.com/articles/exploring-gen-ai/software-supply-chain-attack-surface.html) — Fowler / Boeckeler
+- `S108` [The Balkanization of Execution-Security Research for AI Coding Agents](https://arxiv.org/abs/2607.05743) — arXiv
+- `S109` [Inside the lethal trifecta: blast radius reduction](https://www.sophos.com/en-us/blog/inside-the-lethal-trifecta-blast-radius-reduction-in-ai-agent-deployments) — Sophos · `slow-host`
 
 ### Chapter 10 — Long-running operations & the human interface
 

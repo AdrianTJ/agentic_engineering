@@ -80,9 +80,37 @@ Skills are instructions loaded at runtime from files, often from third parties.
 That is a supply chain, with all the properties of one. Pair with Fowler's
 [*Coding Assistants Threaten the Software Supply Chain*](https://martinfowler.com/articles/exploring-gen-ai/software-supply-chain-attack-surface.html) — the same argument about generated code and its dependencies.
 
+**7. [Defeating Prompt Injections by Design (CaMeL)](https://arxiv.org/abs/2503.18813)** — Debenedetti et al., Google DeepMind · ~45 min
+The strongest architectural answer anyone has proposed, and the design the
+reference harness's Ch.9 seam imitates. The move: extract control and data flow
+from the **trusted** query, so untrusted data can never influence program flow,
+and attach capability metadata to values so unauthorized data flows are blocked
+by a custom interpreter. **The model proposes; a deterministic engine outside it
+decides.** No modification to the LLM. It solves 67% of
+[AgentDojo](https://agentdojo.spylab.ai/) tasks *with provable security* —
+note that "provable" is doing more work in that sentence than "67%".
+
+[Simon Willison's write-up](https://simonwillison.net/2025/Apr/11/camel/) is the
+best short explanation.
+
+Read it alongside the uncomfortable fact: as of 2026 **no production-grade CaMeL
+implementation exists, and no mainstream agent harness has adopted the pattern.**
+The best-understood defense in the field is not deployed in the tools you use.
+Whether that is a gap in the research or in the industry is a question worth
+forming an opinion about.
+
+**8. [Before the Tool Call: Deterministic Pre-Action Authorization for Autonomous AI Agents](https://arxiv.org/abs/2603.20953)** · ~30 min
+The implementable version, and the four-layer architecture worth memorizing:
+model alignment, **deterministic pre-action authorization**, sandboxed execution,
+post-hoc evaluation. Only the middle two are controls; the outer two are
+mitigations. Note the argument for *intent-based* authorization over RBAC — roles
+cannot describe a dynamic workflow, which is what an agent is.
+
 ## Going deeper
 
 - **[AgentBound: Securing Execution Boundaries of AI Agents](https://arxiv.org/abs/2510.21236)** — enforcement mechanisms at the boundary.
+- **[The Balkanization of Execution-Security Research for AI Coding Agents](https://arxiv.org/abs/2607.05743)** — isolation, access control, and time-of-check-to-time-of-use vulnerabilities. The TOCTTOU section is the one most likely to describe a bug you actually have.
+- **[Inside the lethal trifecta: blast radius reduction in AI agent deployments](https://www.sophos.com/en-us/blog/inside-the-lethal-trifecta-blast-radius-reduction-in-ai-agent-deployments)** — Sophos. Seven operational patterns, on an explicit *assume breach* footing rather than an injection-prevention one. Two are underrepresented everywhere else in this chapter: **credential isolation** — resolve and inject secrets in a separate process or proxy so they never enter the model's context at all, which removes a target rather than guarding it; and **sealed tool endpoints** — fixed-schema tools behind a broker that holds the credentials and enforces per-tool egress allow-lists. Also: split one do-everything agent into narrower identities for retrieval, planning, execution, and approval-sensitive actions.
 - **[Give Them an Inch and They Will Take a Mile: Caller Identity Confusion in MCP-Based AI Systems](https://arxiv.org/abs/2603.07473)** — a specific, measured, and genuinely surprising class of MCP vulnerability. Read it as a case study in how protocol-level ambiguity becomes an exploit.
 - **[Deep Dive: 12 Reusable Agentic Harness Design Patterns](https://www.epsilla.com/blogs/2026-04-18-deep-dive-12-reusable-agentic-harness-design-patte)** — the blast-radius/HITL pattern: evaluate the blast radius of each proposed action and require human approval above a threshold. Third-party inference about a shipping harness, but the pattern stands on its own.
 - **[12-Factor Agents](https://github.com/humanlayer/12-factor-agents)** #7, *contact humans with tool calls* — the mechanism that makes approval gates composable rather than special-cased.
@@ -105,6 +133,15 @@ That is a supply chain, with all the properties of one. Pair with Fowler's
 ## Build this
 
 Threat-model the harness you have built across Chapters 2–8, then fix the worst thing.
+
+[`reference-harness/`](../reference-harness/) works this seam: a deterministic
+`authorize()` outside the model, per-tool blast radius, a taint bit that closes
+egress once untrusted content is in context, and approval as a durable wait.
+`POLICY_OFF=1` runs the identical script and the data leaves — which is how its
+`verify.sh` proves the control is load-bearing rather than decorative. Its README
+documents the finding that an **approval is a budget, not a predicate**: keyed by
+occurrence it spams the human, keyed logically it becomes a standing permit, and
+the fix is a use count on a separate ledger from idempotency.
 
 1. **Enumerate.** List every capability: shell, filesystem paths, network destinations,
    credentials, external side effects. For each, write the worst single action.

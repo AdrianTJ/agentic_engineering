@@ -5,7 +5,9 @@ from an empty file twelve times.
 
 ```sh
 node harness.ts          # run it
-./verify.sh              # prove it does what the chapters claim
+./verify.sh              # 23 assertions, checked against a committed baseline
+./verify.sh --baseline   # re-baseline deliberately
+./verify.sh --json       # machine-readable results
 CRASH_AT=3 node harness.ts && node harness.ts   # kill it, watch it resume
 rm -rf .state            # start over
 ```
@@ -26,7 +28,7 @@ spent any money.
 | Real tool schemas and descriptions | Ch.5 | `SEAM(Ch.5)` |
 | Cost accounting and cache layout | Ch.7 | `SEAM(Ch.7)` |
 | Verification, traces, evals | Ch.8 | `SEAM(Ch.8)` |
-| Sandboxing, permissions, approval gates | Ch.9 | `SEAM(Ch.9)` |
+| Permissions, policy engine, approval gates | Ch.9 | **implemented, worked seam** |
 | Handoff artifacts, context reset, evaluator split | Ch.10 | `SEAM(Ch.10)` |
 | A real model provider | Ch.11 / Ch.12 | `SEAM(Ch.11 / Ch.12)` |
 
@@ -98,6 +100,52 @@ This is not an argument that compaction is wrong. It is an argument for
 assuming — which is exactly what Ch.4's exercise asks you to do, and why the
 numbers above come from `verify.sh` rather than from prose.
 
+## The policy engine, and what "approved" turns out to mean
+
+`SEAM(Ch.9)` is worked too. `authorize()` is a deterministic function outside the
+model: **the model proposes, the policy decides.** Nothing asks the model whether
+an action is safe, because a model that has just read attacker-controlled text is
+precisely the wrong thing to ask. The shape is borrowed from
+[CaMeL](https://arxiv.org/abs/2503.18813); it is CaMeL's *structure*, not its
+mechanism — per-tool blast radius plus one taint bit, rather than capabilities
+enforced in a custom interpreter. It demonstrates the pattern without delivering
+the guarantees, and the code says so.
+
+```sh
+SCRIPT=exfil  node harness.ts              # reads untrusted, tries to send → DENIED
+SCRIPT=exfil  POLICY_OFF=1 node harness.ts # same run, no policy → data leaves
+SCRIPT=egress node harness.ts              # clean egress → parks for approval
+SCRIPT=egress APPROVE=1 node harness.ts    # a later process grants it
+```
+
+The trifecta check is the interesting one: we cannot remove private-data access
+or untrusted content, so the policy cuts the third leg — **once untrusted content
+is in context, egress closes**, decided deterministically rather than by the
+tainted model. `POLICY_OFF=1` runs the identical script and the data leaves, which
+is how `verify.sh` proves the control is load-bearing rather than decorative.
+
+### What building it taught: an approval is a budget, not a predicate
+
+The first version keyed approvals by the idempotency key (`step:tool:args`). One
+human approval, three prompts — the agent retried at new steps and each retry
+looked like a new action.
+
+So I keyed them logically (`tool:args`). One prompt, and then **four sends off a
+single approval.** A boolean approval is a standing permit.
+
+Neither is right, and the fix is the lesson:
+
+| Ledger | Key | Answers |
+|---|---|---|
+| Idempotency | `step:tool:args` | *did this occurrence already happen?* |
+| Approval | `tool:args` → **remaining uses** | *did a human bless this action, and how many times?* |
+
+The two ledgers answer different questions and must be keyed differently, and the
+approval's value is a **count**, almost always 1. `verify.sh` asserts that one
+grant authorises exactly one send and that the next send re-prompts.
+
+None of the Ch.9 sources say this. It fell out of running it.
+
 ## A bug this skeleton shipped, and what it teaches
 
 The first working version passed a naive crash test and was still wrong.
@@ -125,7 +173,9 @@ resume" is verification theater. It has to check *what the work produced*.
 
 ```
 harness.ts     the skeleton — types, event log, reducer, loop, stub model
-verify.sh      8 assertions, each corresponding to a claim made in a chapter
+verify.sh      23 assertions, each corresponding to a claim made in a chapter
+baseline.json  committed expected results; verify.sh fails on regression
+results.json   written every run (gitignored)
 SPEC.md        the contracts, language-neutral, for the Rust track and your own port
 .state/        created at runtime: events.jsonl and NOTES.md (gitignored)
 ```

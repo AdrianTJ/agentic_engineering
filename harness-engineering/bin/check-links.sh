@@ -30,6 +30,15 @@ while IFS=$'\t' read -r id chapter tier title author url note; do
              -A 'Mozilla/5.0 (curriculum-link-check)' "$url" 2>/dev/null || echo 000)
     case "$code" in 000*|"") sleep 2 ;; *) break ;; esac
   done
+  # A connection-level failure (000) on a source whose note records that it was
+  # verified by another path is an environment limitation, not a dead link —
+  # same class as a bot filter. Anything else that fails to connect is a FAIL.
+  case "$code$note" in
+    000*webfetch-only|000*verified*|000*slow-host)
+      printf '%-6s %-6s %s  (unreachable to curl; note=%s)\n' "WARN" "$id" "$url" "$note"
+      warn=$((warn+1)); continue ;;
+  esac
+
   case "$code" in
     2*|3*) printf '%-6s %-6s %s\n' "OK" "$id" "$url"; ok=$((ok+1)) ;;
     401|403|405|407|429)

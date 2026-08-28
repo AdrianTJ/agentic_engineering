@@ -1,0 +1,29 @@
+{
+  "pass": 23,
+  "fail": 0,
+  "assertions": [
+    {"status": "pass", "section": "Ch.2: the loop and its stopping conditions", "name": "clean run stops on goal_satisfied"},
+    {"status": "pass", "section": "Ch.2: the loop and its stopping conditions", "name": "identical repeated calls trip no-progress"},
+    {"status": "pass", "section": "Ch.2: the loop and its stopping conditions", "name": "step budget bounds an unbounded task"},
+    {"status": "pass", "section": "Ch.6: crash recovery", "name": "resumes rather than restarting"},
+    {"status": "pass", "section": "Ch.6: crash recovery", "name": "finishes the call the crash interrupted"},
+    {"status": "pass", "section": "Ch.6: crash recovery", "name": "post-crash side effects match a clean run exactly"},
+    {"status": "pass", "section": "Ch.6: crash recovery", "name": "no side effect applied twice"},
+    {"status": "pass", "section": "Ch.6: the event log is well formed", "name": "every request has one outcome; the log brackets the run"},
+    {"status": "pass", "section": "Ch.4: the context policy changes what the model sees", "name": "no policy overflows the window"},
+    {"status": "pass", "section": "Ch.4: the context policy changes what the model sees", "name": "compaction fires at the threshold"},
+    {"status": "pass", "section": "Ch.4: the context policy changes what the model sees", "name": "compaction bounds occupancy"},
+    {"status": "pass", "section": "Ch.4: the context policy changes what the model sees", "name": "tool clearing bounds occupancy"},
+    {"status": "pass", "section": "Ch.4: the context policy changes what the model sees", "name": "tool clearing bills fewer tokens than compaction"},
+    {"status": "pass", "section": "Ch.4: the context policy changes what the model sees", "name": "the policy saves tokens overall"},
+    {"status": "pass", "section": "Ch.4: compaction honours the retention contract", "name": "every compaction preserved the goal and is auditable"},
+    {"status": "pass", "section": "Ch.9: the policy engine blocks the lethal trifecta", "name": "egress denied once untrusted content is in context"},
+    {"status": "pass", "section": "Ch.9: the policy engine blocks the lethal trifecta", "name": "nothing was sent externally"},
+    {"status": "pass", "section": "Ch.9: the policy engine blocks the lethal trifecta", "name": "policy-off run exfiltrates, so the control is load-bearing"},
+    {"status": "pass", "section": "Ch.9 + Ch.6: approval is a durable wait", "name": "run parks rather than blocking"},
+    {"status": "pass", "section": "Ch.9 + Ch.6: approval is a durable wait", "name": "nothing sent while unapproved"},
+    {"status": "pass", "section": "Ch.9 + Ch.6: approval is a durable wait", "name": "a later process can grant the approval"},
+    {"status": "pass", "section": "Ch.9: an approval is a budget, not a standing permit", "name": "one grant authorised exactly one send"},
+    {"status": "pass", "section": "Ch.9: an approval is a budget, not a standing permit", "name": "the next send re-prompts once the budget is spent"}
+  ]
+}

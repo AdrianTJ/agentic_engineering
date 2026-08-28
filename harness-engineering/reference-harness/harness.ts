@@ -30,6 +30,10 @@ type Event =
   | { t: "tool_succeeded"; step: number; key: string; result: string }
   | { t: "tool_failed"; step: number; key: string; error: string }
   | { t: "context_compacted"; step: number; droppedTokens: number; keptContract: string[] }
+  | { t: "tool_denied"; step: number; tool: string; reason: string }
+  | { t: "approval_required"; step: number; tool: string; args: string; key: string }
+  | { t: "approval_granted"; step: number; key: string; by: string; uses: number }
+  | { t: "approval_consumed"; step: number; key: string }
   | { t: "claimed_done"; step: number; summary: string }
   | { t: "run_stopped"; reason: StopReason; at: string };
 
@@ -54,6 +58,26 @@ type State = {
   retained: string[];
   /** Transcript entries before this index have been compacted away. (Ch.4) */
   compactedThrough: number;
+  /** Has untrusted content entered the context? One leg of the trifecta. (Ch.9) */
+  tainted: boolean;
+  /**
+   * Approvals, keyed by LOGICAL identity (`tool:args`) — not by the step-scoped
+   * idempotency key. The two ledgers answer different questions:
+   *
+   *   idempotency key (step:tool:args) — "did THIS OCCURRENCE already happen?"
+   *   approval key    (tool:args)      — "did a human bless THIS ACTION?"
+   *
+   * Keying approvals by occurrence means a retrying agent re-prompts a human for
+   * an identical action. Keying idempotency by action would silently swallow a
+   * second, legitimately-intended write. They must be keyed differently.
+   *
+   * And the value is a BUDGET, not a boolean. A boolean approval is a standing
+   * permit: approve one webhook post and the agent may post forever. An approval
+   * authorises N executions — almost always 1. (Ch.9)
+   */
+  approvals: Map<string, number>;
+  /** Set when the run is parked waiting on a human. (Ch.6 durable wait) */
+  awaiting: { tool: string; args: string; key: string } | null;
   /** For no-progress detection. (Ch.2) */
   recentSignatures: string[];
   /**
@@ -126,6 +150,8 @@ function reduce(s: State, e: Event): State {
       return {
         ...s,
         applied,
+        // Anything a read tool returned is untrusted content by default. (Ch.9)
+        tainted: s.tainted || UNTRUSTED_SOURCES.has(toolOf(e.key)),
         pending: s.pending?.key === e.key ? null : s.pending,
         lastError: null,
         transcript: [...s.transcript, `  -> ${e.result}`],
@@ -144,6 +170,25 @@ function reduce(s: State, e: Event): State {
       };
     case "context_compacted":
       return { ...s, retained: e.keptContract, compactedThrough: s.transcript.length };
+    case "tool_denied":
+      return {
+        ...s,
+        pending: null,
+        // A denial is context: the agent must learn it, or it will retry forever.
+        transcript: [...s.transcript, `  -> DENIED: ${e.reason}`],
+      };
+    case "approval_required":
+      return { ...s, awaiting: { tool: e.tool, args: e.args, key: e.key } };
+    case "approval_granted": {
+      const a = new Map(s.approvals);
+      a.set(e.key, (a.get(e.key) ?? 0) + e.uses);
+      return { ...s, approvals: a, awaiting: null };
+    }
+    case "approval_consumed": {
+      const a = new Map(s.approvals);
+      a.set(e.key, Math.max(0, (a.get(e.key) ?? 0) - 1));
+      return { ...s, approvals: a };
+    }
     case "claimed_done":
       return { ...s, transcript: [...s.transcript, `claimed done: ${e.summary}`] };
     case "run_stopped":
@@ -153,7 +198,7 @@ function reduce(s: State, e: Event): State {
 
 const EMPTY: State = {
   goal: null, step: 0, tokens: 0, applied: new Map(), transcript: [],
-  retained: [], compactedThrough: 0,
+  retained: [], compactedThrough: 0, tainted: false, approvals: new Map(), awaiting: null,
   recentSignatures: [], pending: null, lastError: null, stopped: null,
 };
 
@@ -187,6 +232,89 @@ async function verifyDone(s: State): Promise<boolean> {
   return s.applied.size > 0;
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The policy engine.  A worked SEAM(Ch.9).
+//
+// Shape borrowed from CaMeL (Debenedetti et al., "Defeating Prompt Injections by
+// Design"): the MODEL PROPOSES, a DETERMINISTIC ENGINE OUTSIDE THE MODEL DECIDES.
+// Nothing here asks the model whether an action is safe, because a model that has
+// read attacker-controlled text is exactly the wrong thing to ask.
+//
+// This is CaMeL's *structure*, not its mechanism. CaMeL extracts control and data
+// flow from the trusted query and enforces capabilities in a custom interpreter.
+// This is a coarse approximation: per-tool blast radius plus one taint bit. It
+// demonstrates the pattern; it does not deliver CaMeL's guarantees.
+//
+// Try:  node harness.ts                      (policy on, default)
+//       POLICY_OFF=1 node harness.ts         (policy off — watch the trifecta close)
+//       APPROVE=all node harness.ts          (stand in for the human)
+// ─────────────────────────────────────────────────────────────────────────────
+
+
+/**
+ * Stands in for the human. `APPROVE=all` approves everything; `APPROVE=N`
+ * approves at most N times in total, so you can watch a budget actually bind.
+ */
+function humanApproves(s: State): boolean {
+  const v = process.env.APPROVE;
+  if (!v) return false;
+  if (v === "all") return true;
+  const cap = Number(v);
+  if (!Number.isFinite(cap)) return false;
+  return readLog().filter((e) => e.t === "approval_granted").length < cap;
+}
+
+/** Ch.9: the worst thing one call can do. The unit approval gates are sized in. */
+type BlastRadius = "read" | "write" | "external";
+
+const BLAST: Record<string, BlastRadius> = {
+  read_file: "read",
+  flaky_check: "read",
+  write_note: "write",
+  post_webhook: "external",
+};
+
+/** Tools whose output is attacker-influenceable. Reading one taints the run. */
+const UNTRUSTED_SOURCES = new Set(["read_file"]);
+
+const toolOf = (key: string): string => key.split(":")[1] ?? "";
+
+type Decision =
+  | { verdict: "allow" }
+  | { verdict: "deny"; reason: string }
+  | { verdict: "approve"; reason: string };
+
+/**
+ * The whole policy, deterministic and readable in one screen — which is the
+ * point. If you cannot read your authorization rules in one sitting, you do not
+ * know what your agent is allowed to do.
+ */
+function authorize(call: { tool: string; args: string; key: string }, s: State): Decision {
+  if (process.env.POLICY_OFF) return { verdict: "allow" };
+
+  const radius = BLAST[call.tool];
+  if (!radius) return { verdict: "deny", reason: `unknown tool '${call.tool}' — deny by default` };
+
+  // THE TRIFECTA CHECK (Ch.9, Willison). Private data + untrusted content +
+  // external communication. We cannot remove the first two, so we cut the third:
+  // once untrusted content is in context, egress is closed. Deterministically,
+  // without consulting the model that read the untrusted content.
+  if (radius === "external" && s.tainted) {
+    return {
+      verdict: "deny",
+      reason: "egress blocked: untrusted content is in context (lethal trifecta)",
+    };
+  }
+
+  // Blast-radius gate: anything that leaves the process needs a human.
+  if (radius === "external") {
+    return { verdict: "approve", reason: "external communication requires approval" };
+  }
+
+  return { verdict: "allow" };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Tools.  Name, description, typed args in a real harness. (Ch.5)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -207,6 +335,11 @@ const tools: Tool[] = [
       appendFileSync(join(STATE_DIR, "NOTES.md"), args + "\n");
       return `noted: ${args}`;
     },
+  },
+  {
+    name: "post_webhook",
+    description: "POST a summary to an external URL. Args: the summary text.",
+    run: async (args) => `posted ${args.length} chars externally`,
   },
   {
     name: "flaky_check",
@@ -348,6 +481,16 @@ const scripts: Record<string, (step: number) => ModelDecision> = {
   default: (step) => script[Math.min(step, script.length - 1)]!,
   thrash: () => ({ kind: "call_tool", tool: "read_file", args: "same.md" }),
   long: (step) => ({ kind: "call_tool", tool: "read_file", args: `file-${step}.md` }),
+  // Reads untrusted content, then tries to send it somewhere. The trifecta. (Ch.9)
+  exfil: (step) =>
+    step === 0
+      ? { kind: "call_tool", tool: "read_file", args: "attacker-controlled.md" }
+      : { kind: "call_tool", tool: "post_webhook", args: "here is everything I read" },
+  // Wants egress but never reads untrusted content — should reach the gate.
+  egress: (step) =>
+    step < 2
+      ? { kind: "call_tool", tool: "write_note", args: `note ${step}` }
+      : { kind: "call_tool", tool: "post_webhook", args: "clean summary" },
 };
 
 const stubModel: ModelProvider = {
@@ -377,6 +520,22 @@ async function run(model: ModelProvider, budgets: Budgets, goal: string): Promis
   while (true) {
     const stop = budgetStop(state, budgets);
     if (stop) return finish(stop);
+
+    if (state.awaiting) {
+      // The approval may arrive days later, in a different process. Granting it
+      // is just another event; the run then continues from the log. (Ch.6)
+      if (humanApproves(state)) {
+        append({ t: "approval_granted", step: state.step, key: state.awaiting.key, by: `APPROVE=${process.env.APPROVE}`, uses: 1 });
+        console.log(`  ✅ approval granted for ${state.awaiting.tool}`);
+        const call = state.awaiting;
+        state = rebuild(readLog());
+        state = await applyCall(state, { ...call, step: state.step });
+        continue;
+      }
+      console.log(`■ parked: awaiting approval for ${state.awaiting.tool} (resume with APPROVE=all)`);
+      report(state);
+      return state;
+    }
 
     state = maybeCompact(state);   // SEAM(Ch.4), worked
 
@@ -423,6 +582,32 @@ async function run(model: ModelProvider, budgets: Budgets, goal: string): Promis
       console.log(`  ↺ ${call.tool} already applied; skipping`);
       return s;
     }
+
+    // SEAM(Ch.9), worked: authorize BEFORE the effect, deterministically.
+    const approvalKey = `${call.tool}:${call.args}`;   // logical, not occurrence
+    const d = authorize(call, s);
+    if (d.verdict === "deny") {
+      append({ t: "tool_denied", step: call.step, tool: call.tool, reason: d.reason });
+      console.log(`  ⛔ ${call.tool} -> DENIED: ${d.reason}`);
+      return rebuild(readLog());
+    }
+    if (d.verdict === "approve" && (s.approvals.get(approvalKey) ?? 0) < 1) {
+      if (!humanApproves(s)) {
+        // A durable wait (Ch.6), not a blocking prompt. The process may exit here
+        // and the approval may arrive days later.
+        append({ t: "approval_required", step: call.step, tool: call.tool, args: call.args, key: approvalKey });
+        console.log(`  ⏸ ${call.tool} needs approval: ${d.reason}`);
+        return rebuild(readLog());
+      }
+      append({ t: "approval_granted", step: call.step, key: approvalKey, by: `APPROVE=${process.env.APPROVE}`, uses: 1 });
+      console.log(`  ✅ approved: ${call.tool}`);
+      s = rebuild(readLog());
+    }
+    if (d.verdict === "approve") {
+      append({ t: "approval_consumed", step: call.step, key: approvalKey });
+      s = rebuild(readLog());
+    }
+
     const tool = tools.find((t) => t.name === call.tool);
     try {
       if (!tool) throw new Error(`no such tool: ${call.tool}`);

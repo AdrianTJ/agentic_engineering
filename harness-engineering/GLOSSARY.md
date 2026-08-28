@@ -196,7 +196,9 @@ discount on everything after it. Sometimes correct, never free, rarely measured.
 layout falls out of the cache rather than the other way around. Ch.7
 
 **Model routing** — cheapest capable model per step. Largest single cost lever,
-with real quality risk. Ch.7
+with real quality risk: measured at up to ~85% cost reduction while retaining
+~95% of frontier quality, but the range across query distributions is roughly
+40–98%, so any single headline figure describes someone else's traffic. Ch.7
 
 **Soft and hard budget** — alert threshold and hard stop. Ch.2's budget stopping
 condition denominated in money. Ch.7
@@ -260,6 +262,28 @@ response sanitization. The only control that addresses injection at ingestion. C
 
 **Human-in-the-loop gate** — approval sized to blast radius, implemented as a tool
 call resolving to a durable wait. Ch.6, Ch.9
+
+**Pre-action authorization** — a deterministic decision made *before* the effect,
+by code the model cannot influence. The model proposes; the engine decides. The
+one control that survives a model which has read attacker-controlled text. Ch.9
+
+**Capability (CaMeL sense)** — metadata attached to a value that constrains where
+it may flow. Control and data flow are extracted from the *trusted* query, so
+untrusted data cannot alter the program. Ch.9
+
+**Credential isolation** — secrets resolved and injected outside the model's
+context, so a compromised context has nothing to leak. Removes the target rather
+than guarding it. Ch.9
+
+**Taint** — a marker that untrusted content has entered the context. The cheap
+approximation of a capability, and enough to mechanize the trifecta check. Ch.9
+
+**Approval as a budget** — an approval authorizes N executions, almost always 1;
+a boolean approval is a standing permit. Keyed by logical action, on a *separate
+ledger* from idempotency, which is keyed by occurrence. Ch.9
+
+**Sealed tool endpoint** — a fixed-schema tool behind a broker that holds the
+credentials and enforces per-tool egress allow-lists. Ch.9
 
 ## Implementation
 

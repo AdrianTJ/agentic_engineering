@@ -99,3 +99,12 @@ S097	01	deeper	Claw-SWE-Bench: Evaluating Agent Harnesses on Coding Tasks	arXiv	
 S098	01	deeper	AgentMeter: Evaluating Model-CLI Matching for CLI-Based Agents	arXiv	https://arxiv.org/abs/2606.21140	ok
 S099	08	core	Terminal-Bench	tbench.ai	https://www.tbench.ai/	ok
 S100	08	core	The SWE-bench harness	SWE-bench	https://www.swebench.com/SWE-bench/reference/harness/	ok
+S101	07	core	RouteLLM: Learning to Route LLMs with Preference Data	Ong et al. / LMSYS	https://arxiv.org/abs/2406.18665	ok
+S102	07	core	RouteLLM (LMSYS write-up)	LMSYS	https://www.lmsys.org/blog/2024-07-01-routellm/	ok
+S103	07	deeper	Dynamic Model Routing and Cascading for Efficient LLM Inference: A Survey	arXiv	https://arxiv.org/abs/2603.04445	ok
+S104	09	core	Defeating Prompt Injections by Design (CaMeL)	Debenedetti et al. (Google DeepMind)	https://arxiv.org/abs/2503.18813	ok
+S105	09	core	CaMeL offers a promising new direction for mitigating prompt injection	Simon Willison	https://simonwillison.net/2025/Apr/11/camel/	ok
+S106	09	core	AgentDojo	ETH SPY Lab	https://agentdojo.spylab.ai/	ok
+S107	09	core	Before the Tool Call: Deterministic Pre-Action Authorization	arXiv	https://arxiv.org/abs/2603.20953	ok
+S108	09	deeper	The Balkanization of Execution-Security Research for AI Coding Agents	arXiv	https://arxiv.org/abs/2607.05743	ok
+S109	09	deeper	Inside the lethal trifecta: blast radius reduction	Sophos	https://www.sophos.com/en-us/blog/inside-the-lethal-trifecta-blast-radius-reduction-in-ai-agent-deployments	webfetch-only

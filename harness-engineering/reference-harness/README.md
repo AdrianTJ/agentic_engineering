@@ -39,6 +39,11 @@ Ch.4 is implemented rather than stubbed for a different reason: it is the
 to attach a permission model or a trace exporter, read how the context policy
 attaches first.
 
+**One module per concern, one concern per chapter**, so a chapter can point at a
+file rather than a line range. `harness.ts` is now the loop and its wiring; the
+split was done under the 34-assertion suite and `MEASUREMENTS.md` came out
+byte-identical, which is the only reason to believe it changed nothing.
+
 Grep for `SEAM(` to find every attachment point. **The gaps are the curriculum** —
 this file is a scaffold with the interesting parts removed on purpose, not a
 framework to adopt.
@@ -275,9 +280,18 @@ resume" is verification theater. It has to check *what the work produced*.
 ## Layout
 
 ```
-harness.ts        the skeleton — types, event log, reducer, loop, stub model
+harness.ts        the loop, and nothing else (~190 lines)
+src/types.ts      the contracts — see SPEC.md
+src/log.ts        Ch.6  event log, the reducer, crash recovery
+src/stopping.ts   Ch.2  the four stopping conditions
+src/router.ts     Ch.3  static edges, taken before the model is consulted
+src/context.ts    Ch.4  what the model sees: retention contract, compaction
+src/tools.ts      Ch.5  tool definitions
+src/cache.ts      Ch.7  cache accounting
+src/policy.ts     Ch.9  deterministic authorization outside the model
+src/model.ts      Ch.11/12  the one function you swap for a real SDK call
 run-sandboxed.sh  the same harness under runtime filesystem containment
-measure.sh        regenerates MEASUREMENTS.md (run after changing harness.ts)
+measure.sh        regenerates MEASUREMENTS.md (run after changing the harness)
 MEASUREMENTS.md   generated: every figure the chapters quote
 verify.sh         34 assertions, each corresponding to a claim made in a chapter
 baseline.json     committed expected results; verify.sh fails on regression

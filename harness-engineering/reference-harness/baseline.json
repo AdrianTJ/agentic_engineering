@@ -1,5 +1,5 @@
 {
-  "pass": 34,
+  "pass": 39,
   "fail": 0,
   "assertions": [
     {"status": "pass", "section": "Ch.2: the loop and its stopping conditions", "name": "clean run stops on goal_satisfied"},
@@ -19,6 +19,11 @@
     {"status": "pass", "section": "Ch.7: cache accounting inverts the raw-token ranking", "name": "tool clearing uses fewer RAW tokens than compaction"},
     {"status": "pass", "section": "Ch.7: cache accounting inverts the raw-token ranking", "name": "tool clearing costs MORE once the cache is billed (the ranking inverts)"},
     {"status": "pass", "section": "Ch.7: cache accounting inverts the raw-token ranking", "name": "compaction achieves the higher cache hit rate"},
+    {"status": "pass", "section": "Ch.10: context reset hands off through an artifact", "name": "reset fires at the occupancy threshold"},
+    {"status": "pass", "section": "Ch.10: context reset hands off through an artifact", "name": "a handoff artifact is written"},
+    {"status": "pass", "section": "Ch.10: context reset hands off through an artifact", "name": "the handoff carries the goal and what is already done"},
+    {"status": "pass", "section": "Ch.10: context reset hands off through an artifact", "name": "the run completes across resets"},
+    {"status": "pass", "section": "Ch.10: context reset hands off through an artifact", "name": "the handoff stays bounded rather than growing each reset"},
     {"status": "pass", "section": "Ch.4: compaction honours the retention contract", "name": "every compaction preserved the goal and is auditable"},
     {"status": "pass", "section": "Ch.3: a static edge is a model call you do not pay for", "name": "static routing does exactly the same work"},
     {"status": "pass", "section": "Ch.3: a static edge is a model call you do not pay for", "name": "static routing makes strictly fewer model calls"},

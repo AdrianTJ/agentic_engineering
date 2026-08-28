@@ -111,9 +111,16 @@ cost**, because what you pay for is the part that changes, not the whole context
 Ch.10 says the teams running the longest tasks reset the context entirely rather
 than compacting.
 
-Nobody has settled it, and the curriculum's own measurement is model-dependent in
-a way Ch.7 states explicitly. Read all three before you commit to a context
-policy, and treat any of them alone as an argument rather than an answer.
+The harness now measures all three, and the result is a caution rather than a
+verdict: compaction bills least, reset most — **but the measurement only captures
+cost**, and Ch.10's case for reset is that it prevents a failure this harness's
+scripted model cannot exhibit. Reset also turned out not to escape the retention
+problem at all; it relocates it into a file, where at least you can read what was
+dropped.
+
+Nobody has settled it. Read all three before you commit to a context policy, and
+treat any one of them — or any cost-only table, including this repository's — as
+an argument rather than an answer.
 
 ## The reference harness
 
@@ -122,15 +129,16 @@ attach to, so you are not starting from an empty file twelve times:
 
 ```sh
 node harness.ts                                  # run it (Node 22.6+, no deps)
-reference-harness/verify.sh                      # 34 assertions from the chapters
+reference-harness/verify.sh                      # 39 assertions from the chapters
 CRASH_AT=3 node harness.ts && node harness.ts    # kill it, watch it resume
 ./run-sandboxed.sh SCRIPT=escape                 # containment, not just policy
 ```
 
-Six chapters are implemented in it — **Ch.2** (loop, stopping conditions),
+Seven chapters are implemented in it — **Ch.2** (loop, stopping conditions),
 **Ch.3** (static routing), **Ch.4** (context policy), **Ch.6** (event log, crash
-recovery), **Ch.7** (cache accounting), **Ch.9** (policy engine, containment).
-Ch.5, Ch.8 and Ch.10 remain marked `SEAM(Ch.N)`. **The gaps are the curriculum**;
+recovery), **Ch.7** (cache accounting), **Ch.9** (policy engine, containment),
+**Ch.10** (handoff artifact, context reset). Ch.5 and Ch.8 remain marked
+`SEAM(Ch.N)`. One module per chapter, so a chapter points at a file. **The gaps are the curriculum**;
 this is a scaffold with the interesting parts removed on purpose, not a framework
 to adopt.
 

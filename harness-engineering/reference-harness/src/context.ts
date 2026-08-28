@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { STATE_DIR } from "./paths.ts";
 import { tools } from "./tools.ts";
 import { append, readLog, rebuild } from "./log.ts";
+import { readHandoff, writeHandoff } from "./handoff.ts";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The context policy.  A worked SEAM(Ch.4) — the pattern the other seams follow.
@@ -82,6 +83,8 @@ export function buildContext(s: State): ContextView {
     { label: "system", text: SYSTEM_PROMPT },
     { label: "tools", text: tools.map((t) => `${t.name}: ${t.description}`).join("\n") },
     { label: "retained", text: s.retained.join("\n") },
+    // After a reset the handoff artifact IS the context. (Ch.10)
+    { label: "handoff", text: s.wasReset ? readHandoff() : "" },
     { label: "notes", text: POLICY === "full" ? notes : "" },
     { label: "history", text: history.join("\n") },
   ].map((b) => ({ ...b, tokens: estimate(b.text) }));
@@ -103,8 +106,23 @@ export function lineStep(line: string, history: string[]): number {
 /** Compact if over threshold, honouring the contract. Logged, so it is auditable. */
 export function maybeCompact(s: State): State {
   if (POLICY === "none") return s;
+
+  // The handoff is maintained continuously, not written at the end — an agent
+  // that only writes it on the way out may never get there. (Ch.10)
+  if (POLICY === "reset") writeHandoff(s);
+
   const view = buildContext(s);
   if (view.occupancy < COMPACT_AT) return s;
+
+  if (POLICY === "reset") {
+    // Clear the window entirely and continue from the artifact alone. (Ch.10)
+    const dropped = estimate(s.transcript.slice(s.compactedThrough).join("\n"));
+    writeHandoff(s);
+    const bytes = readHandoff().length;
+    append({ t: "context_reset", step: s.step, droppedTokens: dropped, handoffBytes: bytes });
+    console.log(`  ⭯ context reset: dropped ~${dropped} tokens, handoff is ${bytes} bytes`);
+    return rebuild(readLog());
+  }
 
   const contract = retentionContract(s);
   const dropped = estimate(s.transcript.slice(s.compactedThrough).join("\n"));
@@ -117,12 +135,13 @@ export function maybeCompact(s: State): State {
 export function report(s: State): void {
   const v = buildContext(s);
   const compactions = readLog().filter((e) => e.t === "context_compacted").length;
+  const resets = readLog().filter((e) => e.t === "context_reset").length;
   console.log(`\ncontext report (POLICY=${POLICY})`);
   for (const b of v.blocks) {
     if (b.tokens) console.log(`  ${b.label.padEnd(9)} ${String(b.tokens).padStart(5)} tok`);
   }
   console.log(`  ${"TOTAL".padEnd(9)} ${String(v.total).padStart(5)} tok  (${(v.occupancy * 100).toFixed(0)}% of ${WINDOW})`);
-  console.log(`  compactions: ${compactions}`);
+  console.log(`  compactions: ${compactions}  resets: ${resets}`);
   const log = readLog();
   const modelCalls = log.filter((e) => e.t === "model_called").length;
   const routed = log.filter((e) => e.t === "routed_statically").length;

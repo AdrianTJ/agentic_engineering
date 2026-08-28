@@ -76,6 +76,10 @@ export function reduce(s: State, e: Event): State {
       };
     case "context_compacted":
       return { ...s, retained: e.keptContract, compactedThrough: s.transcript.length };
+    case "context_reset":
+      // A reset drops the transcript entirely. What survives is the handoff
+      // artifact on disk, which is the point: state lives in files. (Ch.10)
+      return { ...s, retained: [], compactedThrough: s.transcript.length, wasReset: true };
     case "tool_denied":
       return {
         ...s,
@@ -105,7 +109,7 @@ export function reduce(s: State, e: Event): State {
 export const EMPTY: State = {
   goal: null, step: 0, tokens: 0, applied: new Map(), transcript: [],
   cachedTokens: 0, freshTokens: 0, billedTokens: 0, lastBlocks: [],
-  retained: [], compactedThrough: 0, provenance: new Map(), approvals: new Map(), awaiting: null,
+  retained: [], compactedThrough: 0, wasReset: false, provenance: new Map(), approvals: new Map(), awaiting: null,
   recentSignatures: [], pending: null, lastError: null, stopped: null,
 };
 

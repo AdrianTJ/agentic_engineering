@@ -14,13 +14,14 @@ cd "$(dirname "$0")"
 field() { echo "$1" | grep -oE "$2" | grep -oE '[0-9]+' | head -1; }
 run() { rm -rf .state; env "$@" node harness.ts 2>&1; }
 
-declare -A RAW BILL HIT CMP
-for p in none compact clear full; do
+declare -A RAW BILL HIT CMP RST
+for p in none compact clear full reset; do
   o=$(run POLICY=$p SCRIPT=long)
   RAW[$p]=$(field "$o" '[0-9]+ tokens\)')
   BILL[$p]=$(field "$o" 'billed: [0-9]+')
   HIT[$p]=$(field "$o" '\([0-9]+% hit')
   CMP[$p]=$(field "$o" 'compactions: [0-9]+')
+  RST[$p]=$(field "$o" 'resets: [0-9]+')
 done
 dyn=$(run SCRIPT=long);           dyn_calls=$(field "$dyn" 'model calls: [0-9]+'); dyn_raw=$(field "$dyn" '[0-9]+ tokens\)')
 rtd=$(run ROUTER=on SCRIPT=long); rtd_calls=$(field "$rtd" 'model calls: [0-9]+'); rtd_raw=$(field "$rtd" '[0-9]+ tokens\)')
@@ -50,9 +51,15 @@ chapters. Prose does not track code on its own.
 | compact | ${CMP[compact]} | ${HIT[compact]}% | ${RAW[compact]} | ${BILL[compact]} |
 | clear | ${CMP[clear]} | ${HIT[clear]}% | ${RAW[clear]} | ${BILL[clear]} |
 | full | ${CMP[full]} | ${HIT[full]}% | ${RAW[full]} | ${BILL[full]} |
+| reset | ${RST[reset]} resets | ${HIT[reset]}% | ${RAW[reset]} | ${BILL[reset]} |
 
 The finding (Ch.4, Ch.7): \`clear\` uses fewer **raw** tokens than \`compact\` and
 costs more **billed**. The ranking inverts depending on which column you optimise.
+
+\`reset\` (Ch.10) is measured here for **cost only**. Ch.10's argument for resetting
+is that it prevents context anxiety — losing coherence as the window fills — and
+this harness's model is a deterministic script that cannot exhibit that failure.
+So this table shows what reset costs and says nothing about what it buys.
 
 ## Static routing (Ch.3)
 

@@ -21,6 +21,7 @@ export type Event =
   | { t: "tool_succeeded"; step: number; key: string; result: string }
   | { t: "tool_failed"; step: number; key: string; error: string }
   | { t: "context_compacted"; step: number; droppedTokens: number; keptContract: string[] }
+  | { t: "context_reset"; step: number; droppedTokens: number; handoffBytes: number }
   | { t: "tool_denied"; step: number; tool: string; reason: string }
   | { t: "approval_required"; step: number; tool: string; args: string; key: string }
   | { t: "approval_granted"; step: number; key: string; by: string; uses: number }
@@ -49,6 +50,8 @@ export type State = {
   retained: string[];
   /** Transcript entries before this index have been compacted away. (Ch.4) */
   compactedThrough: number;
+  /** True once the window has been reset; history is then the handoff. (Ch.10) */
+  wasReset: boolean;
   /**
    * PER-VALUE PROVENANCE, not a run-wide taint bit. (Ch.9)
    *

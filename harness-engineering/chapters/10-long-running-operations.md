@@ -162,6 +162,26 @@ Make your harness survivable by a human who was not watching.
 6. **Non-blocking steer.** Add a channel where you can inject guidance that the
    agent picks up at the next iteration boundary without being interrupted.
 
+[`reference-harness/`](../reference-harness/) works steps 1 and 2:
+
+```sh
+POLICY=reset SCRIPT=long node harness.ts   # reset at threshold, continue from the artifact
+cat .state/HANDOFF.md
+```
+
+Read its README for the bug this produced, because it is this chapter's blind
+spot. The first handoff had no bound on its *Done* list, so it grew every step
+until the artifact itself filled the window and resets fired twice as often.
+**A context reset does not escape the retention problem, it relocates it** —
+compaction decides what to drop inside an opaque summary, a handoff decides it in
+a file you can read. The second is auditable; neither is free.
+
+And note what the harness *cannot* tell you: `reset` bills more than compaction
+there, but its model is a deterministic script that cannot suffer context anxiety.
+The measurement captures reset's cost and nothing of its benefit. Treat any
+cost-only comparison of these policies — including that one — as half an
+argument.
+
 ## Check yourself
 
 1. What is context anxiety, and which of Chapter 2's stopping conditions catches it?

@@ -83,6 +83,19 @@ chk "tool clearing costs MORE once the cache is billed (the ranking inverts)"
 [ "$(hit "$cmp_out")" -gt "$(hit "$clr_out")" ]
 chk "compaction achieves the higher cache hit rate"
 
+sec "Ch.10: context reset hands off through an artifact"
+reset; rst=$(POLICY=reset SCRIPT=long node harness.ts 2>&1)
+echo "$rst" | grep -q "context reset:"; chk "reset fires at the occupancy threshold"
+[ -f .state/HANDOFF.md ]; chk "a handoff artifact is written"
+grep -q "^## Goal" .state/HANDOFF.md && grep -q "^## Done" .state/HANDOFF.md
+chk "the handoff carries the goal and what is already done"
+echo "$rst" | grep -q "stopped: step_budget_exhausted"; chk "the run completes across resets"
+# The bug this bounding fixed: an unbounded Done list grows the artifact until it
+# fills the window on its own, and resets fire twice as often.
+sizes=$(grep -oE "handoff is [0-9]+ bytes" <<<"$rst" | grep -oE '[0-9]+')
+first=$(head -1 <<<"$sizes"); last=$(tail -1 <<<"$sizes")
+[ $((last - first)) -lt 100 ]; chk "the handoff stays bounded rather than growing each reset"
+
 sec "Ch.4: compaction honours the retention contract"
 reset; POLICY=compact SCRIPT=long node harness.ts >/dev/null 2>&1
 node -e '

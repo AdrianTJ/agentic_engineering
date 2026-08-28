@@ -16,9 +16,15 @@ chapters. Prose does not track code on its own.
 | compact | 5 | 59% | 4437 | 2080 |
 | clear | 3 | 49% | 4265 | 2384 |
 | full | 3 | 49% | 4265 | 2384 |
+| reset | 5 resets | 47% | 4459 | 2578 |
 
 The finding (Ch.4, Ch.7): `clear` uses fewer **raw** tokens than `compact` and
 costs more **billed**. The ranking inverts depending on which column you optimise.
+
+`reset` (Ch.10) is measured here for **cost only**. Ch.10's argument for resetting
+is that it prevents context anxiety — losing coherence as the window fills — and
+this harness's model is a deterministic script that cannot exhibit that failure.
+So this table shows what reset costs and says nothing about what it buys.
 
 ## Static routing (Ch.3)
 
@@ -34,4 +40,4 @@ spent before any work happens.
 
 ## Test suite
 
-`verify.sh`: **34 assertions**, checked against `baseline.json`.
+`verify.sh`: **39 assertions**, checked against `baseline.json`.

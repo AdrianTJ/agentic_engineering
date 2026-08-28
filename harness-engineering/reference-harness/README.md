@@ -5,7 +5,7 @@ from an empty file twelve times.
 
 ```sh
 node harness.ts          # run it
-./verify.sh              # 34 assertions, checked against a committed baseline
+./verify.sh              # 39 assertions, checked against a committed baseline
 ./verify.sh --baseline   # re-baseline deliberately
 ./verify.sh --json       # machine-readable results
 CRASH_AT=3 node harness.ts && node harness.ts   # kill it, watch it resume
@@ -31,7 +31,7 @@ spent any money.
 | Verification, traces, evals | Ch.8 | `SEAM(Ch.8)` |
 | Permissions, policy engine, approval gates | Ch.9 | **implemented, worked seam** |
 | Sandboxing / containment | Ch.9 | **implemented** (runtime, not OS) |
-| Handoff artifacts, context reset, evaluator split | Ch.10 | `SEAM(Ch.10)` |
+| Handoff artifact, context reset | Ch.10 | **implemented, worked seam** |
 | A real model provider | Ch.11 / Ch.12 | `SEAM(Ch.11 / Ch.12)` |
 
 Ch.4 is implemented rather than stubbed for a different reason: it is the
@@ -186,6 +186,38 @@ payload derive from an untrusted value?* rather than *did we ever touch
 anything untrusted?* That distinction is CaMeL's actual contribution rather than
 its silhouette.
 
+### Reset, and the thing it does not escape
+
+`POLICY=reset` implements Ch.10's alternative to compaction: at the occupancy
+threshold, clear the window entirely and continue from `HANDOFF.md` alone.
+
+```sh
+POLICY=reset SCRIPT=long node harness.ts
+cat .state/HANDOFF.md
+```
+
+The first version had **no bound on the artifact**. It listed every completed
+effect under *Done*, so it grew every step — 661 bytes to 949 over one run — and
+resets fired ten times in twenty steps, each handing off a slightly larger
+document. The artifact became the thing filling the window.
+
+`src/handoff.ts` said "a handoff that accumulates is just a transcript with extra
+steps" in its own docstring, and then did exactly that. Bounding the *Done* list
+to the last five halved the resets and cut billed cost from 3,104 to 2,578.
+
+The lesson is the one that survives: **a context reset does not escape the
+retention problem, it relocates it.** Compaction decides what to drop inside an
+opaque summary; a handoff decides it in a file you can read. The second is
+auditable. Neither is free, and anyone selling reset as the clean alternative to
+compaction has not bounded their artifact yet.
+
+**What the cost table does not show.** `reset` bills more than `compact` and
+`clear` here — but Ch.10's case for it is that it prevents *context anxiety*, and
+this harness's model is a deterministic script that cannot lose coherence. So the
+measurement captures what reset costs and nothing about what it buys. That is a
+half-comparison, and the honest thing is to say so rather than let the table read
+as a verdict.
+
 ### Authorization is not containment
 
 `authorize()` decides what the agent may *ask for*. It does not decide what the
@@ -289,11 +321,12 @@ src/context.ts    Ch.4  what the model sees: retention contract, compaction
 src/tools.ts      Ch.5  tool definitions
 src/cache.ts      Ch.7  cache accounting
 src/policy.ts     Ch.9  deterministic authorization outside the model
+src/handoff.ts    Ch.10 the handoff artifact and context reset
 src/model.ts      Ch.11/12  the one function you swap for a real SDK call
 run-sandboxed.sh  the same harness under runtime filesystem containment
 measure.sh        regenerates MEASUREMENTS.md (run after changing the harness)
 MEASUREMENTS.md   generated: every figure the chapters quote
-verify.sh         34 assertions, each corresponding to a claim made in a chapter
+verify.sh         39 assertions, each corresponding to a claim made in a chapter
 baseline.json     committed expected results; verify.sh fails on regression
 results.json      written every run (gitignored)
 SPEC.md        the contracts, language-neutral, for the Rust track and your own port

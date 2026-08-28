@@ -81,7 +81,15 @@ never met.
 ## Build this
 
 Write the loop yourself, in whatever language you'll use for Ch.11 or Ch.12. No
-framework. Requirements:
+framework.
+
+If you would rather read a working one first, [`reference-harness/`](../reference-harness/)
+implements exactly this chapter — runnable offline with `node harness.ts`, no
+dependencies and no API key. Read it *after* you have attempted your own; the
+value is in hitting the problems yourself, and the skeleton is more useful as a
+comparison than as a starting point.
+
+Requirements:
 
 1. Tool dispatch from the model's structured output.
 2. **Four** stopping conditions: goal, step budget, token budget, and no-progress.

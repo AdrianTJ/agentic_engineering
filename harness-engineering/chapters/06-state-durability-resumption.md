@@ -69,6 +69,25 @@ The synthesis, and the chapter's thesis in article form: the agent community
 independently reinvented durable execution. Useful for placing the vocabulary of
 Ch.2/Ch.3 onto twenty years of prior art.
 
+**7. [Crab: A Semantics-Aware Checkpoint/Restore Runtime for Agent Sandboxes](https://arxiv.org/abs/2604.28138)** · ~35 min
+The empirical case that this chapter is not academic. It measures recovery
+*correctness* — did the resumed run produce the right result, not merely did it
+restart — across three approaches on Terminal-Bench:
+
+| Approach | Recovery correctness |
+|---|---|
+| Chat history only | **8–13%** |
+| Chat + filesystem | 28–42% |
+| Semantics-aware C/R (Crab) | **100%** |
+
+Sit with the first row. Preserving the conversation and nothing else — which is
+what most harnesses mean by "resumable" — recovers correctly **roughly one time in
+ten**. The paper's framing of the two extremes is the useful part: application-level
+recovery preserves chat history but misses OS-side effects, while full per-turn
+checkpointing is correct but too expensive to co-locate densely. Everything
+interesting is in between, which is why this chapter's exercise is harder than it
+looks.
+
 ## Going deeper
 
 - **[Durable AI Agents: Orchestrating with Fred and Temporal](https://fredk8.dev/blog/durable-ai-agents-orchestrating-the-future-with-fred-and-temporal/)** — LangGraph agents on Temporal execution; a concrete graph-plus-durability composition, with HITL checkpoints.
@@ -106,6 +125,14 @@ Make the Ch.2/Ch.4 loop crash-proof.
 
 Step 4 will take longer than the rest combined. That is the lesson.
 
+[`reference-harness/`](../reference-harness/) implements steps 1–4 and its
+`verify.sh` asserts them, including that post-crash side effects match a clean run
+byte for byte. Its README documents a bug the first version shipped: a crash
+between `tool_requested` and the effect silently dropped the work, and *nothing
+errored* — the log looked healthy and the run reported success with output
+missing. Read that before you write step 4, then go and check whether your own
+implementation has the same hole.
+
 ## Check yourself
 
 1. Where exactly should the log append happen — before or after the side effect — and what does each choice cost you?
@@ -115,4 +142,5 @@ Step 4 will take longer than the rest combined. That is the lesson.
 5. What does "unify execution state and business state" prevent? Describe the drift concretely.
 6. When is a full durable-execution engine over-engineering, and what's the right lighter answer?
 7. HITL approval that may take three days: what must be true of your harness for that to be ordinary rather than exceptional?
-8. Temporal and LangGraph each argue the other's approach is wrong for agents. State each case in one sentence, then say which is right *for your workload* and what fact would change your answer.
+8. Chat-only recovery scores 8–13% on correctness. Name three things it loses that a conversation cannot hold, and say which of them your harness currently drops.
+9. Temporal and LangGraph each argue the other's approach is wrong for agents. State each case in one sentence, then say which is right *for your workload* and what fact would change your answer.

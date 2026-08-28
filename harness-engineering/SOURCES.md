@@ -1,6 +1,6 @@
 # Sources
 
-The full bibliography, 88 entries. Each is cited from at least one
+The full bibliography, 95 entries. Each is cited from at least one
 chapter; several are cited from three or more, which is a reasonable signal of
 which pieces are load-bearing.
 
@@ -16,7 +16,7 @@ validates that every URL linked from a chapter is registered here.
 | `bot-blocked-403` | Live, but rejects automated fetchers (Cloudflare or similar) |
 | `egress-403` | Blocked by this environment's egress policy, not by the host |
 | `…-verified-via-webfetch` | Blocked to `curl`, but content confirmed through a different fetch path |
-| `unchecked` | Registered but not yet fetched; only ever used for *Going deeper* entries |
+| `unchecked` | Registered and link-checked but not yet read end to end; only ever used for *Going deeper* entries |
 
 A `403` is not a dead link. Every `403` entry below was either confirmed through
 an alternate fetch path or corroborated by multiple independent citing sources;
@@ -59,6 +59,7 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S066` [Humans and Agents in Software Engineering Loops](https://martinfowler.com/articles/exploring-gen-ai/humans-and-agents.html) — Fowler / Boeckeler
 - `S070` [Unlocking the Codex harness: how we built the App Server](https://openai.com/index/unlocking-the-codex-harness/) — OpenAI · `bot-blocked-403`
 - `S071` [Awesome Agentic Patterns](https://www.agentic-patterns.com/) — nibzard
+- `S091` [From Question Answering to Task Completion: A Survey on Agent System and Harness Design](https://arxiv.org/abs/2606.20683) — arXiv
 
 ### Chapter 02 — The loop
 
@@ -90,6 +91,10 @@ Cited from three or more chapters. If you read nothing else, read these.
 
 - `S004` [Building a multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system) — Anthropic
 - `S062` [Deep Dive: 12 Reusable Agentic Harness Design Patterns from Claude Code](https://www.epsilla.com/blogs/2026-04-18-deep-dive-12-reusable-agentic-harness-design-patte) — Epsilla · `unchecked`
+- `S092` [Agent2Agent (A2A) Protocol](https://a2a-protocol.org/latest/) — Linux Foundation
+- `S093` [Announcing the Agent2Agent Protocol](https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/) — Google
+- `S094` [A survey of agent interoperability protocols: MCP, ACP, A2A, ANP](https://arxiv.org/abs/2505.02279) — arXiv
+- `S095` [Governance Gaps in Agent Interoperability Protocols](https://arxiv.org/abs/2606.31498) — arXiv
 
 ### Chapter 04 — Context & memory
 
@@ -109,6 +114,7 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S019` [Shedding Heavy Memories: Context Compaction in Codex, Claude Code, OpenCode](https://justin3go.com/en/posts/2026/04/09-context-compaction-in-codex-claude-code-and-opencode) — Justin3go
 - `S020` [Less Context, Better Agents](https://arxiv.org/abs/2606.10209) — arXiv
 - `S065` [Context Engineering for Coding Agents](https://martinfowler.com/articles/exploring-gen-ai/context-engineering-coding-agents.html) — Fowler / Boeckeler
+- `S090` [Meta Context Engineering via Agentic Skill Evolution](https://arxiv.org/abs/2601.21557) — Ye et al. (ICML 2026)
 
 ### Chapter 05 — Tools & definitions
 
@@ -134,6 +140,7 @@ Cited from three or more chapters. If you read nothing else, read these.
 - `S027` [LangGraph State: Checkpoints, Threads, and Recovery](https://eastondev.com/blog/en/posts/ai/20260424-langgraph-agent-architecture/) — Easton
 - `S028` [Agent Workflows Are Rediscovering Durable Execution](https://medium.com/beyond-localhost/agent-workflows-are-rediscovering-durable-execution-be110661ed8c) — Koshy
 - `S072` [Building LangGraph: designing an agent runtime from first principles](https://www.langchain.com/blog/building-langgraph) — LangChain
+- `S089` [Crab: A Semantics-Aware Checkpoint/Restore Runtime for Agent Sandboxes](https://arxiv.org/abs/2604.28138) — Wu et al.
 
 **Going deeper**
 
@@ -235,7 +242,7 @@ Cited from three or more chapters. If you read nothing else, read these.
 
 - `S052` [rmcp — official Rust MCP SDK](https://github.com/modelcontextprotocol/rust-sdk/blob/main/crates/rmcp/README.md) — modelcontextprotocol · `egress-403`
 - `S053` [rig-core](https://docs.rs/rig-core) — Rig
-- `S054` [The Typestate Pattern in Rust](https://cliffle.com/blog/rust-typestate/) — Cliffle · `unchecked`
+- `S054` [The Typestate Pattern in Rust](https://cliffle.com/blog/rust-typestate/) — Cliffle
 - `S055` [Typestate Programming](https://docs.rust-embedded.org/book/static-guarantees/typestate-programming.html) — The Embedded Rust Book · `unchecked`
 - `S056` [How to Implement State Machines in Rust](https://oneuptime.com/blog/post/2026-02-01-rust-state-machines/view) — OneUptime · `unchecked`
 - `S057` [Building AI Agents from Scratch in Rust](https://rustify.rs/articles/rust-ai-agents-from-scratch-2026) — Rustify · `unchecked`

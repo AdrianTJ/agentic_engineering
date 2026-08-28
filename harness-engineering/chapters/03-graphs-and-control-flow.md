@@ -91,6 +91,21 @@ multi-agent *doesn't* pay: tasks with tight interdependencies between subtasks.
 - **[Deep Dive: 12 Reusable Agentic Harness Design Patterns from Claude Code](https://www.epsilla.com/blogs/2026-04-18-deep-dive-12-reusable-agentic-harness-design-patte)** — patterns reverse-engineered from a shipping harness. Third-party inference, so read it as a hypothesis; the blast-radius/HITL pattern is the one worth stealing.
 - **[Temporal: Beyond State Machines for Reliable Distributed Applications](https://temporal.io/blog/temporal-replaces-state-machines-for-distributed-applications)** — the distributed-systems tradition's answer to the same problem, from twenty years earlier. Read it now for the argument that hand-rolled state machines rot; read it again in Ch.6 for the mechanism.
 
+## A note on protocols: when the graph spans organizations
+
+Everything above assumes one team owns every node. When nodes are agents built by
+different teams or vendors, the edges become a wire protocol, and a second family
+of standards applies — distinct from MCP, which connects an agent to its *tools*
+(Ch.5), not to other agents.
+
+- **[Agent2Agent (A2A)](https://a2a-protocol.org/latest/)** — reached v1.0 in 2026, governed under the Linux Foundation. Agents publish **Agent Cards** describing capabilities and how to invoke them securely; communication is asynchronous over HTTP and SSE, so a long-running task doesn't block the caller. Note how much of its design is forced by the same problems as Ch.6: long tasks, callbacks over blocking, and traceability for audit. ([announcement](https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/))
+- **[A survey of agent interoperability protocols: MCP, ACP, A2A, ANP](https://arxiv.org/abs/2505.02279)** — the comparative map. Read it before adopting any of them.
+- **[Governance Gaps in Agent Interoperability Protocols: what MCP, A2A and ACP cannot express](https://arxiv.org/abs/2606.31498)** — the critical read, and the more useful one. What these protocols *cannot* say is where your design work will be.
+
+Treat this as orientation, not a mandate. Cross-organization agent interop is a
+real problem for a small number of systems and a premature abstraction for most;
+if one team owns every node, a function call is a better edge than a protocol.
+
 ## Key concepts
 
 - **Node / edge / state** — the three primitives. If you can name them for your system, you have a graph whether or not you drew one.

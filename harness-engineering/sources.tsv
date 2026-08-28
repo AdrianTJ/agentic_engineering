@@ -52,7 +52,7 @@ S050	11	deeper	Structured outputs with the Vercel AI SDK	AI Hero	https://www.aih
 S051	11	deeper	strands-agents/sdk-typescript	Strands	https://github.com/strands-agents/sdk-typescript	egress-403
 S052	11,12	core	rmcp — official Rust MCP SDK	modelcontextprotocol	https://github.com/modelcontextprotocol/rust-sdk/blob/main/crates/rmcp/README.md	egress-403
 S053	12	core	rig-core	Rig	https://docs.rs/rig-core	ok
-S054	12	core	The Typestate Pattern in Rust	Cliffle	https://cliffle.com/blog/rust-typestate/	unchecked
+S054	12	core	The Typestate Pattern in Rust	Cliffle	https://cliffle.com/blog/rust-typestate/	ok
 S055	12	core	Typestate Programming	The Embedded Rust Book	https://docs.rust-embedded.org/book/static-guarantees/typestate-programming.html	unchecked
 S056	12	core	How to Implement State Machines in Rust	OneUptime	https://oneuptime.com/blog/post/2026-02-01-rust-state-machines/view	unchecked
 S057	12	core	Building AI Agents from Scratch in Rust	Rustify	https://rustify.rs/articles/rust-ai-agents-from-scratch-2026	unchecked
@@ -87,3 +87,10 @@ S085	10	deeper	Long-running AI agents that pause, resume, never lose context (AD
 S086	10	deeper	Long Running Agent Engineering	Nicolas Bustamante	https://nicolasbustamante.com/blog/long-running-agent-engineering	ok
 S087	10	deeper	The Shift to Agentic AI: Evidence from Codex	arXiv	https://arxiv.org/abs/2606.26959	unchecked
 S088	09	core	The lethal trifecta for AI agents	Simon Willison	https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/	ok
+S089	06	core	Crab: A Semantics-Aware Checkpoint/Restore Runtime for Agent Sandboxes	Wu et al.	https://arxiv.org/abs/2604.28138	ok
+S090	04	deeper	Meta Context Engineering via Agentic Skill Evolution	Ye et al. (ICML 2026)	https://arxiv.org/abs/2601.21557	ok
+S091	01	deeper	From Question Answering to Task Completion: A Survey on Agent System and Harness Design	arXiv	https://arxiv.org/abs/2606.20683	ok
+S092	03	deeper	Agent2Agent (A2A) Protocol	Linux Foundation	https://a2a-protocol.org/latest/	ok
+S093	03	deeper	Announcing the Agent2Agent Protocol	Google	https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/	ok
+S094	03	deeper	A survey of agent interoperability protocols: MCP, ACP, A2A, ANP	arXiv	https://arxiv.org/abs/2505.02279	ok
+S095	03	deeper	Governance Gaps in Agent Interoperability Protocols	arXiv	https://arxiv.org/abs/2606.31498	ok

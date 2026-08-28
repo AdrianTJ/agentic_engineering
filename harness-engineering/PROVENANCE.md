@@ -243,3 +243,105 @@ that cries wolf gets ignored, which would defeat the point of having one.
    stated explicitly somewhere rather than left implicit.
 7. **No exit assessment.** The capstone in Ch.12 is good; there is no way for a
    reader to check their own answers to *Check yourself*.
+
+---
+
+## Pass 03 — 2026-08-28 · the reference harness, and two numbers finally sourced
+
+**Scope.** Work the seven gaps from pass 02. The headline item was gap 4: every
+chapter said "build this" and the reader started from nothing each time.
+
+**Queries run** (4): A2A / agent interoperability protocols; semantics-aware
+checkpoint-restore; Meta Context Engineering primary; plus a targeted fetch of the
+Rust typestate source. Fewer queries than previous passes, because most of the
+work this pass was building rather than searching.
+
+### The reference harness (gap 4 — closed)
+
+`reference-harness/` is a runnable skeleton the exercises attach to. Design
+decisions and why:
+
+- **Zero dependencies, no network, no API key.** Node 22.6+ runs TypeScript
+  directly, so `node harness.ts` works immediately. A curriculum artifact that
+  needs a paid API key before it does anything is one most readers never run.
+- **Deterministic stub model.** Swapping in a real provider is one function. This
+  makes the point that almost none of a harness is about the model, and it makes
+  the Ch.4 and Ch.7 measurement exercises reproducible by holding the model
+  constant.
+- **Implements Ch.2 and Ch.6 only.** Everything else is a marked `SEAM(Ch.N)`.
+  Those two are implemented because nothing else has anywhere to stand without a
+  loop that terminates and a log that survives a crash.
+- **`verify.sh` asserts 8 claims**, each corresponding to a chapter's claim. The
+  curriculum now validates its *code* as well as its links.
+
+**A bug it shipped, and why it stayed documented.** The first working version
+passed a naive crash test and was still wrong. Crashing between `tool_requested`
+and the effect left an orphaned intent; on resume the harness asked the model for
+a fresh decision, and the interrupted call was silently dropped — nothing errored,
+the log looked healthy, the run reported success with output missing. Fixed with a
+`pending` field and completion-before-decision on resume, and `verify.sh` now
+compares post-crash side effects against a clean run byte for byte.
+
+The bug is documented prominently in the reference harness README and referenced
+from Ch.6, because it is a better teaching artifact than the fix. It is exactly
+the "append before the effect" subtlety Ch.6 raises, it was found by *running* the
+thing rather than reasoning about it, and it demonstrates the Ch.8 point that a
+crash test which only asks "did it resume" is verification theater.
+
+This also honors the repository's standing rule (`AGENTS.md`): verify anything you
+document, and run the commands before shipping them. The rule earned its keep.
+
+### Both unsourced numbers, sourced (gaps 2 and 3 — closed)
+
+Pass 02 recorded two figures seen in search snippets and deliberately declined to
+cite either. Both now have primaries, and both were worth chasing:
+
+- **Crab** (arXiv 2604.28138): recovery *correctness* on Terminal-Bench — 8–13%
+  chat-only, 28–42% chat+filesystem, 100% semantics-aware. Promoted to **Ch.6 core
+  reading**; the 8–13% row is the strongest single argument in the chapter, since
+  "preserve the conversation" is what most harnesses mean by resumable.
+- **Meta Context Engineering via Agentic Skill Evolution** (arXiv 2601.21557, Ye
+  et al., ICML 2026). The pass-01 snippet's "89.1% vs 70.7%" is not the headline
+  the paper leads with; its own claim is 5.6–53.8% relative improvement (mean
+  16.9%) over agentic CE baselines. Cited in Ch.4 with **the paper's numbers, not
+  the snippet's** — which is the reason for the standing rule about not citing
+  from search results.
+
+### Gaps also closed
+
+- **5. Multi-agent communication protocols.** Added as a Ch.3 section rather than
+  a chapter: A2A (v1.0, Linux Foundation, Agent Cards, async over HTTP/SSE), the
+  four-protocol survey, and the governance-gaps paper — with an explicit note that
+  this is a premature abstraction for most systems, since a function call is a
+  better edge than a protocol when one team owns every node.
+- **6. Scope boundary.** The README now states plainly what is excluded: anything
+  that changes the weights. Where a source crosses the line, the chapter says so.
+- **1. Ch.11/Ch.12 depth (partial).** Ch.12's typestate section deepened from a
+  full read of the primary: transitions consume `self`, `PhantomData` for markers,
+  and the honest downsides — boilerplate per state, and awkwardness in loops,
+  which is exactly what an agent loop does every iteration.
+
+Also added: the field's broadest academic survey (arXiv 2606.20683), which did not
+surface in two prior passes of direct searching and turned up incidentally.
+
+**Validation after this pass:** 95 sources — **84 OK, 11 WARN, 0 FAIL**;
+`check-coverage.sh` passing; `reference-harness/verify.sh` 8/8.
+
+### Known gaps, carried to pass 04
+
+1. **Ch.11 is now the least-revised chapter.** Ch.12 was deepened this pass; the
+   TypeScript track was not, and the reference harness is *written* in TypeScript,
+   which makes the gap more visible. Several `unchecked` entries remain there.
+2. **No exit assessment.** Still no way for a reader to check their answers to
+   *Check yourself*. The strongest version is probably not an answer key but a
+   short list of "you understand this chapter if you can do X to the reference
+   harness."
+3. **The seams are asserted, not demonstrated.** `SEAM(Ch.4)` marks where a
+   context policy goes, but no chapter shows a worked attachment. One fully worked
+   seam — probably Ch.4's, since it is the most measured exercise — would show the
+   pattern for the rest.
+4. **Ch.5 has no exercise against the reference harness**, despite tool design
+   being the most eval-driven part of the curriculum.
+5. **No coverage of evaluation harnesses as products** (Terminal-Bench,
+   SWE-bench harness design) — relevant to Ch.8 and now cited only incidentally
+   through Crab.

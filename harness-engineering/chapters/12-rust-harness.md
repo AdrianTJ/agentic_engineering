@@ -47,10 +47,19 @@ each catches.
 **3. [The Typestate Pattern in Rust](https://cliffle.com/blog/rust-typestate/)** — Cliffle · ~30 min
 The technique that justifies the language for harness work. Encode state in the
 type: `Order<Created>`, `Order<Paid>`, `Order<Shipped>` rather than one type with
-a state field. Operations exist only on the states where they are legal, so an
-invalid transition is a compile error. Now apply it to Chapter 6:
-`Run<AwaitingApproval>` has no `execute_tool` method. The illegal transition that
-would have bitten at hour six does not build.
+a state field. Transitions **consume `self`** and return the next type, which is
+what makes an illegal transition a compile error rather than a runtime check —
+and which is why the pattern is hard to express in languages without move
+semantics. `PhantomData` carries the marker type when it has no runtime
+representation.
+
+Apply it to Chapter 6: `Run<AwaitingApproval>` has no `execute_tool` method. The
+illegal transition that would have bitten at hour six does not build.
+
+Read the downsides section honestly, because they bite in exactly this domain:
+boilerplate scales with the number of states, and consuming-and-recreating a value
+inside a loop is awkward — which an agent loop does on every iteration. The
+`&mut self` variant relieves that, at the cost of some of the guarantee.
 
 **4. [Typestate Programming](https://docs.rust-embedded.org/book/static-guarantees/typestate-programming.html)** — The Embedded Rust Book · ~20 min
 The same idea from the community that has leaned on it longest, and clearer on

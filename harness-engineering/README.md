@@ -71,6 +71,37 @@ the context, Ch.7 says compaction breaks your cache, and Ch.10 says the teams
 running the longest tasks reset the context instead. Nobody has settled it. Read
 all three before you commit to a context policy.
 
+## The reference harness
+
+[`reference-harness/`](reference-harness/) is a runnable skeleton the exercises
+attach to, so you are not starting from an empty file twelve times:
+
+```sh
+node harness.ts                                  # run it (Node 22.6+, no deps)
+reference-harness/verify.sh                      # 8 assertions from the chapters
+CRASH_AT=3 node harness.ts && node harness.ts    # kill it, watch it resume
+```
+
+It implements Ch.2 and Ch.6 in full — a loop that terminates and a log that
+survives a crash, because everything else needs somewhere to stand. Every other
+chapter attaches at a marked `SEAM(Ch.N)`. **The gaps are the curriculum**; this
+is a scaffold with the interesting parts removed on purpose, not a framework to
+adopt.
+
+The model is a deterministic stub, so it runs offline in a second and your
+measurements in Ch.4 and Ch.7 hold the model constant.
+
+## Scope
+
+What this curriculum covers: the system **around** a fixed model. What it
+deliberately excludes: anything that changes the weights — RL for long-horizon
+competence, fine-tuning, reward design. That work is real and it is adjacent, but
+it answers a different question ("how do we make the model better at this?")
+rather than this one ("how do we get reliable work out of the model we have?").
+Where a source crosses the line — Weng's joint optimization with model weights,
+Meta Context Engineering's learned skills — the chapter says so and stays on this
+side of it.
+
 Supporting material:
 
 - [`GLOSSARY.md`](GLOSSARY.md) — terms the field uses inconsistently, pinned down

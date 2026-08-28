@@ -140,8 +140,8 @@ Instrument, then optimize, then measure the thing you broke.
    the chapter, and almost nobody has made it.
 
    [`reference-harness/`](../reference-harness/) has made it, and the answer
-   reversed Ch.4's standing advice: tool clearing uses 6% fewer raw tokens and
-   costs 22% more billed, because compaction shrinks the volatile tail while
+   reversed Ch.4's standing advice: tool clearing uses 4% fewer raw tokens and
+   costs 15% more billed, because compaction shrinks the volatile tail while
    clearing churns a mid-sized one. **Billed cost tracks the size of the part that
    changes, not the size of the context.**
 

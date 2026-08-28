@@ -123,7 +123,7 @@ Port your Chapters 2–10 harness to TypeScript, or build it natively.
 [`reference-harness/`](../reference-harness/) is already TypeScript, so the
 fastest version of this exercise is to take it and replace one function —
 `ModelProvider.decide` — with a real SDK call, then re-run `verify.sh` and see
-which of its 15 assertions still hold once the model is non-deterministic. The
+which of its 34 assertions still hold once the model is non-deterministic. The
 ones that break are the interesting ones.
 
 1. **Schemas first.** Every tool defined once in Zod; derive both the TS type and

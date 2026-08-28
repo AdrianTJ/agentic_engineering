@@ -830,3 +830,117 @@ deliberately.
    Six passes of local edits; no full read-through for coherence. Cheap and
    overdue.
 5. **Still no human reader.** Unchanged.
+
+---
+
+## Pass 08 — 2026-08-28 · the end-to-end read
+
+**Scope.** The coherence pass. Eight passes of local edits and nobody had read the
+whole thing in order, including me. Zero queries; zero new sources.
+
+It found more than expected, and the most important finding was structural rather
+than editorial.
+
+### Every published number was stale
+
+Not one figure the chapters quoted about the reference harness was current.
+
+The cause is mundane and worth naming: passes 05 and 07 added tools
+(`post_webhook`, `escape_workspace`) to demonstrate the security seams. Tool
+definitions are part of the context, so the tools block grew, so **every token
+count in four chapters changed** — silently, with every test still passing,
+because no test knew the prose existed.
+
+| Figure | Published | Actual |
+|---|---|---|
+| Ch.3 dynamic-run tokens | 3,935 | 4,265 |
+| Ch.3 routed-run tokens | 92 | 110 |
+| Ch.4 `compact` billed | 1,939 | 2,080 |
+| Ch.4 `clear` billed | 2,358 | 2,384 |
+| Ch.5 fixed tool cost | 58 tok / 14.5% | 95 tok / 23% |
+| README assertion count | 8 | 34 |
+| Ch.11 assertion count | 15 | 34 |
+
+The qualitative findings all survive — `clear` still uses fewer raw tokens and
+bills more; routing still cuts 20 model calls to 1. But a curriculum that
+publishes wrong numbers while running a link checker has its priorities exactly
+backwards, and this is the second consecutive pass where a measurement I was
+confident in turned out to be wrong.
+
+**The fix is structural, not editorial.** `reference-harness/measure.sh` generates
+`MEASUREMENTS.md` — one source of truth for every quoted figure — and
+`bin/check-numbers.sh` fails if any chapter has drifted from it. The
+reference-harness README no longer restates the tables at all; it links.
+
+That makes four validators, and each exists because something went wrong that it
+would have caught:
+
+| Checker | The failure that created it |
+|---|---|
+| `check-links.sh` | a search result gave a URL that 404s (pass 01) |
+| `check-coverage.sh` | a bare link escaped the link checker (pass 03) |
+| `check-refs.sh` | a renumber stranded three cross-references (pass 04) |
+| `check-numbers.sh` | published figures went stale twice (passes 07, 08) |
+
+### The assessment had rotted
+
+Three of the twelve tasks — Ch.3, Ch.7, Ch.9 — asked the reader to build things
+the harness has since implemented. They were descriptions of existing code
+presented as exercises.
+
+Rewritten to point past the artifact instead, and two now aim at questions this
+curriculum has **not** answered: re-derive the cache comparison under
+token-granular caching (Ch.7), and close the laundering bypass or prove it
+unclosable (Ch.9). The assessment intro now says which chapters are implemented
+and that a clean result on the open ones belongs upstream.
+
+### The reading ladder was quoted from memory
+
+"Weekend ≈6h" was, summed from the per-source estimates, 8.7h. "Two weeks ≈25h"
+was ~28h before exercises. Now computed rather than recalled, with the ±35% caveat
+carried through, and the honest note that nobody has done the full ~75h — author
+included.
+
+### Smaller things a read catches and a grep does not
+
+- Ch.1 said "roughly a million lines" twice in one paragraph — a pass-02 patch
+  spliced badly and nothing noticed for six passes.
+- Ch.1 promised the harness inventory would be revised "after Chapters 4, 6, 8 and
+  9"; only Ch.9 ever asked. Rather than soften the promise, Ch.4, Ch.6 and Ch.8
+  now each close by updating it, so the inventory is a genuine through-line.
+- Ch.1 claimed the curriculum is "one chapter per part" of LangChain's six
+  primitives. It is twelve chapters. Now says so, and names cost and the human
+  interface as the two the parts list omits.
+- Ch.2 said the harness "implements exactly this chapter" — true when written,
+  false since pass 03.
+- The README's seam list still claimed only Ch.2 and Ch.6 were implemented; six
+  chapters are.
+- The three-chapter context tension was described in pass-02 terms, before Ch.7
+  measured it and found compaction wins on billed cost.
+- `check-refs.sh` and `check-numbers.sh` were missing from the README's validator
+  list.
+- "Core reading | 3–6 pieces" — Ch.9 has 8, Ch.10 has 7.
+
+**Validation:** 114 sources — **102 OK, 12 WARN, 0 FAIL**; all four doc checkers
+passing; `verify.sh` **34/34**.
+
+### Known gaps, carried to pass 09
+
+1. **The two open technical questions are now assessment tasks** (Ch.7 cache
+   granularity, Ch.9 laundering). That is a better home than a gap list, but they
+   remain unanswered by the curriculum itself.
+2. **Ch.5, Ch.8, Ch.10 have no worked seam.** Ch.10's is the most valuable — it
+   has the strongest empirical backing (SlopCodeBench) and no runnable artifact.
+3. **`harness.ts` is ~700 lines doing ten jobs.** It was a teaching artifact at
+   two. Splitting it into modules would let each chapter point at a file, and
+   would make the "read the first 80 lines" advice in Ch.2 unnecessary.
+4. ~~`measure.sh` is not run automatically.~~ **Closed within the pass.**
+   `check-numbers.sh` now fails if `harness.ts` or `verify.sh` is newer than
+   `MEASUREMENTS.md`, so it cannot validate prose against a stale generated file.
+   Verified by touching the source and confirming exit 1 — and my first attempt to
+   confirm that read `head`'s exit code through a pipe rather than the script's,
+   which is **the same mistake I made testing the regression gate in pass 05.**
+   Recorded because a repeated error is worth more than a novel one.
+5. **Still no human reader.** Eight passes. This one found seven real defects in a
+   single ordered read, which is the strongest evidence yet that the binding
+   constraint is a reader rather than another pass.

@@ -121,6 +121,9 @@ Close the loop on the harness you have been building since Ch.2.
 6. Do step 5 three times, and keep the log. That log is the artifact; it is what
    harness engineering actually looks like day to day.
 
+Update your Ch.1 inventory one more time: *planning and verification loops*. This
+is the primitive most often missing, and you have just built it.
+
 ## Check yourself
 
 1. Give three verifications for a coding agent that need no LLM. Why is each better than a judge?

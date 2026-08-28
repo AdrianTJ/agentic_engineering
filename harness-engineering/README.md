@@ -26,7 +26,7 @@ Each chapter has the same shape:
 | Section | What it is |
 |---|---|
 | **The problem** | The failure this chapter's ideas exist to prevent |
-| **Core reading** | 3–6 pieces. Non-negotiable. Time-estimated. |
+| **Core reading** | 4–8 pieces. Non-negotiable. Time-estimated. |
 | **Going deeper** | Optional depth, papers, primary specs |
 | **Key concepts** | The vocabulary you should own after reading |
 | **Build this** | A concrete exercise that forces the idea into your hands |
@@ -72,14 +72,20 @@ answer.
 
 Three passes, depending on how much time you have.
 
-**Weekend (≈6h).** Ch.1 core → Ch.2 core → Ch.4 core → Ch.5 core. This is the
+These totals are summed from the per-source estimates, which the section above
+tells you carry about ±35%. They were also wrong in an earlier version — quoted
+from memory rather than added up — so they are now computed.
+
+**Weekend (≈9h).** Ch.1 core → Ch.2 core → Ch.4 core → Ch.5 core. This is the
 minimum that lets you read someone else's harness and say something true about it.
 
-**Two weeks (≈25h).** Chapters 1–10 core reading, one exercise per chapter, plus
-whichever of 11/12 matches your language.
+**Two weeks (≈28h + exercises).** Chapters 1–10 core reading, one exercise per
+chapter, plus whichever of 11/12 matches your language (≈3h more). Budget real
+time for the exercises; they are where the curriculum actually lands.
 
-**Full (≈75h).** Everything, including *Going deeper*, both language tracks, and
-the capstone in Chapter 12.
+**Full (≈33h core, plus *Going deeper*, both language tracks, twelve exercises and
+the capstone).** Call it 70–80 hours if you do all of it properly. Nobody has,
+including its author — see `PROVENANCE.md`.
 
 ## The chapters
 
@@ -98,10 +104,16 @@ the capstone in Chapter 12.
 | [11](chapters/11-typescript-harness.md) | TypeScript harness engineering | Building it where the ecosystem lives |
 | [12](chapters/12-rust-harness.md) | Rust harness engineering | Building it where the guarantees live |
 
-Three chapters form a running argument you should read as one: Ch.4 says compact
-the context, Ch.7 says compaction breaks your cache, and Ch.10 says the teams
-running the longest tasks reset the context instead. Nobody has settled it. Read
-all three before you commit to a context policy.
+Three chapters form a running argument you should read as one. Ch.4 says compact
+the context. Ch.7 says compaction rewrites the prefix and rewriting invalidates
+the cache — **and then measures it, and finds compaction still wins on billed
+cost**, because what you pay for is the part that changes, not the whole context.
+Ch.10 says the teams running the longest tasks reset the context entirely rather
+than compacting.
+
+Nobody has settled it, and the curriculum's own measurement is model-dependent in
+a way Ch.7 states explicitly. Read all three before you commit to a context
+policy, and treat any of them alone as an argument rather than an answer.
 
 ## The reference harness
 
@@ -110,18 +122,26 @@ attach to, so you are not starting from an empty file twelve times:
 
 ```sh
 node harness.ts                                  # run it (Node 22.6+, no deps)
-reference-harness/verify.sh                      # 8 assertions from the chapters
+reference-harness/verify.sh                      # 34 assertions from the chapters
 CRASH_AT=3 node harness.ts && node harness.ts    # kill it, watch it resume
+./run-sandboxed.sh SCRIPT=escape                 # containment, not just policy
 ```
 
-It implements Ch.2 and Ch.6 in full — a loop that terminates and a log that
-survives a crash, because everything else needs somewhere to stand. Every other
-chapter attaches at a marked `SEAM(Ch.N)`. **The gaps are the curriculum**; this
-is a scaffold with the interesting parts removed on purpose, not a framework to
-adopt.
+Six chapters are implemented in it — **Ch.2** (loop, stopping conditions),
+**Ch.3** (static routing), **Ch.4** (context policy), **Ch.6** (event log, crash
+recovery), **Ch.7** (cache accounting), **Ch.9** (policy engine, containment).
+Ch.5, Ch.8 and Ch.10 remain marked `SEAM(Ch.N)`. **The gaps are the curriculum**;
+this is a scaffold with the interesting parts removed on purpose, not a framework
+to adopt.
 
 The model is a deterministic stub, so it runs offline in a second and your
 measurements in Ch.4 and Ch.7 hold the model constant.
+
+Every figure the chapters quote about the harness lives in
+[`reference-harness/MEASUREMENTS.md`](reference-harness/MEASUREMENTS.md), which is
+**generated**, not written. `bin/check-numbers.sh` fails if the prose has drifted
+from it — a check that exists because the numbers went stale twice before anyone
+looked.
 
 ## Scope
 
@@ -149,14 +169,20 @@ Link rot is the failure mode of any curriculum. Every URL cited here is in
 `sources.tsv` and checkable:
 
 ```sh
-harness-engineering/bin/check-links.sh      # every source still resolves
-harness-engineering/bin/check-coverage.sh   # every cited URL is registered
+bin/check-links.sh                # every source still resolves
+bin/check-coverage.sh             # every cited URL is registered in sources.tsv
+bin/check-refs.sh                 # every Ch.N reference points at a real chapter
+bin/check-numbers.sh              # every quoted measurement matches the harness
+reference-harness/verify.sh       # the harness does what the chapters claim
 ```
 
-The first reports HTTP status per source; the second fails if any chapter links
-to a URL that isn't in `sources.tsv`, so a citation can't escape the checker. A `403` is usually an egress policy or a bot
-filter rather than a dead link — `SOURCES.md` marks which sources are known to
-reject automated fetchers and how they were verified instead.
+Each exists because something went wrong that it would have caught. Coverage came
+from a bare link that escaped the link checker; refs from a renumber that stranded
+three cross-references; numbers from published figures that went stale twice.
+
+A `403` from the link checker is usually an egress policy or a bot filter rather
+than a dead link — `SOURCES.md` records which sources reject automated fetchers
+and how each was verified instead.
 
 ## A caveat worth stating up front
 

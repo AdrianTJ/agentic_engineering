@@ -11,8 +11,15 @@ did it or you didn't, and the harness tells you which.
 Work them in order. Each assumes the previous ones are done — by the end you have
 built most of a real harness, which is the point.
 
+Six chapters are already implemented in the harness (Ch.2, 3, 4, 6, 7, 9), so
+those tasks ask you to go **past** what is there rather than rebuild it. Three of
+them point at questions this curriculum has not answered: they are open, and a
+clean result belongs upstream rather than in your notes.
+
 > Setup: `cd harness-engineering/reference-harness && node harness.ts`
-> Baseline: `./verify.sh` should report 15/15 before you change anything.
+> Baseline: `./verify.sh` should pass against `baseline.json` before you change
+> anything. Current figures: `MEASUREMENTS.md` (generated — never quote prose for
+> a number).
 
 ---
 
@@ -41,24 +48,30 @@ budgets are redundant — which is itself the finding.
 
 ### Ch.3 — Graphs & control flow
 
-**Task.** The harness has exactly one dynamic edge: the model choosing a tool.
-Add a **static** router that sends any `args` matching `*.md` to a dedicated
-markdown path without consulting the model, and measure the token saving.
+**Task.** `route()` already makes one edge static, and its README warns that a
+sequential scan is the most routable case that exists. So: **find where routing
+stops paying.** Add a second rule for a case that is *nearly* enumerable, and
+measure it.
 
-**Pass condition.** Fewer model calls for the same completed work, with the
-routing decision visible in the event log. Then answer: what did you give up?
+**Pass condition.** Either a second rule that saves model calls without changing
+behaviour, or a written account of the rule you tried, what it got wrong, and what
+you would have had to enumerate to make it safe. The negative result is the more
+valuable pass, and harder to write honestly.
 
 ---
 
 ### Ch.4 — Context & memory
 
-**Task.** Reproduce the three-policy measurement, then **beat it**. Add a fourth
-policy that gets below `full`'s 3,570 billed tokens without exceeding 100%
-occupancy.
+**Task.** Reproduce the four-policy measurement, then **beat it**. Add a fifth
+policy that bills less than `compact` (currently the cheapest) without exceeding
+100% occupancy.
 
-**Pass condition.** A measured number lower than 3,570, and a one-paragraph
-account of what you traded to get it. "I dropped the notes" is a legitimate answer
-if you can say what it costs.
+Read the current numbers from `reference-harness/MEASUREMENTS.md` rather than from
+any prose — including this file. The published figures have gone stale twice as
+the harness grew, which is why that file is generated.
+
+**Pass condition.** A measured billed figure below `compact`'s, and a paragraph on
+what you traded. "I dropped the notes" is legitimate if you can say what it costs.
 
 ---
 
@@ -88,12 +101,20 @@ second is harder.
 
 ### Ch.7 — Cost, caching & economics
 
-**Task.** Add cache accounting: mark the stable prefix, and report which context
-blocks would survive as a cache hit versus be invalidated, per turn.
+**Task.** Cache accounting exists, and it produced a result the curriculum has
+**not settled**: compaction bills less than tool clearing, but the model is
+*block-granular* — any change invalidates a whole block — while real providers
+cache at token-prefix granularity.
 
-**Pass condition.** Your report shows compaction invalidating the prefix, and you
-can state the break-even — how many turns of cache hits a compaction has to save
-to pay for the invalidation it causes.
+Re-derive it. Implement a token-prefix cache model, where an append-only history
+stays cached and a mid-list deletion invalidates everything after it. Re-run the
+four policies.
+
+**Pass condition.** A measured answer to an open question: does the ranking hold,
+or does token-granular caching restore tool clearing's win? Either result passes.
+Stating which assumptions your answer depends on is the actual test — and if you
+get a clean result, it belongs upstream in this repository rather than in your
+notes.
 
 ---
 
@@ -111,13 +132,21 @@ record.
 
 ### Ch.9 — Security, sandboxing & permissions
 
-**Task.** The harness has no sandbox: `write_note` appends to the filesystem with
-whatever privileges the process has. Classify all tools by blast radius, gate the
-high-radius ones behind approval, and containerize execution.
+**Task.** Blast-radius classification, an approval gate, and runtime containment
+all exist. What does not exist is a defence against **laundering**: `SCRIPT=launder`
+paraphrases untrusted content and walks it straight past the substring check, and
+`verify.sh` asserts that it does.
 
-**Pass condition.** An approval gate that fires on the right tools, and a
-containment boundary you tried to breach. **An untested boundary is a claim, not a
-control** — if you didn't attempt the breach, you haven't passed.
+Close it, or prove you can't. Then go further than the harness does: it uses
+Node's permission model, which is a *runtime* boundary. Put it in a container and
+bound CPU, memory and network too.
+
+**Pass condition.** Either a check that catches laundering without an unacceptable
+false-positive rate — measured, on both the `launder` and `benign` scripts — or a
+written argument for why payload inspection cannot work and what CaMeL's
+interpreter does instead. Plus a containment boundary you **tried to breach**. An
+untested boundary is a claim, not a control; if you didn't attempt the breach, you
+haven't passed.
 
 ---
 

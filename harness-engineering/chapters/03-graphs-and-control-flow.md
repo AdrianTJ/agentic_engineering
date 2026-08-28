@@ -139,8 +139,8 @@ edge static — continuing a sequential scan, where the next file is arithmetic 
 and defers everything else to the model:
 
 ```sh
-SCRIPT=long node harness.ts              # every edge dynamic:  20 model calls, 3,935 tokens
-ROUTER=on SCRIPT=long node harness.ts    # one static edge:      1 model call,      92 tokens
+SCRIPT=long node harness.ts              # every edge dynamic:  20 model calls, 4,265 tokens
+ROUTER=on SCRIPT=long node harness.ts    # one static edge:      1 model call,     110 tokens
 ```
 
 Identical work; `verify.sh` asserts both runs touch the same files. **Read the

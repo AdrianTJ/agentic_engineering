@@ -84,8 +84,9 @@ Write the loop yourself, in whatever language you'll use for Ch.11 or Ch.12. No
 framework.
 
 If you would rather read a working one first, [`reference-harness/`](../reference-harness/)
-implements exactly this chapter — runnable offline with `node harness.ts`, no
-dependencies and no API key. Read it *after* you have attempted your own; the
+implements this chapter in full — runnable offline with `node harness.ts`, no
+dependencies and no API key. (It has since grown seams for five other chapters;
+the loop itself is still the first ~80 lines of `harness.ts`.) Read it *after* you have attempted your own; the
 value is in hitting the problems yourself, and the skeleton is more useful as a
 comparison than as a starting point.
 

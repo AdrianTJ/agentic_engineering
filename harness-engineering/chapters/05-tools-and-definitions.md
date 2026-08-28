@@ -109,9 +109,10 @@ as its own line in the context breakdown:
 SCRIPT=long node harness.ts   # look at the `tools` row
 ```
 
-In its default configuration three tools cost 58 tokens against a 400-token
-window — **14.5% of the budget spent before any work happens**, and it climbs
-linearly with every tool you add. Add five plausible tools with realistic
+In its default configuration five tools cost 95 tokens against a 400-token
+window — **24% of the budget spent before any work happens**, and it climbs
+linearly with every tool you add. (It was 14.5% with three tools, two passes ago.
+Adding two tools cost a tenth of the window; nobody noticed until an audit.) Add five plausible tools with realistic
 descriptions, re-run, and watch the share. That number is the argument for
 consolidation and progressive disclosure, and it is more persuasive as a
 measurement than as advice.

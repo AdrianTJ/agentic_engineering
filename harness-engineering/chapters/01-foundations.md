@@ -30,10 +30,10 @@ what the harness *forbids*.
 
 **1. [Harness engineering: leveraging Codex in an agent-first world](https://openai.com/index/harness-engineering/)** — OpenAI (Feb 2026) · ~20 min
 The piece that named the discipline. A team shipped roughly a million lines of
-production code without hand-typing it, and the account is about what they built
-*around* the agents: the rules, feedback loops, docs structure, and dependency
-order — roughly a million lines over five months. The line to sit with is that
-discipline didn't disappear, it moved: from the code into the scaffolding.
+production code over five months without hand-typing any of it, and the account is
+about what they built *around* the agents: the rules, feedback loops, docs
+structure, and dependency order. The line to sit with is that discipline didn't
+disappear, it moved — from the code into the scaffolding.
 
 The sharpest distinction in the piece, and the one this whole curriculum turns on:
 
@@ -61,8 +61,9 @@ parallelism explicit and inspectable**. Dense; budget the time.
 **3. [The Anatomy of an Agent Harness](https://www.langchain.com/blog/the-anatomy-of-an-agent-harness)** — LangChain · ~20 min
 The component breakdown. Six primitives: filesystem, code execution, sandbox,
 memory and search, context management, planning and verification loops. This is
-the best single map of *what parts exist*; the rest of this curriculum is one
-chapter per part. Read it as a parts list, and notice that "the model" is not
+the best single map of *what parts exist*; most of this curriculum is one chapter
+per part, with cost (Ch.7) and the human interface (Ch.10) added because they
+turned out to matter and the parts list omits them. Read it as a parts list, and notice that "the model" is not
 one of the parts.
 
 **4. [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents)** — Anthropic · ~25 min
@@ -129,7 +130,7 @@ primitives, name the concrete mechanism that implements it, or write "none."
 
 The "none" entries are the point. Nearly every harness has at least two, and the
 gaps predict its failure modes with unnerving accuracy. Keep this page — you will
-revise it after Chapters 4, 6, and 8.
+revise it after Chapters 4, 6, 8, and 9.
 
 ## Check yourself
 

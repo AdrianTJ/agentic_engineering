@@ -124,11 +124,11 @@ Then the harness learned to bill the cache (Ch.7), and the ranking flipped:
 
 | Policy | Compactions | Cache hit | Raw | **Billed** |
 |---|---|---|---|---|
-| none | 0 | 34% | 5,107 | 3,530 |
-| compact | 3 | **59%** | 4,168 | **1,939** |
-| clear (tool clearing only) | 1 | 44% | **3,935** | 2,358 |
+| none | 0 | 38% | 5,467 | 3,586 |
+| compact | 5 | **59%** | 4,437 | **2,080** |
+| clear (tool clearing only) | 3 | 49% | **4,265** | 2,384 |
 
-Tool clearing uses 6% fewer raw tokens and costs **22% more** once cached input is
+Tool clearing uses 4% fewer raw tokens and costs **15% more** once cached input is
 discounted. The earlier advice was not wrong about its measurement; it was
 measuring the wrong quantity.
 
@@ -148,6 +148,9 @@ twenty-step sequential scan in ways that matter.
 What survives both caveats: **measure billed, not raw**, and treat any advice in
 this chapter — including this paragraph — as conditional on which quantity was
 counted.
+
+Then go back to your Ch.1 harness inventory and fill in *context management*. If
+you wrote "none" there, you now know what that costs in tokens.
 
 ## Check yourself
 

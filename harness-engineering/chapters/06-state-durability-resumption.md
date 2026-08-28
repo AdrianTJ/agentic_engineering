@@ -125,6 +125,9 @@ Make the Ch.2/Ch.4 loop crash-proof.
 
 Step 4 will take longer than the rest combined. That is the lesson.
 
+Update your Ch.1 inventory: *filesystem* and *memory* are no longer "none", and
+you can now say what each one is for.
+
 [`reference-harness/`](../reference-harness/) implements steps 1–4 and its
 `verify.sh` asserts them, including that post-crash side effects match a clean run
 byte for byte. Its README documents a bug the first version shipped: a crash

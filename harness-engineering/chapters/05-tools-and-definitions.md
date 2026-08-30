@@ -80,7 +80,7 @@ you get a large capability surface without paying for all of it on every turn.
 
 - **[AI SDK: tools and tool calling](https://github.com/vercel/ai/blob/main/content/docs/03-ai-sdk-core/15-tools-and-tool-calling.mdx)** shows schema-first tool definition in practice, and Chapter 11 picks it up properly.
 - **[rig-core `Tool` trait](https://docs.rs/rig-core)** is the same contract expressed in static types, for Chapter 12.
-- **[Agent Skills specification](https://agentskills.io/specification)** is the format this very repository is built on. Read `.ruler/skills/general/write-skill/SKILL.md` here for the craft, and notice that a skill's `description` is the entire basis on which an agent decides to load it, which is the description-engineering problem one level up.
+- **[Agent Skills specification](https://agentskills.io/specification)** is the format this very repository is built on. Read `.ruler/skills/general/write-skill/SKILL.md` here for the craft, and notice that an agent decides whether to load a skill from its `description` alone, which is the description-engineering problem one level up.
 - **[Understanding MCP Security](https://www.wiz.io/academy/ai-security/model-context-protocol-security)** should wait until after Chapter 9.
 
 ## Key concepts

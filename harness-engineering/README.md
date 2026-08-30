@@ -54,9 +54,10 @@ script/style/nav/header/footer):
 | Building LangGraph | 30 min | 4,230 | 141 wpm |
 | The lethal trifecta | 10 min | 1,618 | 162 wpm |
 
-The estimates are **internally consistent, implying ~120 wpm on average** — a
-defensible rate for careful reading of technical prose, as against the ~200 wpm
-usually quoted for skimming. So they are not arbitrary.
+The estimates turn out to be internally consistent, implying about 120 words per
+minute on average, which is a defensible rate for careful reading of technical
+prose against the roughly 200 usually quoted for skimming. So they are not
+arbitrary.
 
 They are still loose: the implied rate ranges from 68 to 162 wpm, so any single
 estimate carries roughly ±35%. The outlier at the slow end (loop engineering) is
@@ -73,8 +74,8 @@ answer.
 Three passes, depending on how much time you have.
 
 These totals are summed from the per-source estimates, which the section above
-tells you carry about ±35%. They were also wrong in an earlier version — quoted
-from memory rather than added up — so they are now computed.
+tells you carry about ±35%. They were also wrong in an earlier version, quoted
+from memory rather than added up, so they are now computed.
 
 **Weekend (≈9h).** Ch.1 core → Ch.2 core → Ch.4 core → Ch.5 core. This is the
 minimum that lets you read someone else's harness and say something true about it.
@@ -85,7 +86,7 @@ time for the exercises; they are where the curriculum actually lands.
 
 **Full (≈33h core, plus *Going deeper*, both language tracks, twelve exercises and
 the capstone).** Call it 70–80 hours if you do all of it properly. Nobody has,
-including its author — see `PROVENANCE.md`.
+including its author. See `PROVENANCE.md` for that admission.
 
 ## The chapters
 
@@ -106,20 +107,20 @@ including its author — see `PROVENANCE.md`.
 
 Three chapters form a running argument you should read as one. Ch.4 says compact
 the context. Ch.7 says compaction rewrites the prefix and rewriting invalidates
-the cache — **and then measures it, and finds compaction still wins on billed
+the cache, **and then measures it and finds compaction still wins on billed
 cost**, because what you pay for is the part that changes, not the whole context.
 Ch.10 says the teams running the longest tasks reset the context entirely rather
 than compacting.
 
 The harness now measures all three, and the result is a caution rather than a
-verdict: compaction bills least, reset most — **but the measurement only captures
-cost**, and Ch.10's case for reset is that it prevents a failure this harness's
+verdict. Compaction bills least and reset most, **but the measurement only
+captures cost**, and Ch.10's case for reset is that it prevents a failure this harness's
 scripted model cannot exhibit. Reset also turned out not to escape the retention
 problem at all; it relocates it into a file, where at least you can read what was
 dropped.
 
 Nobody has settled it. Read all three before you commit to a context policy, and
-treat any one of them — or any cost-only table, including this repository's — as
+treat any one of them, or any cost-only table, including this repository's, as
 an argument rather than an answer.
 
 ## The reference harness
@@ -134,7 +135,7 @@ CRASH_AT=3 node harness.ts && node harness.ts    # kill it, watch it resume
 ./run-sandboxed.sh SCRIPT=escape                 # containment, not just policy
 ```
 
-Seven chapters are implemented in it — **Ch.2** (loop, stopping conditions),
+Seven chapters are implemented in it: **Ch.2** (loop, stopping conditions),
 **Ch.3** (static routing), **Ch.4** (context policy), **Ch.6** (event log, crash
 recovery), **Ch.7** (cache accounting), **Ch.9** (policy engine, containment),
 **Ch.10** (handoff artifact, context reset). Ch.5 and Ch.8 remain marked
@@ -148,28 +149,28 @@ measurements in Ch.4 and Ch.7 hold the model constant.
 Every figure the chapters quote about the harness lives in
 [`reference-harness/MEASUREMENTS.md`](reference-harness/MEASUREMENTS.md), which is
 **generated**, not written. `bin/check-numbers.sh` fails if the prose has drifted
-from it — a check that exists because the numbers went stale twice before anyone
+from it. That check exists because the numbers went stale twice before anyone
 looked.
 
 ## Scope
 
 What this curriculum covers: the system **around** a fixed model. What it
-deliberately excludes: anything that changes the weights — RL for long-horizon
-competence, fine-tuning, reward design. That work is real and it is adjacent, but
+deliberately excludes anything that changes the weights, meaning RL for
+long-horizon competence, fine-tuning, and reward design. That work is real and it is adjacent, but
 it answers a different question ("how do we make the model better at this?")
 rather than this one ("how do we get reliable work out of the model we have?").
-Where a source crosses the line — Weng's joint optimization with model weights,
-Meta Context Engineering's learned skills — the chapter says so and stays on this
-side of it.
+Where a source crosses the line, whether Weng's joint optimization with model
+weights or Meta Context Engineering's learned skills, the chapter says so and
+stays on this side of it.
 
 Supporting material:
 
-- [`ASSESSMENT.md`](ASSESSMENT.md) — one objective task per chapter, against the reference harness. The *Check yourself* questions have no answer key by design; this is the substitute, and a better test.
-- [`GLOSSARY.md`](GLOSSARY.md) — terms the field uses inconsistently, pinned down
-- [`SOURCES.md`](SOURCES.md) — the full annotated bibliography, one row per source
-- [`sources.tsv`](sources.tsv) — the same list, machine-checkable
-- [`PROVENANCE.md`](PROVENANCE.md) — how this curriculum was built, pass by pass
-- [`meta/research-log/`](meta/research-log/) — raw findings from each research pass
+- [`ASSESSMENT.md`](ASSESSMENT.md): one objective task per chapter, against the reference harness. The *Check yourself* questions have no answer key by design; this is the substitute, and a better test.
+- [`GLOSSARY.md`](GLOSSARY.md): terms the field uses inconsistently, pinned down
+- [`SOURCES.md`](SOURCES.md): the full annotated bibliography, one row per source
+- [`sources.tsv`](sources.tsv): the same list, machine-checkable
+- [`PROVENANCE.md`](PROVENANCE.md): how this curriculum was built, pass by pass
+- [`meta/research-log/`](meta/research-log/): raw findings from each research pass
 
 ## Validating the reading list
 
@@ -190,10 +191,11 @@ reference-harness/verify.sh       # the harness does what the chapters claim
 bin/check-refs.sh                 # every Ch.N reference points at a real chapter
 bin/check-coverage.sh             # every cited URL is registered in sources.tsv
 bin/check-numbers.sh              # every quoted measurement matches the harness
+bin/check-style.py                # prose carries no machine-writing tells
 bin/check-links.sh                # every source still resolves
 ```
 
-Each exists because something went wrong that it would have caught — including
+Each exists because something went wrong that it would have caught, including
 `check-all.sh` itself, which exists because pass 09 pushed a commit with
 `check-numbers.sh` red. The checkers were run by discipline; discipline is what
 failed. Coverage came
@@ -201,8 +203,8 @@ from a bare link that escaped the link checker; refs from a renumber that strand
 three cross-references; numbers from published figures that went stale twice.
 
 A `403` from the link checker is usually an egress policy or a bot filter rather
-than a dead link — `SOURCES.md` records which sources reject automated fetchers
-and how each was verified instead.
+than a dead link, and `SOURCES.md` records which sources reject automated
+fetchers and how each was verified instead.
 
 ## A caveat worth stating up front
 

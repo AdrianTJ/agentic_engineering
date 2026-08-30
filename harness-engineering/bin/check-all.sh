@@ -26,6 +26,7 @@ step "harness behaviour"        ./reference-harness/verify.sh
 step "chapter references"       ./bin/check-refs.sh
 step "citation coverage"        ./bin/check-coverage.sh
 step "published numbers"        ./bin/check-numbers.sh
+step "prose style (AI tells)"   python3 ./bin/check-style.py
 [ "${1:-}" = "--links" ] && step "link rot" ./bin/check-links.sh
 
 echo

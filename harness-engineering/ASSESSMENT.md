@@ -8,7 +8,7 @@ This is the substitute, and it is a better test anyway. Each chapter gets **one
 task against the reference harness** with an objective pass condition. You either
 did it or you didn't, and the harness tells you which.
 
-Work them in order. Each assumes the previous ones are done — by the end you have
+Work them in order. Each assumes the previous ones are done, and by the end you have
 built most of a real harness, which is the point.
 
 Six chapters are already implemented in the harness (Ch.2, 3, 4, 6, 7, 9), so
@@ -18,7 +18,7 @@ clean result belongs upstream rather than in your notes.
 
 > Setup: `cd harness-engineering/reference-harness && node harness.ts`
 > Baseline: `./verify.sh` should pass against `baseline.json` before you change
-> anything. Current figures: `MEASUREMENTS.md` (generated — never quote prose for
+> anything. Current figures live in `MEASUREMENTS.md`, which is generated; never quote prose for
 > a number).
 
 ---
@@ -31,7 +31,7 @@ context management, planning & verification), name the mechanism or write "none.
 
 **Pass condition.** You identified at least three "none"s and, for each, named the
 long-horizon failure its absence produces. If you wrote a mechanism for *sandbox*,
-re-read the code — there isn't one, and that is Ch.9's problem.
+re-read the code, because there isn't one, and that is Chapter 9's problem.
 
 ---
 
@@ -42,7 +42,7 @@ task that trips it and nothing else.
 
 **Pass condition.** `verify.sh` still passes 15/15, and your new condition fires
 without the step or token budget firing first. If you can't separate them, your
-budgets are redundant — which is itself the finding.
+budgets are redundant, which is itself the finding.
 
 ---
 
@@ -56,7 +56,7 @@ measure it.
 **Pass condition.** Either a second rule that saves model calls without changing
 behaviour, or a written account of the rule you tried, what it got wrong, and what
 you would have had to enumerate to make it safe. The negative result is the more
-valuable pass, and harder to write honestly.
+valuable pass, and the harder one to write without fudging.
 
 ---
 
@@ -67,7 +67,7 @@ policy that bills less than `compact` (currently the cheapest) without exceeding
 100% occupancy.
 
 Read the current numbers from `reference-harness/MEASUREMENTS.md` rather than from
-any prose — including this file. The published figures have gone stale twice as
+any prose, including this file. The published figures have gone stale twice as
 the harness grew, which is why that file is generated.
 
 **Pass condition.** A measured billed figure below `compact`'s, and a paragraph on
@@ -82,7 +82,7 @@ the context report before and after. Then halve that number without removing
 capability.
 
 **Pass condition.** Same capability, roughly half the fixed token cost, and you
-can name which technique bought each saving — consolidation, namespacing, or
+can name which technique bought each saving, whether consolidation, namespacing, or
 progressive disclosure.
 
 ---
@@ -93,8 +93,9 @@ progressive disclosure.
 step boundary; the interesting windows are narrower than that.
 
 **Pass condition.** Either a reproducible divergence between a crashed-and-resumed
-run and a clean one — in which case write the `verify.sh` assertion that catches
-it — or a written argument for why no such window remains. Both are passes. The
+run and a clean one, in which case you write the `verify.sh` assertion that
+catches it, or a written argument for why no such window remains. Both are passes;
+the
 second is harder.
 
 ---
@@ -103,7 +104,7 @@ second is harder.
 
 **Task.** Cache accounting exists, and it produced a result the curriculum has
 **not settled**: compaction bills less than tool clearing, but the model is
-*block-granular* — any change invalidates a whole block — while real providers
+block-granular, so any change invalidates a whole block, while real providers
 cache at token-prefix granularity.
 
 That question has since been **answered** (`CACHE_MODEL=chunk`): the ordering
@@ -117,7 +118,7 @@ tokenizer, or against actual provider cache telemetry.**
 
 **Pass condition.** A measured answer with its assumptions stated: does 1.04%
 survive contact with a real tokenizer? If your result is clean it belongs upstream
-in this repository, not in your notes — that is the standard the curriculum holds
+in this repository rather than in your notes, which is the standard the curriculum holds
 itself to, twice now.
 
 ---
@@ -146,7 +147,7 @@ Node's permission model, which is a *runtime* boundary. Put it in a container an
 bound CPU, memory and network too.
 
 **Pass condition.** Either a check that catches laundering without an unacceptable
-false-positive rate — measured, on both the `launder` and `benign` scripts — or a
+false-positive rate, measured on both the `launder` and `benign` scripts, or a
 written argument for why payload inspection cannot work and what CaMeL's
 interpreter does instead. Plus a containment boundary you **tried to breach**. An
 untested boundary is a claim, not a control; if you didn't attempt the breach, you
@@ -161,7 +162,7 @@ haven't passed.
 
 **Pass condition.** A run that resets mid-task completes correctly, and
 `verify.sh` proves its output matches a no-reset run. Then compare reset against
-compaction on the Ch.4 measurement — you now have four policies and a real
+compaction on the Chapter 4 measurement, since you now have four policies and a real
 opinion about which suits which task.
 
 ---
@@ -196,4 +197,4 @@ Not "I read the sources." Not "I built a harness." A recorded before/after on a
 regression suite, including at least one change that made things worse and which
 you kept in the log.
 
-That is the whole discipline. Everything else here is preparation for it.
+That is the discipline in full, and everything else here is preparation for it.

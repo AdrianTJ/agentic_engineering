@@ -1057,3 +1057,77 @@ passing; `verify.sh` **42/42** (34 → 42).
    refspec form are both refused by this environment's proxy. `feat/long-horizon-textbook`
    carries every commit; the stale ref needs removing from GitHub's UI.
 5. **Still no human reader.** Nine passes.
+
+---
+
+## Pass 10 — 2026-08-28 · a prose pass, and a checker for machine-writing tells
+
+**Scope.** A reader gave the first external feedback the curriculum has had:
+the content is fine, but the prose is terse and choppy, and the em dash habit
+makes it hard to read. The ask was to rewrite every chapter in a flowing
+register modelled on Ben Thompson's Stratechery, to keep the voice consistent,
+and to strip the tells that mark text as machine-written.
+
+Zero research queries. This pass touched prose and prose only; every URL,
+table, measured figure, and code block carried over unchanged.
+
+### Grounding the target rather than guessing it
+
+Two things were fetched before any rewriting. The first was a Stratechery
+article, read for concrete construction habits: medium-length sentences that
+connect rather than stack, semicolons and parentheses carrying the asides that
+em dashes had been carrying, and topic sentences that state the point outright.
+The second was the pattern list from Simon Willison's LLM cliché highlighter
+(`github.com/simonw/tools`), ported into `bin/check-style.py`. The port keeps
+Willison's framing, which is that these are symptoms rather than proof of
+authorship, so the checker fails only on the patterns that are never right in
+this register (negative parallelisms, didactic hedges, stage-managed reveals,
+AI vocabulary, epigrams) and warns on the ones that need judgment (em dashes,
+three-item lists, announced sincerity).
+
+### The measured problem, and the measured result
+
+The baseline was one em dash every forty words: 587 across 23,726 words, where
+ordinary prose runs two or three per thousand, plus three hard style failures.
+
+Afterward, prose em dashes are effectively zero. The 90 that remain are all
+structural, living in chapter titles, the blockquote core-question lines, and
+the `Source — Author · ~N min` citation headers, which are a formatting
+convention rather than prose. Hard failures are zero, and `check-style.py` now
+runs inside `check-all.sh`, so the pre-commit hook blocks any regression.
+
+### What a prose pass caught that nine content passes did not
+
+Rewriting a sentence forces you to check whether it is still true, and three
+stale claims surfaced that way. Chapter 2 still said the loop was the first
+eighty lines of `harness.ts`, which stopped being true at the pass 09
+modularization. Chapter 4 still called the cache-granularity question unsettled
+after pass 09 settled it. Chapter 9 was still selling a taint bit that pass 06
+had replaced with per-value provenance, so the chapter described a design its
+own reference implementation had outgrown. Chapter 11's stale assertion count,
+34 where the suite now has 42, went along for the ride.
+
+### The residual warnings, and why they stand
+
+Twenty-eight warnings remain, and each is a deliberate editorial call rather
+than an oversight. The structural em dashes are the citation format. The
+three-item lists are a construction Thompson himself uses freely. And the
+flagged uses of "honest" are Chapter 12's case-for-and-against framing, where
+"the honest case against Rust" is the right phrase and contorting it to dodge a
+heuristic would make the prose worse. The checker exists to catch the choppy
+dash prose the rewrite set out to remove, and on that it reads clean.
+
+**Validation:** all five doc checkers plus the new style checker passing;
+`verify.sh` 42/42; every measured figure unchanged, since no code was touched.
+
+### Known gaps, carried to pass 11
+
+1. **The reference-harness source comments and SPEC.md were not restyled.** They
+   are code comments rather than curriculum prose, and the register there
+   serves a different purpose, but a reader moving from a chapter into the
+   harness will feel the seam.
+2. **Still one open technical question**, the tokenizer-granular cache
+   measurement from pass 09, now living as the Chapter 7 assessment task.
+3. **The reader has seen one rewritten chapter, not twelve.** The voice is now
+   consistent by construction, but whether it is the right voice is still a
+   single data point.

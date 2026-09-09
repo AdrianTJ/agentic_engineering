@@ -13,7 +13,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Install Ruler
-        run: npm i -g @intellectronica/ruler
-      - name: Run repo checks
-        run: bin/test.sh
+      - name: Run curriculum checks
+        run: harness-engineering/bin/check-all.sh

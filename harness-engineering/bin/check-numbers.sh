@@ -29,7 +29,7 @@ bad=0
 # Pull canonical values out of the generated file.
 row()  { grep -E "^\| $1 \|" "$M" | awk -F'|' '{gsub(/ /,"",$0)}1' | head -1; }
 val()  { grep -E "^\| $1 \|" "$M" | awk -F'|' -v c="$2" '{gsub(/ /,"",$c); print $c}' | head -1; }
-comma(){ printf "%s" "$1" | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta'; }
+comma(){ printf "%s" "$1" | awk '{ s=$0; out=""; while (length(s)>3) { out="," substr(s,length(s)-2) out; s=substr(s,1,length(s)-3) } print s out }'; }
 
 # (label, value, file, human description)
 check() { # <value> <file> <what>
